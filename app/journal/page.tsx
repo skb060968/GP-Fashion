@@ -1,12 +1,23 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import SectionHeading from "@/components/SectionHeading"
 import RevealWrapper from "@/components/RevealWrapper"
 import { content } from "@/lib/data"
 
-export const metadata = {
-  title: "Journal | Piyush Bholla",
-  description: "Design insights, creative process, and inspiration from the studio.",
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "Journal | GP Fashion",
+  description:
+    "Design insights, creative process, and inspiration from the GP Fashion studio.",
+  openGraph: {
+    title: "Journal | GP Fashion",
+    description:
+      "Design insights, creative process, and inspiration from the GP Fashion studio.",
+    url: `${SITE_URL}/journal`,
+    images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
+  },
 }
 
 export default function JournalPage() {

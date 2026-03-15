@@ -1,10 +1,21 @@
+import type { Metadata } from "next"
 import SectionHeading from "@/components/SectionHeading"
 import CollectionCard from "@/components/CollectionCard"
 import { content } from "@/lib/data"
 
-export const metadata = {
-  title: "Collections | Piyush Bholla",
-  description: "Explore curated collections that celebrate craftsmanship, innovation, and timeless elegance.",
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "Collections | GP Fashion",
+  description:
+    "Explore curated collections celebrating craftsmanship, innovation, and timeless elegance.",
+  openGraph: {
+    title: "Collections | GP Fashion",
+    description:
+      "Explore curated collections celebrating craftsmanship, innovation, and timeless elegance.",
+    url: `${SITE_URL}/collections`,
+    images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
+  },
 }
 
 export default function CollectionsPage() {

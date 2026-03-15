@@ -12,6 +12,7 @@ model Order {
   orderCode     String   @unique    
   amount        Int
   discount      Int             @default(0)        // ✅ new field for order-level discount
+  couponCode    String?                             // applied coupon code (null if no coupon)
   paymentMethod PaymentMethod
   status        OrderStatus
   createdAt     DateTime        @default(now())
@@ -74,4 +75,30 @@ enum OrderStatus {
 
   CANCELLED            // Cancelled before shipment
   REFUNDED             // Money returned to customer
+}
+
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  discountType   DiscountType
+  discountValue  Int                // percentage (e.g. 10 for 10%) or fixed amount in paise
+  minOrderAmount Int?               // optional minimum order subtotal in paise
+  maxUses        Int?               // optional usage cap
+  currentUses    Int          @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+}
+
+model AdminSession {
+  id          String   @id @default(cuid())
+  tokenHash   String   @unique        // sha256 of the random token
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
 }

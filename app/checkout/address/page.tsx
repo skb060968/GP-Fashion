@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { validateAddress } from "@/lib/validation/addressValidation"
 
 type AddressForm = {
   fullName: string
   phone: string
-  email: string        // ✅ new field
+  email: string
   addressLine1: string
   city: string
   state: string
@@ -20,34 +21,40 @@ export default function AddressPage() {
   const [form, setForm] = useState<AddressForm>({
     fullName: "",
     phone: "",
-    email: "",          // ✅ initialize
+    email: "",
     addressLine1: "",
     city: "",
     state: "",
     pincode: "",
   })
 
-  const [error, setError] = useState<string | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+    // Clear the field-specific error when the user types
+    if (errors[name]) {
+      setErrors(prev => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
   }
 
   const handleContinue = () => {
-    const hasEmptyField = Object.values(form).some(
-      value => value.trim() === ""
-    )
+    const result = validateAddress(form)
 
-    if (hasEmptyField) {
-      setError("Please fill in all address details before continuing.")
+    if (!result.valid) {
+      setErrors(result.errors)
       return
     }
 
-    // ✅ SINGLE SOURCE OF TRUTH
+    // Persist validated address and navigate to payment
     localStorage.setItem("checkout_address", JSON.stringify(form))
-
     router.push("/checkout/payment")
   }
 
@@ -59,77 +66,91 @@ export default function AddressPage() {
         </h1>
 
         <div className="bg-white rounded-2xl border border-stone-200 p-8 space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Full Name"
-            value={form.fullName}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-          />
-
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone Number"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-          />
-
-          {/* ✅ New Email Field */}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-          />
-
-          <textarea
-            name="addressLine1"
-            placeholder="Address (House no, Street, Area)"
-            rows={3}
-            value={form.addressLine1}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
             <input
               type="text"
-              name="city"
-              placeholder="City"
-              value={form.city}
+              name="fullName"
+              placeholder="Full Name"
+              value={form.fullName}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
+              className={`w-full px-4 py-3 rounded-lg border ${errors.fullName ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
             />
-
-            <input
-              type="text"
-              name="state"
-              placeholder="State"
-              value={form.state}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-            />
+            {errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName}</p>}
           </div>
 
-          <input
-            type="text"
-            name="pincode"
-            placeholder="Pincode"
-            value={form.pincode}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-fashion-gold"
-          />
+          <div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              value={form.phone}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.phone ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+            />
+            {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}
+          </div>
+
+          <div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.email ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+            />
+            {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
+          </div>
+
+          <div>
+            <textarea
+              name="addressLine1"
+              placeholder="Address (House no, Street, Area)"
+              rows={3}
+              value={form.addressLine1}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.addressLine1 ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+            />
+            {errors.addressLine1 && <p className="text-sm text-red-600 mt-1">{errors.addressLine1}</p>}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <input
+                type="text"
+                name="city"
+                placeholder="City"
+                value={form.city}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${errors.city ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+              />
+              {errors.city && <p className="text-sm text-red-600 mt-1">{errors.city}</p>}
+            </div>
+
+            <div>
+              <input
+                type="text"
+                name="state"
+                placeholder="State"
+                value={form.state}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${errors.state ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+              />
+              {errors.state && <p className="text-sm text-red-600 mt-1">{errors.state}</p>}
+            </div>
+          </div>
+
+          <div>
+            <input
+              type="text"
+              name="pincode"
+              placeholder="Pincode"
+              value={form.pincode}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.pincode ? "border-red-400" : "border-gray-300"} focus:outline-none focus:border-fashion-gold`}
+            />
+            {errors.pincode && <p className="text-sm text-red-600 mt-1">{errors.pincode}</p>}
+          </div>
         </div>
 
         {/* Actions */}

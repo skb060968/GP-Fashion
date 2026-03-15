@@ -17,6 +17,14 @@ type Address = {
   pincode: string
 }
 
+const COUPON_ERROR_MESSAGES: Record<string, string> = {
+  NOT_FOUND: "Coupon not found",
+  EXPIRED: "Coupon has expired",
+  USAGE_LIMIT: "Coupon usage limit reached",
+  MIN_ORDER_NOT_MET: "Minimum order amount not met",
+  INACTIVE: "Coupon is not active",
+}
+
 export default function PaymentPage() {
   const router = useRouter()
   const { cart, clearCart } = useCart()
@@ -25,16 +33,47 @@ export default function PaymentPage() {
   const [confirmChecked, setConfirmChecked] = useState(false)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("")
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [couponError, setCouponError] = useState("")
+  const [couponApplied, setCouponApplied] = useState(false)
+
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const discountRate = 0.1
-  const discountAmount = totalAmount * discountRate
-  const orderTotal = totalAmount - discountAmount
+  const discountAmount = couponDiscount
+  const orderTotal = totalAmount - couponDiscount
 
   useEffect(() => {
     const storedAddress = localStorage.getItem("checkout_address")
     if (!storedAddress) return
     setAddress(JSON.parse(storedAddress))
   }, [])
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return
+    setCouponError("")
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode.trim(), subtotal: totalAmount }),
+      })
+      const data = await res.json()
+      if (data.valid) {
+        setCouponDiscount(data.discountAmount ?? 0)
+        setCouponApplied(true)
+        setCouponError("")
+      } else {
+        setCouponDiscount(0)
+        setCouponApplied(false)
+        setCouponError(COUPON_ERROR_MESSAGES[data.error] ?? "Invalid coupon")
+      }
+    } catch {
+      setCouponDiscount(0)
+      setCouponApplied(false)
+      setCouponError("Failed to validate coupon")
+    }
+  }
 
   const handlePlaceOrder = async () => {
     if (!address || cart.length === 0 || !confirmChecked) return
@@ -44,7 +83,6 @@ export default function PaymentPage() {
       await fetch("/api/warmup", { method: "POST" })
 
       // 🔥 Step 2: Place actual order
-
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,6 +92,7 @@ export default function PaymentPage() {
           amount: orderTotal,
           discount: discountAmount,
           paymentMethod: "UPI_MANUAL",
+          ...(couponApplied && couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
         }),
       })
       if (!res.ok) throw new Error("Order creation failed")
@@ -136,15 +175,60 @@ export default function PaymentPage() {
         </div>
 
         {/* Amount Summary */}
-        <div className="bg-white rounded-xl shadow p-6 space-y-2">
+        <div className="bg-white rounded-xl shadow p-6 space-y-4">
           <div className="flex justify-between">
             <span className="font-medium">Total Amount</span>
             <span className="font-semibold">{formatRupees(totalAmount)}</span>
           </div>
-          <div className="flex justify-between text-gray-700">
-            <span>Discount ({discountRate * 100}%)</span>
-            <span>-{formatRupees(discountAmount)}</span>
+
+          {/* Coupon Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Coupon Code</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Enter coupon code"
+                disabled={couponApplied}
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold disabled:bg-gray-100"
+              />
+              {couponApplied ? (
+                <button
+                  onClick={() => {
+                    setCouponApplied(false)
+                    setCouponDiscount(0)
+                    setCouponCode("")
+                    setCouponError("")
+                  }}
+                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition"
+                >
+                  Remove
+                </button>
+              ) : (
+                <button
+                  onClick={handleApplyCoupon}
+                  className="rounded-lg bg-fashion-gold px-4 py-2 text-sm font-medium text-white hover:bg-fashion-gold/90 transition"
+                >
+                  Apply
+                </button>
+              )}
+            </div>
+            {couponError && (
+              <p className="text-sm text-red-600">{couponError}</p>
+            )}
+            {couponApplied && (
+              <p className="text-sm text-green-600">Coupon applied successfully!</p>
+            )}
           </div>
+
+          {couponApplied && (
+            <div className="flex justify-between text-gray-700">
+              <span>Coupon Discount</span>
+              <span>-{formatRupees(couponDiscount)}</span>
+            </div>
+          )}
+
           <div className="flex justify-between text-lg font-bold text-fashion-black">
             <span>Order Total</span>
             <span>{formatRupees(orderTotal)}</span>

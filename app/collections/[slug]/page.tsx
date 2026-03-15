@@ -1,10 +1,37 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import type { Metadata } from "next"
 import { content } from "@/lib/data"
 import { dresses } from "@/lib/data/shop"
 import { formatRupees } from "@/lib/money"
 import RevealWrapper from "@/components/RevealWrapper"
+
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const collection = content.collections.find((c) => c.slug === slug)
+  if (!collection) return {}
+
+  const title = `${collection.name} | GP Fashion`
+  const description = collection.description
+  const imageUrl = `${SITE_URL}${collection.coverImage}`
+  const pageUrl = `${SITE_URL}/collections/${collection.slug}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      images: [{ url: imageUrl }],
+    },
+  }
+}
 
 export default async function CollectionDetailPage({
   params,

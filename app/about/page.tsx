@@ -1,10 +1,26 @@
 import Image from "next/image"
+import type { Metadata } from "next"
 import {
     Sparkles,
   GraduationCap,
 } from "lucide-react"
 import { content } from "@/lib/data"
 import RevealWrapper from "@/components/RevealWrapper"
+
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "About | GP Fashion",
+  description:
+    "Learn about GP Fashion — where heritage meets innovation in premium designer wear.",
+  openGraph: {
+    title: "About | GP Fashion",
+    description:
+      "Learn about GP Fashion — where heritage meets innovation in premium designer wear.",
+    url: `${SITE_URL}/about`,
+    images: [{ url: `${SITE_URL}/images/about/piyush1.jpg` }],
+  },
+}
 
 
 export default function AboutPage() {

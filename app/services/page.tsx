@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import {
   Sparkles,
@@ -10,6 +11,21 @@ import {
 } from "lucide-react"
 import { content } from "@/lib/data"
 import RevealWrapper from "@/components/RevealWrapper"
+
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "Services | GP Fashion",
+  description:
+    "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
+  openGraph: {
+    title: "Services | GP Fashion",
+    description:
+      "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
+    url: `${SITE_URL}/services`,
+    images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
+  },
+}
 
 const iconMap: { [key: string]: any } = {
   "Creative Design": Sparkles,

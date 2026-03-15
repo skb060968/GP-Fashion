@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import type { NextRequest } from "next/server";
+import { createRateLimiter } from "@/lib/security/rateLimiter";
+import { createSession } from "@/lib/security/session";
+
+const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 5 });
 
 export async function POST(req: NextRequest) {
+  // Rate limiting check
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || req.headers.get("x-real-ip")
+    || "unknown";
+  const rateResult = loginRateLimiter.check(clientIp);
+  if (!rateResult.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(rateResult.retryAfterSeconds) } }
+    );
+  }
+
   const { email, password } = await req.json();
 
   if (
@@ -12,10 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  const token = crypto
-    .createHmac("sha256", process.env.ADMIN_SECRET!)
-    .update("admin-session")
-    .digest("hex");
+  const { token } = await createSession();
 
   // ✅ Set cookie on the response, not via cookies()
   const res = NextResponse.json({ success: true });

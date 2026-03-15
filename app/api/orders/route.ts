@@ -6,6 +6,11 @@ import {
   orderPlacedEmailAdmin,
   orderPlacedEmailCustomer,
 } from "@/lib/emails/orderPlaced";
+import { createOrderSchema, formatZodErrors } from "@/lib/validation/schemas";
+import { createRateLimiter } from "@/lib/security/rateLimiter";
+import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
+
+const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
 // Helper: generate short order codes like 26001, 26002, etc.
 async function generateOrderCode(year: number) {
@@ -27,14 +32,53 @@ async function generateOrderCode(year: number) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { items, address, amount, discount, paymentMethod } = body;
-
-    if (!items || !address || !amount || !paymentMethod) {
+    // Rate limiting check
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("x-real-ip")
+      || "unknown";
+    const rateResult = orderRateLimiter.check(clientIp);
+    if (!rateResult.allowed) {
       return NextResponse.json(
-        { error: "Invalid order data" },
+        { error: "Too many requests" },
+        { status: 429, headers: { "Retry-After": String(rateResult.retryAfterSeconds) } }
+      );
+    }
+
+    // Check payload size before parsing
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    if (contentLength > 102400) {
+      return NextResponse.json(
+        { error: "Payload too large" },
+        { status: 413 }
+      );
+    }
+
+    const body = await req.json();
+
+    // Validate with Zod schema
+    const result = createOrderSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { errors: formatZodErrors(result.error) },
         { status: 400 }
       );
+    }
+
+    const { items, address, amount, paymentMethod, couponCode } = result.data;
+
+    // 🎟️ Coupon validation — server calculates discount
+    let discount = 0;
+    let validCoupon = false;
+    if (couponCode) {
+      const couponResult = await validateCoupon(couponCode, amount);
+      if (!couponResult.valid) {
+        return NextResponse.json(
+          { error: couponResult.error, code: couponResult.error },
+          { status: 400 }
+        );
+      }
+      discount = couponResult.discountAmount!;
+      validCoupon = true;
     }
 
     // 🔑 Generate orderCode
@@ -46,9 +90,10 @@ export async function POST(req: Request) {
       data: {
         orderCode, // 👈 new short code
         amount,
-        discount: discount ?? 0,
-        paymentMethod: paymentMethod as PaymentMethod,
+        discount,
+        paymentMethod: paymentMethod as PaymentMethod, // Zod validates the enum value
         status: OrderStatus.UNDER_VERIFICATION,
+        couponCode: validCoupon ? couponCode : null,
 
         address: {
           create: {
@@ -64,7 +109,7 @@ export async function POST(req: Request) {
         },
 
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item) => ({
             name: item.name,
             slug: item.slug,
             size: item.size,
@@ -82,6 +127,11 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    // 🎟️ Increment coupon usage after successful order creation
+    if (validCoupon && couponCode) {
+      await applyCoupon(couponCode);
+    }
 
     // 2️⃣ Re-fetch order WITH relations
     const order = await prisma.order.findUnique({

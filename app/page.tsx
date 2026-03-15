@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Hero from "@/components/Hero"
 import About from "@/components/About"
 import Link from "next/link"
@@ -6,6 +7,21 @@ import CollectionCard from "@/components/CollectionCard"
 import RevealWrapper from "@/components/RevealWrapper"
 import { content } from "@/lib/data"
 import { achievements } from "@/lib/data/achievements"
+
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "GP Fashion | Premium Designer Wear",
+  description:
+    "Discover premium designer wear crafted with intention, texture, and timeless silhouettes.",
+  openGraph: {
+    title: "GP Fashion | Premium Designer Wear",
+    description:
+      "Discover premium designer wear crafted with intention, texture, and timeless silhouettes.",
+    url: SITE_URL,
+    images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
+  },
+}
 
 export default function Home() {
   const { collections, brandStory } = content

@@ -23,3 +23,6 @@ Thumbs.db
 
 # Prisma generated code (if you keep it in repo but don’t want deployed)
 lib/generated/prisma/
+
+# kiro
+.kiro/

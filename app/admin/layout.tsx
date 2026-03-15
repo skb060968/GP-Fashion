@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import crypto from "crypto";
+import { validateSession } from "@/lib/security/session";
 
 export default async function AdminLayout({
   children,
@@ -14,12 +14,9 @@ export default async function AdminLayout({
     redirect("/admin-login");
   }
 
-  const expected = crypto
-    .createHmac("sha256", process.env.ADMIN_SECRET!)
-    .update("admin-session")
-    .digest("hex");
+  const isValid = await validateSession(session);
 
-  if (session !== expected) {
+  if (!isValid) {
     redirect("/admin-login");
   }
 

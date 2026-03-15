@@ -1,6 +1,22 @@
+import type { Metadata } from "next"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
 import { content } from "@/lib/data"
 import RevealWrapper from "@/components/RevealWrapper"
+
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  title: "Contact | GP Fashion",
+  description:
+    "Get in touch with GP Fashion for custom designs, collaborations, or inquiries.",
+  openGraph: {
+    title: "Contact | GP Fashion",
+    description:
+      "Get in touch with GP Fashion for custom designs, collaborations, or inquiries.",
+    url: `${SITE_URL}/contact`,
+    images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
+  },
+}
 
 export default function ContactPage() {
   const { contact, faq } = content

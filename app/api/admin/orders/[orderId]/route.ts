@@ -1,20 +1,15 @@
 import { NextResponse, NextRequest } from "next/server";
-import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
+import { validateSession } from "@/lib/security/session";
+import { updateStatusSchema } from "@/lib/validation/schemas";
 
-function verifyAdmin(req: NextRequest) {
-  const session = req.cookies.get("admin_session")?.value;
+async function verifyAdmin(req: NextRequest) {
+  const token = req.cookies.get("admin_session")?.value;
 
-  if (!session) return false;
+  if (!token) return false;
 
-  const expected = crypto
-    .createHmac("sha256", process.env.ADMIN_SECRET!)
-    .update("admin-session")
-    .digest("hex");
-
-  return session === expected;
+  return validateSession(token);
 }
 
 // GET
@@ -22,7 +17,7 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
 ) {
-  if (!verifyAdmin(req)) {
+  if (!(await verifyAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -53,16 +48,23 @@ export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
 ) {
-  if (!verifyAdmin(req)) {
+  if (!(await verifyAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { orderId } = await context.params; // ✅ IMPORTANT FIX
     const body = await req.json();
-    const newStatus = body.status as OrderStatus;
 
-    const updatedOrder = await updateOrderStatus(orderId, newStatus);
+    const parsed = updateStatusSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid status value" },
+        { status: 400 }
+      );
+    }
+
+    const updatedOrder = await updateOrderStatus(orderId, parsed.data.status);
 
     return NextResponse.json(updatedOrder);
   } catch (err) {
