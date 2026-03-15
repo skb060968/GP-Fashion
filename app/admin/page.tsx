@@ -5,7 +5,7 @@ import Link from "next/link";
 import { formatRupees } from "@/lib/money";
 import { formatDateDDMMYYYY } from "@/lib/date";
 import StatusBadge from "@/components/StatusBadge";
-import LogoutButton from "./LogoutButton";
+
 
 const ORDER_STATUSES = [
   "All",
@@ -88,7 +88,6 @@ export default function AdminPage() {
     <section className="pt-28 px-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-serif font-bold">Admin Orders</h1>
-        <LogoutButton />
       </div>
 
       {/* Controls: search, status filter, export */}

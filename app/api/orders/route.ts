@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OrderStatus, PaymentMethod } from "@prisma/client";
 import { sendMail } from "@/lib/mailer";
@@ -156,8 +156,8 @@ export async function POST(req: Request) {
       { status: 201 }
     );
 
-    // 🔔 Fire-and-forget email sending
-    (async () => {
+    // 🔔 Send emails after response (kept alive by Next.js `after`)
+    after(async () => {
       try {
         // Admin notification
         if (process.env.ADMIN_EMAIL) {
@@ -227,7 +227,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error("ORDER_EMAIL_FAILED:", error);
       }
-    })();
+    });
 
     return response;
   } catch (error) {

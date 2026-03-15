@@ -82,20 +82,26 @@ export default function PaymentPage() {
       // 🔥 Step 1: Warm-up query (wake Neon branch)
       await fetch("/api/warmup", { method: "POST" })
 
-      // 🔥 Step 2: Place actual order
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: cart,
-          address,
-          amount: orderTotal,
-          discount: discountAmount,
-          paymentMethod: "UPI_MANUAL",
-          ...(couponApplied && couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
-        }),
-      })
-      if (!res.ok) throw new Error("Order creation failed")
+      // 🔥 Step 2: Place actual order (retry up to 2 times for cold DB)
+      let res: Response | null = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart,
+            address,
+            amount: orderTotal,
+            discount: discountAmount,
+            paymentMethod: "UPI_MANUAL",
+            ...(couponApplied && couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
+          }),
+        })
+        if (res.ok || res.status < 500) break
+        // Wait before retrying on server errors (likely cold DB)
+        await new Promise((r) => setTimeout(r, 1500))
+      }
+      if (!res || !res.ok) throw new Error("Order creation failed")
       const data = await res.json()
       clearCart()
       localStorage.removeItem("checkout_address")

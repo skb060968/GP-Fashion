@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { validateSession } from "@/lib/security/session";
+import AdminNav from "./AdminNav";
 
 export default async function AdminLayout({
   children,
@@ -20,5 +21,10 @@ export default async function AdminLayout({
     redirect("/admin-login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AdminNav />
+      {children}
+    </>
+  );
 }
