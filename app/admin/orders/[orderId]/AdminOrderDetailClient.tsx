@@ -73,6 +73,9 @@ export default function AdminOrderDetailPage() {
     typeof params?.orderId === "string" ? params.orderId : "";
 
   const [order, setOrder] = useState<Order | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [updating, setUpdating] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orderCode) return;
@@ -82,26 +85,38 @@ export default function AdminOrderDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setOrder(data);
+        setSelectedStatus(data.status);
       }
     }
 
     fetchOrder();
   }, [orderCode]);
 
-  async function updateStatus(newStatus: string) {
-    if (!orderCode) return;
+  async function handleUpdateStatus() {
+    if (!orderCode || !selectedStatus || selectedStatus === order?.status) return;
+    setUpdating(true);
+    setStatusError(null);
 
-    const res = await fetch(`/api/admin/orders/${orderCode}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    });
+    try {
+      const res = await fetch(`/api/admin/orders/${orderCode}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: selectedStatus }),
+      });
 
-    if (res.ok) {
-      const updated = await res.json();
-      setOrder(updated);
-    } else {
-      alert("Failed to update status");
+      if (res.ok) {
+        const updated = await res.json();
+        setOrder(updated);
+        setSelectedStatus(updated.status);
+      } else {
+        setStatusError("Failed to update status. Please try again.");
+        setSelectedStatus(order?.status ?? "");
+      }
+    } catch {
+      setStatusError("Network error. Please try again.");
+      setSelectedStatus(order?.status ?? "");
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -128,23 +143,38 @@ export default function AdminOrderDetailPage() {
       {order && (
         <>
           {/* Status */}
-          <div className="flex items-center space-x-4">
-            <span className="font-medium">Current Status:</span>
-            <StatusBadge status={order.status} />
-            <select
-              value={order.status}
-              onChange={(e) => updateStatus(e.target.value)}
-              className="border rounded px-2 py-1"
-            >
-              <option value="UNDER_VERIFICATION">Under Verification</option>
-              <option value="VERIFIED">Verified</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="PROCESSING">Processing</option>
-              <option value="SHIPPED">Shipped</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="CANCELLED">Cancelled</option>
-              <option value="REFUNDED">Refunded</option>
-            </select>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-4">
+              <span className="font-medium">Current Status:</span>
+              <StatusBadge status={order.status} />
+            </div>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                disabled={updating}
+                className="border rounded px-2 py-1"
+              >
+                <option value="UNDER_VERIFICATION">Under Verification</option>
+                <option value="VERIFIED">Verified</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="PROCESSING">Processing</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
+                <option value="REFUNDED">Refunded</option>
+              </select>
+              <button
+                onClick={handleUpdateStatus}
+                disabled={updating || selectedStatus === order.status}
+                className="px-4 py-1 text-sm rounded-md bg-stone-800 text-white hover:bg-stone-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {updating ? "Updating…" : "Update Status"}
+              </button>
+            </div>
+            {statusError && (
+              <p className="text-sm text-red-600">{statusError}</p>
+            )}
           </div>
 
           {/* Payment */}

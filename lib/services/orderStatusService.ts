@@ -1,28 +1,47 @@
 import { prisma } from "../prisma";
-import { sendMail } from "../mailer";
-import { orderStatusEmailCustomer } from "../emails/orderStatusEmailCustomer";
 import { OrderEmailData } from "../types/OrderEmailData";
 import { OrderStatus } from "@prisma/client";
 
 export async function updateOrderStatus(orderCode: string, newStatus: OrderStatus) {
   // ✅ Update order by orderCode
   const order = await prisma.order.update({
-    where: { orderCode },   // 👈 use boutique code
+    where: { orderCode },
     data: { status: newStatus },
     include: { items: true, address: true },
   });
 
-  // ✅ Log the status change in history (FK still uses internal id)
+  // ✅ Log the status change in history
   await prisma.statusHistory.create({
     data: { status: newStatus, orderId: order.id },
   });
 
-  // Adapt Prisma result into OrderEmailData
-  const emailData: OrderEmailData = {
-    orderCode: order.orderCode,   // 👈 expose boutique code
+  // ✅ Return updated order including history for API response
+  const updatedOrder = await prisma.order.findUnique({
+    where: { orderCode },
+    include: { items: true, address: true, history: true },
+  });
+
+  return updatedOrder;
+}
+
+/**
+ * Build email data from an order (for use in route handler's after() callback).
+ */
+export function buildOrderEmailData(order: {
+  orderCode: string;
+  amount: number;
+  discount: number;
+  status: string;
+  createdAt: Date;
+  paymentMethod: string;
+  address: { fullName: string; phone: string; email: string | null; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
+  items: { name: string; size: string; price: number; quantity: number; coverThumbnail: string }[];
+}): OrderEmailData {
+  return {
+    orderCode: order.orderCode,
     amount: order.amount,
     discount: order.discount ?? undefined,
-    status: newStatus,
+    status: order.status,
     createdAt: order.createdAt,
     paymentMethod: order.paymentMethod,
     customer: {
@@ -43,29 +62,4 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
       coverThumbnail: i.coverThumbnail,
     })),
   };
-
-  // ✅ Send status email to customer if email exists
-if (emailData.customer.email) {
-  (async () => {
-    try {
-      const html = orderStatusEmailCustomer(emailData);
-      const subject = `Order Status: ${newStatus.replace(/_/g, " ")}`;
-      await sendMail({
-        to: emailData.customer.email!, // 👈 non‑null assertion
-        subject,
-        html,
-      });
-    } catch (err) {
-      console.error("STATUS_EMAIL_FAILED:", err);
-    }
-  })();
-}
-
-  // ✅ Return updated order including history for API response
-  const updatedOrder = await prisma.order.findUnique({
-    where: { orderCode },   // 👈 fetch by boutique code
-    include: { items: true, address: true, history: true },
-  });
-
-  return updatedOrder;
 }

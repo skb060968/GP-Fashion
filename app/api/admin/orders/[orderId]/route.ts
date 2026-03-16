@@ -1,8 +1,10 @@
-import { NextResponse, NextRequest } from "next/server";
-import { updateOrderStatus } from "@/lib/services/orderStatusService";
+import { NextResponse, NextRequest, after } from "next/server";
+import { updateOrderStatus, buildOrderEmailData } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
 import { validateSession } from "@/lib/security/session";
 import { updateStatusSchema } from "@/lib/validation/schemas";
+import { sendMail } from "@/lib/mailer";
+import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer";
 
 async function verifyAdmin(req: NextRequest) {
   const token = req.cookies.get("admin_session")?.value;
@@ -65,6 +67,20 @@ export async function PATCH(
     }
 
     const updatedOrder = await updateOrderStatus(orderId, parsed.data.status);
+
+    // Send status email after response using Next.js after()
+    if (updatedOrder?.address?.email) {
+      const emailData = buildOrderEmailData(updatedOrder as any);
+      after(async () => {
+        try {
+          const html = orderStatusEmailCustomer(emailData);
+          const subject = `Order Status: ${parsed.data.status.replace(/_/g, " ")}`;
+          await sendMail({ to: emailData.customer.email!, subject, html });
+        } catch (err) {
+          console.error("STATUS_EMAIL_FAILED:", err);
+        }
+      });
+    }
 
     return NextResponse.json(updatedOrder);
   } catch (err) {
