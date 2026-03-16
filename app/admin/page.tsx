@@ -23,6 +23,7 @@ interface OrderSummary {
   orderCode: string;
   amount: number;
   discount: number | null;
+  couponCode: string | null;
   status: string;
   createdAt: string;
 }
@@ -131,6 +132,7 @@ export default function AdminPage() {
               <th className="p-4">Order Code</th>
               <th className="p-4">Subtotal</th>
               <th className="p-4">Discount</th>
+              <th className="p-4">Coupon</th>
               <th className="p-4">Amount Paid</th>
               <th className="p-4">Status</th>
               <th className="p-4">Date</th>
@@ -139,7 +141,7 @@ export default function AdminPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-gray-500">
+                <td colSpan={7} className="p-6 text-center text-gray-500">
                   Loading…
                 </td>
               </tr>
@@ -164,6 +166,11 @@ export default function AdminPage() {
                       {order.discount && order.discount > 0
                         ? `-${formatRupees(order.discount)}`
                         : "—"}
+                    </td>
+                    <td className="p-4 text-sm">
+                      {order.couponCode ? (
+                        <span className="font-mono text-xs bg-stone-100 px-2 py-1 rounded">{order.couponCode}</span>
+                      ) : "—"}
                     </td>
                     <td className="p-4 font-semibold">
                       {formatRupees(order.amount)}

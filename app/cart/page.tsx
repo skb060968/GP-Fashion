@@ -16,21 +16,14 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <section className="bg-stone-50 pt-24 pb-16">
+      <section className="bg-white pt-24 pb-16">
         <div className="container-max text-center">
           <h1 className="font-serif text-3xl font-bold mb-6">Your Cart</h1>
           <p className="text-gray-600 mb-8">Your cart is empty.</p>
 
           <Link
             href="/shop"
-            className="
-              inline-flex items-center justify-center
-              px-8 py-4 rounded-full
-              border-2 border-fashion-gold
-              text-fashion-gold font-medium
-              transition-all
-              hover:bg-fashion-gold hover:text-white hover:shadow-lg
-            "
+            className="btn-secondary inline-flex items-center justify-center"
           >
             Back to Shop
           </Link>
@@ -40,7 +33,7 @@ export default function CartPage() {
   }
 
   return (
-    <section className="bg-stone-50 pt-24 pb-20">
+    <section className="bg-white pt-24 pb-20">
       <div className="container-max">
         <h1 className="font-serif text-3xl font-bold mb-10">Your Cart</h1>
 
@@ -134,32 +127,14 @@ export default function CartPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <Link
               href="/shop"
-              className="
-                w-full sm:w-auto
-                inline-flex items-center justify-center
-                px-10 py-4
-                rounded-full
-                border-2 border-fashion-gold
-                text-fashion-gold font-semibold
-                transition-all
-                hover:bg-fashion-gold hover:text-white hover:shadow-xl
-              "
+              className="btn-secondary w-full sm:w-auto inline-flex items-center justify-center"
             >
               Continue Shopping
             </Link>
 
             <Link
               href="/checkout/address"
-              className="
-                w-full sm:w-auto
-                inline-flex items-center justify-center
-                px-10 py-4
-                rounded-full
-                border-2 border-fashion-gold
-                text-fashion-gold font-semibold
-                transition-all
-                hover:bg-fashion-gold hover:text-white hover:shadow-xl
-              "
+              className="btn-primary w-full sm:w-auto inline-flex items-center justify-center"
             >
               Proceed to Checkout
             </Link>

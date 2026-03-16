@@ -7,9 +7,9 @@ export const metadata = {
 
 export default function RecognitionPage() {
   return (
-    <main className="bg-stone-50">
+    <main>
       {/* Hero */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-stone-100 to-stone-50">
+      <section className="pt-32 pb-20 bg-stone-50">
         <div className="container-max">
           <h1 className="text-3xl md:text-4xl font-bold text-fashion-black mb-4">
             Recognition & Awards
@@ -21,7 +21,7 @@ export default function RecognitionPage() {
       </section>
 
       {/* Recognition awards */}
-      <section className="pb-24">
+      <section className="pb-24 bg-white">
         <div className="container-max">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {recognitions.map((award, i) => (

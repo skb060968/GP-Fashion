@@ -49,7 +49,7 @@ export default function TrackOrderClient() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
+    <div className="bg-white max-w-2xl mx-auto py-10 px-4">
       <h1 className="text-2xl font-semibold mb-6">Track Your Order</h1>
 
       <form onSubmit={handleTrack} className="space-y-4 mb-8">
@@ -76,12 +76,7 @@ export default function TrackOrderClient() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg py-3 font-semibold text-white
-                  bg-gradient-to-r from-fashion-gold to-amber-500
-                  hover:from-amber-500 hover:to-fashion-gold
-                  shadow-md hover:shadow-xl
-                  transform hover:-translate-y-0.5 active:translate-y-0
-                  transition-all duration-300"
+          className="btn-primary w-full"
         >
           {loading ? "Checking..." : "Track Order"}
         </button>

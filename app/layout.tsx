@@ -1,7 +1,6 @@
 import "./globals.css"
-import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
 import ClientGuards from "@/components/ClientGuards"
+import LayoutShell from "@/components/LayoutShell"
 import { CartProvider } from "@/context/CartContext"
 
 export const metadata = {
@@ -19,9 +18,7 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col">
         <CartProvider>
           <ClientGuards />
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+          <LayoutShell>{children}</LayoutShell>
         </CartProvider>
       </body>
     </html>

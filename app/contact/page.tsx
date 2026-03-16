@@ -22,7 +22,7 @@ export default function ContactPage() {
   const { contact, faq } = content
 
   return (
-    <section className="section-padding bg-stone-50">
+    <section className="section-padding bg-white">
       <div className="container-max space-y-20">
 
         {/* ================= HEADER ================= */}
@@ -86,12 +86,7 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-lg py-3 font-semibold text-white
-                  bg-gradient-to-r from-fashion-gold to-amber-500
-                  hover:from-amber-500 hover:to-fashion-gold
-                  shadow-md hover:shadow-xl
-                  transform hover:-translate-y-0.5 active:translate-y-0
-                  transition-all duration-300"
+                className="btn-primary w-full"
               >
                 Send Message
               </button>

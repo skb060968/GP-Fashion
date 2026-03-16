@@ -25,7 +25,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
   const handleInquire = () => router.push(`/contact?design=${dress.slug}`)
 
   return (
-    <section className="pt-24 sm:pt-32 pb-16 sm:pb-28 bg-stone-50">
+    <section className="pt-24 sm:pt-32 pb-16 sm:pb-28 bg-white">
       <div className="container-max">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-24 items-start">
           {/* ================= IMAGE COLUMN ================= */}
@@ -143,7 +143,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
             <div className="flex flex-col gap-6 mb-10">
               <button
                 onClick={handleInquire}
-                className="w-full px-10 py-4 rounded-full text-sm font-semibold border-2 border-fashion-gold bg-fashion-gold text-white hover:bg-transparent hover:text-fashion-gold transition-all duration-300 shadow-md hover:shadow-xl"
+                className="w-full btn-primary"
               >
                 Request Information
               </button>
@@ -151,14 +151,14 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
-                className="w-full px-10 py-4 rounded-full text-sm font-semibold border-2 border-fashion-gold bg-fashion-gold text-white hover:bg-transparent hover:text-fashion-gold transition-all duration-300 shadow-md hover:shadow-xl"
+                className="w-full btn-primary"
               >
                 Shop the Look
-                </button>
+              </button>
 
               <button
                 onClick={handleBackToPortfolio}
-                className="px-10 py-4 rounded-full text-sm font-medium border border-gray-300 text-gray-700 hover:border-fashion-gold hover:text-fashion-black transition"
+                className="btn-secondary"
               >
                 ← Back to Portfolio
               </button>
@@ -241,13 +241,13 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
             setShowModal(false)
             router.push("/cart")
           }}
-          className="flex-1 px-6 py-3 rounded-full text-sm font-semibold border-2 border-fashion-gold bg-fashion-gold text-white hover:bg-transparent hover:text-fashion-gold transition-all duration-300"
+          className="flex-1 btn-primary"
         >
           Confirm
         </button>
         <button
           onClick={() => setShowModal(false)}
-          className="flex-1 px-6 py-3 rounded-full text-sm font-medium border border-gray-300 text-gray-700 hover:border-fashion-gold hover:text-fashion-black transition"
+          className="flex-1 btn-secondary"
         >
           Cancel
         </button>

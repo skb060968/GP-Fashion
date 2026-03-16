@@ -82,8 +82,8 @@ video {
 }
 
 .btn-secondary {
-  @apply px-8 py-4 rounded-full font-semibold border-2 border-fashion-black text-fashion-black;
-  @apply hover:bg-fashion-black hover:text-white transition-all duration-300;
+  @apply px-8 py-4 rounded-full font-semibold border-2 border-fashion-gold text-fashion-gold;
+  @apply hover:bg-fashion-gold hover:text-white transition-all duration-300;
 }
 
 .btn-outline {

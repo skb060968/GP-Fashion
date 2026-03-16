@@ -40,9 +40,9 @@ export default function ServicesPage() {
   const { services, servicesPage } = content
 
   return (
-    <div className="bg-stone-50">
+    <div>
       {/* ================= HERO ================= */}
-      <section className="section-padding">
+      <section className="section-padding bg-white">
         <div className="container-max text-center max-w-3xl">
           <h1 className="font-serif text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
             {servicesPage.heroTitle}
@@ -55,7 +55,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ================= SERVICES GRID ================= */}
-      <section className="pb-24">
+      <section className="pb-24 bg-stone-50">
         <div className="container-max grid grid-cols-1 lg:grid-cols-2 gap-10">
           {services.map((service, index) => {
             const Icon = iconMap[service.title] || Sparkles
@@ -97,7 +97,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ================= PROCESS ================= */}
-      <section className="pb-28">
+      <section className="pb-28 bg-white">
         <div className="container-max text-center">
           <h2 className="font-serif text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
             {servicesPage.processHeading}
@@ -129,7 +129,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ================= CTA ================= */}
-      <section className="pb-32">
+      <section className="pb-32 bg-stone-50">
         <div className="container-max text-center">
           <p className="text-gray-800 mb-8 text-lg">
             {servicesPage.ctaText}
@@ -137,10 +137,7 @@ export default function ServicesPage() {
 
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2
-              border-2 border-fashion-gold text-fashion-gold
-              px-10 py-4 rounded-full font-semibold
-              transition-all hover:bg-fashion-gold hover:text-white hover:shadow-xl"
+            className="btn-secondary inline-flex items-center gap-2"
           >
             {servicesPage.ctaButton}
             <ArrowRight className="w-4 h-4" />

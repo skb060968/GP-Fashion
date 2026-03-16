@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { formatRupees } from "@/lib/money";
 import { formatDateDDMMYYYY } from "@/lib/date";
-import LogoutButton from "@/app/admin/LogoutButton";
 
 interface OrderItem {
   id: string;
@@ -38,6 +37,7 @@ interface Order {
   orderCode: string;
   amount: number;
   discount?: number;
+  couponCode?: string | null;
   paymentMethod: string;
   status: string;
   createdAt: string;
@@ -110,7 +110,7 @@ export default function AdminOrderDetailPage() {
 
   return (
     <div className="pt-28 max-w-3xl mx-auto px-6 pb-6 space-y-6">
-      {/* ✅ Professional Header with Logout */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Order Details</h1>
@@ -121,8 +121,6 @@ export default function AdminOrderDetailPage() {
             </span>
           </p>
         </div>
-
-        <LogoutButton />
       </div>
 
       {!order && <div>Loading order details...</div>}
@@ -155,7 +153,12 @@ export default function AdminOrderDetailPage() {
             <p>Method: {order.paymentMethod}</p>
             <p>Subtotal: {formatRupees(subtotal)}</p>
             {discountAmount > 0 && (
-              <p>Discount: -{formatRupees(discountAmount)}</p>
+              <p>
+                Discount: -{formatRupees(discountAmount)}
+                {order.couponCode && (
+                  <span className="text-sm text-gray-500 ml-1">({order.couponCode})</span>
+                )}
+              </p>
             )}
             <p className="font-bold">
               Amount Paid: {formatRupees(order.amount)}

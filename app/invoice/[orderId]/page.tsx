@@ -10,6 +10,7 @@ type Order = {
   orderCode: string        // 👈 use orderCode instead of id
   amount: number           // final paid amount
   discount?: number        // discount applied
+  couponCode?: string | null
   paymentMethod: string
   status: string
   createdAt: string
@@ -54,7 +55,7 @@ export default function InvoicePage() {
   const orderTotal = order.amount
 
   return (
-    <div className="bg-gray-100 px-4 pt-32 pb-10 print:pb-0">
+    <div className="bg-white px-4 pt-32 pb-10 print:pb-0">
       <div
         id="invoice"
         className="invoice-card max-w-3xl mx-auto bg-white p-10 rounded-xl shadow print:shadow-none border-2 border-fashion-gold"
@@ -144,6 +145,9 @@ export default function InvoicePage() {
           {discountAmount > 0 && (
             <p className="text-gray-700">
               Discount : -{formatRupees(discountAmount)}
+              {order.couponCode && (
+                <span className="text-sm text-gray-500 ml-1">({order.couponCode})</span>
+              )}
             </p>
           )}
           <p className="text-fashion-black font-bold">
@@ -164,19 +168,19 @@ export default function InvoicePage() {
         <div className="flex gap-4 justify-center print:hidden">
           <button
             onClick={() => window.print()}
-            className="border border-gray-300 px-6 py-3 rounded-md hover:bg-gray-100 text-base transition"
+            className="btn-secondary"
           >
             Print / Save PDF
           </button>
           <button
             onClick={() => router.push("/shop")}
-            className="border border-gray-300 px-6 py-3 rounded-md hover:bg-gray-100 text-base transition"
+            className="btn-secondary"
           >
             Continue Shopping
           </button>
           <button
             onClick={() => router.push("/")}
-            className="border border-gray-300 px-6 py-3 rounded-md hover:bg-gray-100 text-base transition"
+            className="btn-secondary"
           >
             Go to Home
           </button>

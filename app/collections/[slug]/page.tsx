@@ -53,9 +53,9 @@ export default async function CollectionDetailPage({
   )
 
   return (
-    <main className="bg-stone-50">
+    <main>
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20">
+      <section className="relative pt-32 pb-20 bg-white">
         <div className="container-max">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm font-medium tracking-wider uppercase text-fashion-gold mb-4">
@@ -154,10 +154,10 @@ export default async function CollectionDetailPage({
       </section>
 
       {/* Back to Collections */}
-      <section className="py-12 text-center">
+      <section className="py-12 text-center bg-white">
         <Link
           href="/collections"
-          className="inline-flex items-center px-8 py-3 rounded-full border-2 border-stone-300 text-fashion-black hover:border-fashion-gold hover:text-fashion-gold transition-all duration-300"
+          className="btn-secondary inline-flex items-center"
         >
           <svg
             className="w-5 h-5 mr-2"

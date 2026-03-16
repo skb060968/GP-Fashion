@@ -59,7 +59,7 @@ export default function AddressPage() {
   }
 
   return (
-    <section className="bg-stone-50 pt-24 pb-20">
+    <section className="bg-white pt-24 pb-20">
       <div className="container-max max-w-3xl">
         <h1 className="font-serif text-3xl font-bold mb-10">
           Shipping Address
@@ -157,30 +157,14 @@ export default function AddressPage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mt-10">
           <Link
             href="/cart"
-            className="
-              w-full sm:w-auto
-              inline-flex items-center justify-center
-              px-10 py-4 rounded-full
-              border-2 border-fashion-gold
-              text-fashion-gold font-semibold
-              transition-all
-              hover:bg-fashion-gold hover:text-white hover:shadow-xl
-            "
+            className="btn-secondary w-full sm:w-auto inline-flex items-center justify-center"
           >
             ← Back to Cart
           </Link>
 
           <button
             onClick={handleContinue}
-            className="
-              w-full sm:w-auto
-              inline-flex items-center justify-center
-              px-10 py-4 rounded-full
-              border-2 border-fashion-gold
-              text-fashion-gold font-semibold
-              transition-all
-              hover:bg-fashion-gold hover:text-white hover:shadow-xl
-            "
+            className="btn-primary w-full sm:w-auto inline-flex items-center justify-center"
           >
             Continue to Payment
           </button>

@@ -25,7 +25,6 @@ export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
   amount: z.number().int().positive(),
-  discount: z.number().int().min(0).optional(),
   paymentMethod: z.enum(["UPI_MANUAL", "COD"]),
   couponCode: z.string().optional(),
 });

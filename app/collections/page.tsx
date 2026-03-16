@@ -22,9 +22,9 @@ export default function CollectionsPage() {
   const { collections } = content
 
   return (
-    <main className="bg-stone-50">
+    <main>
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-stone-100 to-stone-50">
+      <section className="pt-32 pb-20 bg-stone-50">
         <div className="container-max">
           <SectionHeading
             title="Collections"
@@ -34,7 +34,7 @@ export default function CollectionsPage() {
       </section>
 
       {/* Collections Grid */}
-      <section className="pb-24">
+      <section className="pb-24 bg-white">
         <div className="container-max">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {collections.map((collection, index) => (
@@ -59,7 +59,7 @@ export default function CollectionsPage() {
           </p>
           <a
             href="/contact"
-            className="inline-block px-10 py-4 rounded-full border-2 border-fashion-gold text-fashion-gold font-semibold hover:bg-fashion-gold hover:text-black transition-all duration-300"
+            className="btn-primary inline-block"
           >
             Get in Touch
           </a>

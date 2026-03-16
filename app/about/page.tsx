@@ -29,7 +29,7 @@ export default function AboutPage() {
   return (
     <div>
       {/* ================= HERO + PHILOSOPHY ================= */}
-      <section className="section-padding bg-stone-50">
+      <section className="section-padding bg-white">
         <div className="container-max space-y-20">
           {/* HERO */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -156,7 +156,7 @@ export default function AboutPage() {
 
        {/* SKILLS */}
 
-      <section className="py-20 bg-stone-50">
+      <section className="py-20 bg-white">
         <div className="container-max space-y-20">
           
       

@@ -16,9 +16,9 @@ interface JournalPost {
 
 export default function JournalDetailClient({ post }: { post: JournalPost }) {
   return (
-    <main className="bg-stone-50">
+    <main>
       {/* Hero with contained width */}
-      <section className="container-max pt-32 pb-12">
+      <section className="bg-white container-max pt-32 pb-12">
         <div className="rounded-xl overflow-hidden shadow bg-stone-100">
           <Image
             src={post.coverImage}
@@ -34,7 +34,7 @@ export default function JournalDetailClient({ post }: { post: JournalPost }) {
       </section>
 
       {/* Meta (simplified: category + date only) */}
-      <section className="container-max pb-8">
+      <section className="bg-white container-max pb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex gap-6 text-sm text-gray-600">
             <span className="font-semibold text-fashion-gold uppercase tracking-wide">
@@ -52,7 +52,7 @@ export default function JournalDetailClient({ post }: { post: JournalPost }) {
       </section>
 
       {/* Content */}
-      <section className="container-max pb-24">
+      <section className="bg-stone-50 container-max pb-24">
         <article className="prose prose-lg max-w-none text-gray-800 leading-relaxed">
           {post.content.split("\n\n").map((para, i) => (
             <p key={i}>{para}</p>

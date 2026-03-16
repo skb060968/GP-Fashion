@@ -80,16 +80,7 @@ export default function AboutSection() {
             <div className="pt-6">
               <Link
                 href="/about"
-                className="
-                  inline-block
-                  border border-fashion-gold
-                  text-fashion-gold
-                  px-6 py-3
-                  rounded-full
-                  hover:bg-fashion-gold
-                  hover:text-white
-                  transition
-                "
+                className="inline-block btn-secondary"
               >
                 Read Full Story →
               </Link>

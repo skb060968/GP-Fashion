@@ -64,13 +64,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items, address, amount, paymentMethod, couponCode } = result.data;
+    const { items, address, amount: subtotal, paymentMethod, couponCode } = result.data;
 
-    // 🎟️ Coupon validation — server calculates discount
+    // 🎟️ Coupon validation — server calculates discount on original subtotal
     let discount = 0;
     let validCoupon = false;
     if (couponCode) {
-      const couponResult = await validateCoupon(couponCode, amount);
+      const couponResult = await validateCoupon(couponCode, subtotal);
       if (!couponResult.valid) {
         return NextResponse.json(
           { error: couponResult.error, code: couponResult.error },
@@ -81,6 +81,9 @@ export async function POST(req: Request) {
       validCoupon = true;
     }
 
+    // Final amount = subtotal minus discount
+    const finalAmount = subtotal - discount;
+
     // 🔑 Generate orderCode
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
@@ -89,7 +92,7 @@ export async function POST(req: Request) {
     const createdOrder = await prisma.order.create({
       data: {
         orderCode, // 👈 new short code
-        amount,
+        amount: finalAmount,
         discount,
         paymentMethod: paymentMethod as PaymentMethod, // Zod validates the enum value
         status: OrderStatus.UNDER_VERIFICATION,

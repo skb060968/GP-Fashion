@@ -61,7 +61,7 @@ export default function Home() {
           <div className="text-center">
             <Link
               href="/collections"
-              className="inline-block px-10 py-4 rounded-full border-2 border-fashion-gold text-fashion-gold font-semibold hover:bg-fashion-gold hover:text-white transition-all duration-300"
+              className="inline-block btn-secondary"
             >
               View All Collections
             </Link>
@@ -135,13 +135,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/contact"
-                 className="inline-block px-10 py-4 rounded-full border-2 border-fashion-gold text-fashion-gold font-semibold hover:bg-fashion-gold hover:text-white transition-all duration-300"
+                className="inline-block btn-primary"
               >
                 Get in Touch
               </Link>
               <Link
                 href="/collections"
-                 className="inline-block px-10 py-4 rounded-full border-2 border-fashion-gold text-fashion-gold font-semibold hover:bg-fashion-gold hover:text-white transition-all duration-300"
+                className="inline-block btn-secondary"
               >
                 Explore Collections
               </Link>

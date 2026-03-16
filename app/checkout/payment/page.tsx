@@ -91,8 +91,7 @@ export default function PaymentPage() {
           body: JSON.stringify({
             items: cart,
             address,
-            amount: orderTotal,
-            discount: discountAmount,
+            amount: totalAmount,
             paymentMethod: "UPI_MANUAL",
             ...(couponApplied && couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
           }),
@@ -116,7 +115,7 @@ export default function PaymentPage() {
   if (!address) return null
 
   return (
-    <section className="bg-stone-50 pt-28 pb-16">
+    <section className="bg-white pt-28 pb-16">
       <div className="mx-auto max-w-3xl space-y-8 px-4">
         <h1 className="font-serif text-3xl font-bold">Payment</h1>
 
@@ -266,7 +265,7 @@ export default function PaymentPage() {
         <button
           onClick={handlePlaceOrder}
           disabled={!confirmChecked || isPlacingOrder}
-          className="w-full py-4 rounded-full bg-fashion-gold text-white font-medium hover:bg-fashion-gold/90 transition disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50"
         >
           {isPlacingOrder ? "Placing Order..." : "Place Order"}
         </button>
