@@ -159,6 +159,17 @@ video {
 
 
 /* -----------------------------
+   Card Base
+----------------------------- */
+.card-base {
+  @apply bg-white rounded-xl shadow-md transition-all duration-300;
+}
+
+.card-base:hover {
+  @apply shadow-xl -translate-y-1;
+}
+
+/* -----------------------------
    Premium Hover Effects
 ----------------------------- */
 .hover-lift {

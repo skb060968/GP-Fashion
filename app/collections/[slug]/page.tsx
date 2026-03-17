@@ -6,6 +6,7 @@ import { content } from "@/lib/data"
 import { dresses } from "@/lib/data/shop"
 import { formatRupees } from "@/lib/money"
 import RevealWrapper from "@/components/RevealWrapper"
+import GoldCornerFrame from "@/components/GoldCornerFrame"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
@@ -112,13 +113,7 @@ export default async function CollectionDetailPage({
               <RevealWrapper key={dress.slug} index={index}>
                 <Link href={`/shop/${dress.slug}`} className="group block">
                   {/* Premium Frame Container */}
-                  <div className="relative p-3 sm:p-4 bg-gradient-to-br from-stone-100 via-white to-stone-100 rounded-2xl sm:rounded-3xl shadow-xl transition-all duration-500 ease-out group-hover:shadow-2xl group-hover:-translate-y-2">
-                    {/* Decorative corner accents */}
-                    <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-l-2 border-fashion-gold rounded-tl-xl sm:rounded-tl-2xl"></div>
-                    <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-r-2 border-fashion-gold rounded-tr-xl sm:rounded-tr-2xl"></div>
-                    <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-l-2 border-fashion-gold rounded-bl-xl sm:rounded-bl-2xl"></div>
-                    <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-r-2 border-fashion-gold rounded-br-xl sm:rounded-br-2xl"></div>
-
+                  <GoldCornerFrame className="shadow-xl transition-all duration-500 ease-out group-hover:shadow-2xl group-hover:-translate-y-2">
                     {/* Inner frame with image */}
                     <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-lg ring-1 ring-stone-200">
                       <Image
@@ -145,7 +140,7 @@ export default async function CollectionDetailPage({
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </GoldCornerFrame>
                 </Link>
               </RevealWrapper>
             ))}

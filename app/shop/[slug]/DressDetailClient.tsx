@@ -8,6 +8,7 @@ import Image from "next/image"
 import { dresses } from "@/lib/data/shop"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
+import GoldCornerFrame from "@/components/GoldCornerFrame"
 
 type Dress = (typeof dresses)[number]
 
@@ -32,13 +33,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
           <div className="flex flex-col items-center w-full">
             {/* Main Image with Premium Frame */}
             <div className="relative inline-block w-full max-w-md">
-              <div className="relative p-3 sm:p-4 bg-gradient-to-br from-stone-100 via-white to-stone-100 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl">
-                {/* Decorative corners */}
-                <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-l-2 border-fashion-gold rounded-tl-xl sm:rounded-tl-2xl"></div>
-                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-r-2 border-fashion-gold rounded-tr-xl sm:rounded-tr-2xl"></div>
-                <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-l-2 border-fashion-gold rounded-bl-xl sm:rounded-bl-2xl"></div>
-                <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-r-2 border-fashion-gold rounded-br-xl sm:rounded-br-2xl"></div>
-
+              <GoldCornerFrame className="shadow-xl sm:shadow-2xl">
                 <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-lg ring-1 ring-stone-200">
                   <div className="w-full aspect-[3/4] bg-stone-100 relative">
                  <Image
@@ -51,7 +46,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
 />
                   </div>
                 </div>
-              </div>
+              </GoldCornerFrame>
             </div>
 
             {/* Thumbnail Gallery */}

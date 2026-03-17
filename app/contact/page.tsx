@@ -105,9 +105,8 @@ export default function ContactPage() {
               <RevealWrapper key={index} index={index}>
                 <div
                   className="flex flex-col h-full min-h-[220px]
-                    bg-stone-100 p-8 rounded-xl space-y-4
-                    transition-all duration-300
-                    hover:shadow-lg hover:bg-stone-200"
+                    card-base bg-stone-100 p-8 space-y-4
+                    hover:bg-stone-200"
                 >
                   <h3 className="font-semibold text-fashion-black">
                     {item.question}

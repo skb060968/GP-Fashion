@@ -79,7 +79,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ================= JOURNEY + EDUCATION ================= */}
+      {/* ================= JOURNEY + EDUCATION + SKILLS ================= */}
       <section className="py-12 bg-stone-50">
         <div className="container-max space-y-20">
           {/* JOURNEY */}
@@ -151,15 +151,8 @@ export default function AboutPage() {
               </RevealWrapper>
             </div>
           </div>
-        </div>
-      </section>
 
-       {/* SKILLS */}
-
-      <section className="py-20 bg-white">
-        <div className="container-max space-y-20">
-          
-      
+          {/* SKILLS */}
           <div>
             <h3 className="font-serif text-3xl font-bold text-center mb-12 text-fashion-black">
               {aboutPage.skillsHeading}
@@ -168,7 +161,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
               {Object.entries(skills).map(([key, list], i) => (
                 <RevealWrapper key={key} index={i}>
-                  <div className="bg-stone-100 rounded-xl p-6 shadow-sm hover:shadow-lg transition h-full">
+                  <div className="card-base bg-stone-100 p-6 h-full">
                     <h4 className="font-serif text-xl font-semibold mb-4 capitalize text-fashion-black">
                       {key}
                     </h4>
@@ -186,7 +179,6 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-
       </section>
     </div>
   )

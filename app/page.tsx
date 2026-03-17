@@ -108,7 +108,7 @@ export default function Home() {
             {achievements.map((award, i) => (
               <div
                 key={i}
-                className="bg-stone-100 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="card-base bg-stone-100 p-6"
               >
                 <h3 className="font-serif text-xl font-bold text-fashion-gold mb-2">
                   {award.title}
