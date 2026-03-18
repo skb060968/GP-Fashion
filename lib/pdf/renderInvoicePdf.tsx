@@ -1,18 +1,21 @@
-import path from "path"
-import fs from "fs"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { InvoiceDocument, type InvoiceDocumentProps } from "./InvoiceDocument"
 
 export async function renderInvoicePdf(
-  order: InvoiceDocumentProps["order"]
+  order: InvoiceDocumentProps["order"],
+  siteUrl?: string
 ): Promise<Buffer> {
+  // Use the site URL to fetch the logo — works on both local and Vercel
+  const baseUrl = siteUrl || process.env.SITE_URL || "http://localhost:3000"
   let logoSrc = ""
   try {
-    const logoPath = path.join(process.cwd(), "public", "payments", "logo.png")
-    const logoBuffer = fs.readFileSync(logoPath)
-    logoSrc = `data:image/png;base64,${logoBuffer.toString("base64")}`
+    const res = await fetch(`${baseUrl}/payments/logo.png`)
+    if (res.ok) {
+      const arrayBuffer = await res.arrayBuffer()
+      logoSrc = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`
+    }
   } catch {
-    // Logo missing — render PDF without it
+    // Logo fetch failed — render PDF without it
   }
 
   const buffer = await renderToBuffer(

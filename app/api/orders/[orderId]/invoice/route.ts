@@ -2,8 +2,11 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { renderInvoicePdf } from "@/lib/pdf/renderInvoicePdf"
 
+// Allow up to 30 seconds for PDF generation on Vercel
+export const maxDuration = 30
+
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
@@ -21,7 +24,11 @@ export async function GET(
       )
     }
 
-    const pdfBuffer = await renderInvoicePdf(order as any)
+    // Derive site URL from the request for logo fetching
+    const url = new URL(req.url)
+    const siteUrl = `${url.protocol}//${url.host}`
+
+    const pdfBuffer = await renderInvoicePdf(order as any, siteUrl)
 
     return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
