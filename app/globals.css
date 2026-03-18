@@ -173,13 +173,24 @@ video {
    Print Styles
 ----------------------------- */
 @media print {
-  nav, footer, .navbar, .footer {
-    display: none !important;
-  }
-
-  body {
+  html, body {
     margin: 0 !important;
     padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  body > * {
+    min-height: 0 !important;
+  }
+
+  main {
+    flex-grow: 0 !important;
+    min-height: 0 !important;
+  }
+
+  nav, footer, .navbar, .footer {
+    display: none !important;
   }
 
   .invoice-card {
@@ -187,8 +198,9 @@ video {
     box-shadow: none !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 15mm !important;
+    padding: 10mm !important;
     page-break-inside: avoid;
+    border-radius: 0 !important;
   }
 }
 
