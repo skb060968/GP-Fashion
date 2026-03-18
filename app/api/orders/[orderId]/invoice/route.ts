@@ -24,11 +24,7 @@ export async function GET(
       )
     }
 
-    // Derive site URL from the request for logo fetching
-    const url = new URL(req.url)
-    const siteUrl = `${url.protocol}//${url.host}`
-
-    const pdfBuffer = await renderInvoicePdf(order as any, siteUrl)
+    const pdfBuffer = await renderInvoicePdf(order as any)
 
     return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
