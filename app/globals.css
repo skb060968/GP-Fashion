@@ -124,26 +124,6 @@ video {
   animation: fade-in-up 0.6s ease-out forwards;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(200, 169, 81, 0.1) 50%,
-    transparent 100%
-  );
-  background-size: 1000px 100%;
-}
-
 /* ----------------------------------
    Scroll Elevation (Wrapper Based)
 ---------------------------------- */
@@ -167,18 +147,6 @@ video {
 
 .card-base:hover {
   @apply shadow-xl -translate-y-1;
-}
-
-/* -----------------------------
-   Premium Hover Effects
------------------------------ */
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
 /* -----------------------------
@@ -220,23 +188,6 @@ video {
 }
 
 /* -----------------------------
-   Premium Text Gradients
------------------------------ */
-.text-gradient-gold {
-  background: linear-gradient(135deg, #c8a951 0%, #d4b76a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* -----------------------------
-   Loading States
------------------------------ */
-.skeleton {
-  @apply animate-pulse bg-stone-200 rounded;
-}
-
-/* -----------------------------
    Focus States (Accessibility)
 ----------------------------- */
 *:focus-visible {
@@ -253,12 +204,6 @@ img {
   -webkit-user-drag: none;
   user-select: none;
 }
-
-/* Optional: prevent text selection on cards */
-.no-select {
-  user-select: none;
-}
-
 
 @keyframes slideDown {
   from {

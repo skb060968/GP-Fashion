@@ -166,12 +166,13 @@ export default function InvoicePage() {
 
         {/* ACTION BUTTONS */}
         <div className="flex gap-4 justify-center print:hidden">
-          <button
-            onClick={() => window.print()}
-            className="btn-secondary"
+          <a
+            href={`/api/orders/${order.orderCode}/invoice`}
+            download
+            className="btn-primary inline-flex items-center justify-center"
           >
-            Print / Save PDF
-          </button>
+            Download Invoice
+          </a>
           <button
             onClick={() => router.push("/shop")}
             className="btn-secondary"

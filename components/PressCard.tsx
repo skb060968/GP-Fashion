@@ -19,7 +19,7 @@ export default function PressCard({
   image,
 }: PressCardProps) {
   return (
-    <article className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+    <article className="group card-base overflow-hidden">
       <div className="relative aspect-[16/9] overflow-hidden bg-stone-100">
       <Image
   src={image}
