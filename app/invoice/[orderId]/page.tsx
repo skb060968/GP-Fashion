@@ -41,6 +41,14 @@ export default function InvoicePage() {
       .then(setOrder)
   }, [orderId])
 
+  // Set document title for PDF filename when printing
+  useEffect(() => {
+    if (order) {
+      document.title = `Invoice-${order.orderCode}`
+    }
+    return () => { document.title = "Piyush Bholla" }
+  }, [order])
+
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
