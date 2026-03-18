@@ -124,10 +124,10 @@ export default function TrackOrderClient() {
             </ul>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 text-center">
             <a
               href={`/invoice/${order.orderCode}`}
-              className="btn-secondary inline-flex items-center justify-center w-full sm:w-auto"
+              className="inline-block px-5 py-2.5 rounded-full text-sm font-semibold border-2 border-fashion-gold text-fashion-gold hover:bg-fashion-gold hover:text-white transition-all duration-300"
             >
               View / Download Invoice
             </a>
