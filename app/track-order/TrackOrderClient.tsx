@@ -123,6 +123,15 @@ export default function TrackOrderClient() {
               ))}
             </ul>
           </div>
+
+          <div className="pt-4">
+            <a
+              href={`/invoice/${order.orderCode}`}
+              className="btn-secondary inline-flex items-center justify-center w-full sm:w-auto"
+            >
+              View / Download Invoice
+            </a>
+          </div>
         </div>
       )}
     </div>
