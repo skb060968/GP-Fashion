@@ -55,10 +55,10 @@ export default function InvoicePage() {
   const orderTotal = order.amount
 
   return (
-    <div className="bg-white px-4 pt-32 pb-10 print:pb-0">
+    <div className="bg-white px-4 pt-32 pb-10 print:pt-0 print:pb-0 print:px-0">
       <div
         id="invoice"
-        className="invoice-card max-w-3xl mx-auto bg-white p-10 rounded-xl shadow print:shadow-none border-2 border-fashion-gold"
+        className="invoice-card max-w-3xl mx-auto bg-white p-10 print:p-6 rounded-xl shadow print:shadow-none border-2 border-fashion-gold print:border-0"
       >
         {/* HEADER BAR */}
         <div className="flex justify-between items-center border-b pb-4 mb-8">
@@ -166,13 +166,12 @@ export default function InvoicePage() {
 
         {/* ACTION BUTTONS */}
         <div className="flex gap-4 justify-center print:hidden">
-          <a
-            href={`/api/orders/${order.orderCode}/invoice`}
-            download
-            className="btn-primary inline-flex items-center justify-center"
+          <button
+            onClick={() => window.print()}
+            className="btn-primary"
           >
-            Download Invoice
-          </a>
+            Print / Save PDF
+          </button>
           <button
             onClick={() => router.push("/shop")}
             className="btn-secondary"
