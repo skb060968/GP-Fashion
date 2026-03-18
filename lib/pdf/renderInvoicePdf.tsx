@@ -1,4 +1,3 @@
-import React from "react"
 import path from "path"
 import fs from "fs"
 import { renderToBuffer } from "@react-pdf/renderer"
@@ -17,7 +16,7 @@ export async function renderInvoicePdf(
   }
 
   const buffer = await renderToBuffer(
-    React.createElement(InvoiceDocument, { order, logoSrc })
+    <InvoiceDocument order={order} logoSrc={logoSrc} />
   )
   return Buffer.from(buffer)
 }
