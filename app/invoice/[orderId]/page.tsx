@@ -49,6 +49,16 @@ export default function InvoicePage() {
     return () => { document.title = "Piyush Bholla" }
   }, [order])
 
+  const handlePrint = () => {
+    const originalTitle = document.title
+    document.title = `Invoice-${order?.orderCode ?? orderId}`
+    // Small delay to ensure title is applied before print dialog opens
+    setTimeout(() => {
+      window.print()
+      document.title = originalTitle
+    }, 100)
+  }
+
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
@@ -175,7 +185,7 @@ export default function InvoicePage() {
         {/* ACTION BUTTONS */}
         <div className="flex gap-4 justify-center print:hidden">
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="btn-primary"
           >
             Print / Save PDF
