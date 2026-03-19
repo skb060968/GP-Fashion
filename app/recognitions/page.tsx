@@ -27,7 +27,7 @@ export default function RecognitionPage() {
             {recognitions.map((award, i) => (
               <div
                 key={i}
-                className="card-base p-6"
+                className="card-base bg-stone-100 p-6"
               >
                 <h3 className="font-serif text-xl font-bold text-fashion-gold mb-2">
                   {award.title}

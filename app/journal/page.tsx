@@ -41,7 +41,7 @@ export default function JournalPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {journalPosts.map((post, index) => (
               <RevealWrapper key={post.slug} index={index}>
-                <article className="group card-base overflow-hidden">
+                <article className="group card-base bg-stone-100 overflow-hidden">
                   <Link href={`/journal/${post.slug}`}>
                     <div className="relative aspect-[16/10] overflow-hidden bg-stone-100">
                      <Image
@@ -49,7 +49,7 @@ export default function JournalPage() {
   alt={post.title}
   fill
   className="object-cover transition-transform duration-700 group-hover:scale-105"
-  priority
+  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
 />
                     </div>
 

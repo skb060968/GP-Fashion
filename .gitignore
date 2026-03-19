@@ -50,3 +50,9 @@ Thumbs.db
 
 # kiro
 .kiro/
+
+# original dress images (source files, not needed in deployment)
+/public/images/shop/*dress/
+!/public/images/shop/items/
+!/public/images/shop/thumbnails/
+!/public/images/shop/meta/

@@ -53,7 +53,7 @@ export default function ShopClientWrapper({ dresses }: ShopClientWrapperProps) {
                         alt={dress.name}
                         fill
                         className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        priority
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </div>
 

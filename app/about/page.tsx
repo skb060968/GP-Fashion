@@ -161,7 +161,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
               {Object.entries(skills).map(([key, list], i) => (
                 <RevealWrapper key={key} index={i}>
-                  <div className="card-base bg-stone-100 p-6 h-full">
+                  <div className="card-base p-6 h-full">
                     <h4 className="font-serif text-xl font-semibold mb-4 capitalize text-fashion-black">
                       {key}
                     </h4>

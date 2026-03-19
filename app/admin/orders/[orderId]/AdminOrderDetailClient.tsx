@@ -225,7 +225,7 @@ export default function AdminOrderDetailPage() {
                   <div>Size: {item.size}</div>
                   <div>Qty: {item.quantity}</div>
                   <div className="text-right">
-                    {formatRupees(item.price)}
+                    Price: {formatRupees(item.price)}
                   </div>
                 </li>
               ))}

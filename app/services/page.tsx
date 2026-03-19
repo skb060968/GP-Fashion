@@ -112,8 +112,8 @@ export default function ServicesPage() {
             {servicesPage.processSteps.map((step, i) => (
               <RevealWrapper key={i} index={i}>
                 <div
-                  className="card-base bg-stone-100 p-6
-                    hover:bg-stone-200 text-center h-full"
+                  className="card-base p-6
+                    hover:bg-stone-50 text-center h-full"
                 >
                   <div className="w-12 h-12 bg-fashion-gold rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">

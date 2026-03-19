@@ -122,7 +122,7 @@ export default async function CollectionDetailPage({
     width={600}
     height={800}
     className="w-full aspect-[3/4] object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-    priority
+    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
   />
 
 
