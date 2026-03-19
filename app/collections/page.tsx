@@ -27,6 +27,7 @@ export default function CollectionsPage() {
       <section className="pt-32 pb-20 bg-stone-50">
         <div className="container-max">
           <SectionHeading
+            as="h1"
             title="Collections"
             subtitle="Each collection tells a story—of heritage, innovation, and the artistry of fashion. Explore curated pieces that transcend trends and celebrate timeless elegance."
           />

@@ -29,6 +29,7 @@ export default function JournalPage() {
       <section className="pt-32 pb-20 bg-stone-50">
         <div className="container-max">
           <SectionHeading
+            as="h1"
             title="Journal"
             subtitle="Thoughts on design, process, and the creative journey. An intimate look behind the scenes of building a fashion brand."
           />

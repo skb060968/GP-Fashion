@@ -59,17 +59,17 @@ export default function AboutSection() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-6 pt-4">
               <div>
-                <h4 className="font-serif text-xl font-semibold text-fashion-black mb-1">
+                <h3 className="font-serif text-xl font-semibold text-fashion-black mb-1">
                   {about.stats.experience.label}
-                </h4>
+                </h3>
                 <p className="text-gray-600">
                   {about.stats.experience.value}
                 </p>
               </div>
               <div>
-                <h4 className="font-serif text-xl font-semibold text-fashion-black mb-1">
+                <h3 className="font-serif text-xl font-semibold text-fashion-black mb-1">
                   {about.stats.projects.label}
-                </h4>
+                </h3>
                 <p className="text-gray-600">
                   {about.stats.projects.value}
                 </p>

@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "fashion-gold": "#c8a951",
+        "fashion-gold": "#a08339",
         "fashion-black": "#1a1a1a",
       },
       fontFamily: {

@@ -161,12 +161,12 @@ video {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c8a951;
+  background: #a08339;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b39847;
+  background: #8a7030;
 }
 
 /* -----------------------------

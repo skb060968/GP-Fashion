@@ -59,9 +59,9 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-serif text-lg font-semibold mb-4">
+            <h3 className="font-serif text-lg font-semibold mb-4">
               {footer.quickLinksHeading}
-            </h4>
+            </h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li><Link href="/collections" className="hover:text-black">Collections</Link></li>
               <li><Link href="/about" className="hover:text-black">About</Link></li>
@@ -73,9 +73,9 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="font-serif text-lg font-semibold mb-4">
+            <h3 className="font-serif text-lg font-semibold mb-4">
               {footer.servicesHeading}
-            </h4>
+            </h3>
             <ul className="space-y-2 text-sm text-gray-600">
               {footer.servicesList.map((service, index) => (
                 <li key={index}>
@@ -89,7 +89,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+        <div className="mt-10 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
           © {siteInfo.copyright}
         </div>
       </div>

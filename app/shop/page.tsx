@@ -26,6 +26,7 @@ export default function ShopPage() {
         <div className="container-max">
           {/* Header */}
           <SectionHeading
+            as="h1"
             title="Design Portfolio"
             subtitle="A curated showcase of garments designed with intention, texture, and timeless silhouettes. Each piece represents a commitment to craftsmanship and creative excellence."
             className="mb-20"
