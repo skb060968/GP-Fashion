@@ -17,6 +17,9 @@ model Order {
   status        OrderStatus
   createdAt     DateTime        @default(now())
 
+  razorpayPaymentId  String?
+  razorpayOrderId    String?
+
   address       Address?
   items         OrderItem[]
   history       StatusHistory[]
@@ -62,6 +65,7 @@ model StatusHistory {
 enum PaymentMethod {
   UPI_MANUAL
   COD
+  RAZORPAY
 }
 
 enum OrderStatus {

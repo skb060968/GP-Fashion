@@ -20,7 +20,7 @@ const ORDER_STATUS_VALUES = [
 ] as const;
 
 const VALID_SIZES = ["S", "M", "L", "XL"] as const;
-const VALID_PAYMENT_METHODS = ["UPI_MANUAL", "COD"] as const;
+const VALID_PAYMENT_METHODS = ["UPI_MANUAL", "COD", "RAZORPAY"] as const;
 
 // --- Generators ---
 

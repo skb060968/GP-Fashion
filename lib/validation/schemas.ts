@@ -25,7 +25,7 @@ export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
   amount: z.number().int().positive(),
-  paymentMethod: z.enum(["UPI_MANUAL", "COD"]),
+  paymentMethod: z.enum(["UPI_MANUAL", "COD", "RAZORPAY"]),
   couponCode: z.string().optional(),
 });
 
@@ -49,6 +49,17 @@ export const couponSchema = z.object({
 );
 
 export type CouponFormData = z.infer<typeof couponSchema>;
+
+export const razorpayCreateOrderSchema = z.object({
+  amount: z.number().int().positive("Amount must be a positive integer"),
+});
+
+export const razorpayVerifyPaymentSchema = z.object({
+  razorpay_payment_id: z.string().min(1, "Payment ID is required"),
+  razorpay_order_id: z.string().min(1, "Order ID is required"),
+  razorpay_signature: z.string().min(1, "Signature is required"),
+  orderData: createOrderSchema,
+});
 
 /**
  * Converts a ZodError into a flat field-level error map.

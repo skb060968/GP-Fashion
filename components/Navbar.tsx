@@ -33,6 +33,7 @@ export default function Navbar() {
               alt="GP Fashion logo"
               width={60}
               height={60}
+              priority
               className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
             />
             <span className="font-serif text-2xl font-bold tracking-tight text-fashion-black">

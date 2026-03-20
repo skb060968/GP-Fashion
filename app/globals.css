@@ -6,7 +6,7 @@
    Base
 ----------------------------- */
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior managed via data-scroll-behavior attribute on <html> */
 }
 
 body {
