@@ -11,14 +11,14 @@ export const orderItemSchema = z.object({
 });
 
 export const addressSchema = z.object({
-  fullName: z.string().min(2).max(100),
-  phone: z.string().regex(/^[6-9]\d{9}$/),
-  email: z.string().email(),
-  addressLine1: z.string().min(5).max(200),
+  fullName: z.string().min(2, "Name must be at least 2 characters").max(100, "Name is too long"),
+  phone: z.string().regex(/^[6-9]\d{9}$/, "Invalid phone number. Must be a 10-digit Indian mobile number"),
+  email: z.string().email("Invalid email address"),
+  addressLine1: z.string().min(5, "Address must be at least 5 characters").max(200, "Address is too long"),
   addressLine2: z.string().max(200).optional().or(z.literal("")),
-  city: z.string().min(1),
-  state: z.string().min(1),
-  pincode: z.string().regex(/^\d{6}$/),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Invalid pincode. Must be a 6-digit number"),
 });
 
 export const createOrderSchema = z.object({

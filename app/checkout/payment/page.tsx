@@ -38,6 +38,7 @@ export default function PaymentPage() {
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponError, setCouponError] = useState("")
   const [couponApplied, setCouponApplied] = useState(false)
+  const [couponLoading, setCouponLoading] = useState(false)
 
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const discountAmount = couponDiscount
@@ -52,11 +53,12 @@ export default function PaymentPage() {
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return
     setCouponError("")
+    setCouponLoading(true)
     try {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode.trim(), subtotal: totalAmount }),
+        body: JSON.stringify({ code: couponCode.trim().toUpperCase(), subtotal: totalAmount }),
       })
       const data = await res.json()
       if (data.valid) {
@@ -72,6 +74,8 @@ export default function PaymentPage() {
       setCouponDiscount(0)
       setCouponApplied(false)
       setCouponError("Failed to validate coupon")
+    } finally {
+      setCouponLoading(false)
     }
   }
 
@@ -193,10 +197,10 @@ export default function PaymentPage() {
               <input
                 type="text"
                 value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 placeholder="Enter coupon code"
-                disabled={couponApplied}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold disabled:bg-gray-100"
+                disabled={couponApplied || couponLoading}
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-fashion-gold disabled:bg-gray-100"
               />
               {couponApplied ? (
                 <button
@@ -213,9 +217,10 @@ export default function PaymentPage() {
               ) : (
                 <button
                   onClick={handleApplyCoupon}
-                  className="rounded-lg bg-fashion-gold px-4 py-2 text-sm font-medium text-white hover:bg-fashion-gold/90 transition"
+                  disabled={couponLoading}
+                  className="rounded-lg bg-fashion-gold px-4 py-2 text-sm font-medium text-white hover:bg-fashion-gold/90 transition disabled:opacity-50"
                 >
-                  Apply
+                  {couponLoading ? "Applying..." : "Apply"}
                 </button>
               )}
             </div>
