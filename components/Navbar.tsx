@@ -59,11 +59,15 @@ export default function Navbar() {
 
   // Hover intent: open immediately, close after a short delay so the
   // pointer can travel from the trigger into the dropdown.
-  const openMenu = () => {
+  // Only a real mouse should trigger hover. Touch taps emit a synthetic
+  // "enter" before the click, which would open then immediately toggle closed.
+  const openMenu = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse") return
     if (closeTimer.current) clearTimeout(closeTimer.current)
     setMenuOpen(true)
   }
-  const scheduleClose = () => {
+  const scheduleClose = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse") return
     if (closeTimer.current) clearTimeout(closeTimer.current)
     closeTimer.current = setTimeout(() => setMenuOpen(false), 150)
   }
@@ -75,11 +79,14 @@ export default function Navbar() {
         className="relative flex h-28 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"
       >
         {/* Left: Menu */}
+        {/* Wrapper spans the full bar height (not `relative`) so the dropdown
+            positions against the nav and hovering anywhere in this column keeps
+            the menu open while the pointer travels down to it. */}
         <div
           ref={menuRef}
-          className="relative"
-          onMouseEnter={openMenu}
-          onMouseLeave={scheduleClose}
+          className="flex h-full items-center"
+          onPointerEnter={openMenu}
+          onPointerLeave={scheduleClose}
         >
           <button
             type="button"
@@ -103,7 +110,7 @@ export default function Navbar() {
           <div
             id="primary-menu"
             role="menu"
-            className={`absolute left-0 top-full mt-3 min-w-[220px] origin-top-left border border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:min-w-[260px] sm:py-3 lg:min-w-[320px] lg:py-4 ${
+            className={`absolute left-3 top-full w-44 origin-top-left border border-t-0 border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-60 sm:py-3 lg:left-10 lg:w-72 lg:py-4 2xl:left-14 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -116,7 +123,7 @@ export default function Navbar() {
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
                 onClick={() => setMenuOpen(false)}
-                className="block px-5 py-3 font-jost text-sm font-semibold uppercase tracking-[0.18em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
+                className="block px-4 py-3 font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base sm:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
               >
                 {link.label}
               </Link>
