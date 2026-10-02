@@ -72,7 +72,7 @@ export default function Navbar() {
     <header className="fixed top-0 z-50 w-full border-b border-black/10 bg-white text-black">
       <nav
         aria-label="Primary"
-        className="relative flex h-32 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"
+        className="relative flex h-28 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"
       >
         {/* Left: Menu */}
         <div
@@ -94,7 +94,7 @@ export default function Navbar() {
             ) : (
               <Menu className={ICON_CLASS} strokeWidth={2} aria-hidden />
             )}
-            <span className="hidden font-cinzel text-base font-bold uppercase tracking-[0.2em] sm:inline sm:text-lg lg:text-2xl 2xl:text-3xl">
+            <span className="hidden font-jost text-base font-semibold uppercase tracking-[0.18em] sm:inline lg:text-xl 2xl:text-2xl">
               Menu
             </span>
           </button>
@@ -103,7 +103,7 @@ export default function Navbar() {
           <div
             id="primary-menu"
             role="menu"
-            className={`absolute left-0 top-full mt-3 min-w-[260px] origin-top-left border border-black/10 bg-white py-3 shadow-2xl transition-all duration-200 ease-out lg:min-w-[360px] lg:py-4 ${
+            className={`absolute left-0 top-full mt-3 min-w-[220px] origin-top-left border border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:min-w-[260px] sm:py-3 lg:min-w-[320px] lg:py-4 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -116,7 +116,7 @@ export default function Navbar() {
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
                 onClick={() => setMenuOpen(false)}
-                className="block px-6 py-3.5 font-cinzel text-base font-bold uppercase tracking-[0.2em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black lg:px-8 lg:py-4 lg:text-xl 2xl:text-2xl"
+                className="block px-5 py-3 font-jost text-sm font-semibold uppercase tracking-[0.18em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
               >
                 {link.label}
               </Link>
@@ -137,11 +137,11 @@ export default function Navbar() {
             width={213}
             height={320}
             priority
-            className="h-14 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
+            className="h-12 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
           />
           {/* On phones the name wraps to two lines so it never collides with
               the icons; from sm upward it sits on one line. */}
-          <span className="mt-1.5 text-center font-cinzel text-lg font-bold uppercase leading-tight tracking-[0.15em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-4xl lg:tracking-[0.25em] 2xl:text-5xl 2xl:tracking-[0.3em]">
+          <span className="mt-1 text-center font-cinzel text-base font-bold uppercase leading-tight tracking-[0.15em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-4xl lg:tracking-[0.25em] 2xl:text-5xl 2xl:tracking-[0.3em]">
             Piyush
             <br className="sm:hidden" />
             <span className="hidden sm:inline">&nbsp;</span>

@@ -1,4 +1,4 @@
-import { Cinzel } from "next/font/google"
+import { Cinzel, Jost } from "next/font/google"
 import "./globals.css"
 import ClientGuards from "@/components/ClientGuards"
 import LayoutShell from "@/components/LayoutShell"
@@ -9,6 +9,14 @@ const cinzel = Cinzel({
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-cinzel",
+})
+
+// Geometric sans for navigation / UI labels, paired with Cinzel for the wordmark.
+const jost = Jost({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-jost",
 })
 
 export const metadata = {
@@ -22,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={cinzel.variable}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${cinzel.variable} ${jost.variable}`}>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
           <ClientGuards />
