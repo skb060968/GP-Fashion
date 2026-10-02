@@ -21,7 +21,8 @@ const iconLinks = [
 ]
 
 // Shared icon sizing so Menu and the right-hand icons scale together.
-const ICON_CLASS = "h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 2xl:h-8 2xl:w-8"
+// phone 28 → sm 36 → lg 44 → 2xl 64
+const ICON_CLASS = "h-7 w-7 sm:h-9 sm:w-9 lg:h-11 lg:w-11 2xl:h-16 2xl:w-16"
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -68,10 +69,10 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 z-50 w-full bg-black text-white">
+    <header className="fixed top-0 z-50 w-full border-b border-black/10 bg-white text-black">
       <nav
         aria-label="Primary"
-        className="relative flex h-20 w-full items-center justify-between px-3 sm:h-24 sm:px-6 lg:h-28 lg:px-10 2xl:h-32 2xl:px-14"
+        className="relative flex h-32 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"
       >
         {/* Left: Menu */}
         <div
@@ -86,14 +87,14 @@ export default function Navbar() {
             aria-expanded={menuOpen}
             aria-controls="primary-menu"
             aria-haspopup="true"
-            className="group -ml-2 flex items-center gap-2 rounded p-2 text-white transition-colors hover:text-white/70 focus-visible:ring-white lg:gap-3"
+            className="group -ml-2 flex items-center gap-2 rounded p-2 text-black transition-colors hover:text-black/60 focus-visible:ring-black lg:gap-4"
           >
             {menuOpen ? (
-              <X className={ICON_CLASS} strokeWidth={1.5} aria-hidden />
+              <X className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
             ) : (
-              <Menu className={ICON_CLASS} strokeWidth={1.5} aria-hidden />
+              <Menu className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
             )}
-            <span className="hidden font-cinzel text-xs uppercase tracking-[0.25em] sm:inline lg:text-sm 2xl:text-base">
+            <span className="hidden font-cinzel text-sm uppercase tracking-[0.25em] sm:inline sm:text-base lg:text-xl 2xl:text-2xl">
               Menu
             </span>
           </button>
@@ -102,7 +103,7 @@ export default function Navbar() {
           <div
             id="primary-menu"
             role="menu"
-            className={`absolute left-0 top-full mt-3 min-w-[220px] origin-top-left border border-white/15 bg-black py-3 shadow-2xl transition-all duration-200 ease-out ${
+            className={`absolute left-0 top-full mt-3 min-w-[240px] origin-top-left border border-black/10 bg-white py-3 shadow-2xl transition-all duration-200 ease-out lg:min-w-[300px] ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -115,7 +116,7 @@ export default function Navbar() {
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
                 onClick={() => setMenuOpen(false)}
-                className="block px-6 py-3 font-cinzel text-xs uppercase tracking-[0.25em] text-white/80 transition-colors hover:bg-white/5 hover:text-white focus-visible:ring-white lg:text-sm"
+                className="block px-6 py-3 font-cinzel text-sm uppercase tracking-[0.25em] text-black/70 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black lg:px-8 lg:py-4 lg:text-base"
               >
                 {link.label}
               </Link>
@@ -128,7 +129,7 @@ export default function Navbar() {
         <Link
           href="/"
           aria-label="Piyush Bholla, home"
-          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded px-2 focus-visible:ring-white"
+          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded px-2 focus-visible:ring-black"
         >
           <Image
             src="/images/brand/logo-mark.png"
@@ -136,15 +137,20 @@ export default function Navbar() {
             width={213}
             height={320}
             priority
-            className="h-9 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-11 lg:h-14 2xl:h-16"
+            className="h-14 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
           />
-          <span className="mt-1 whitespace-nowrap font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-brand-gold sm:mt-1.5 sm:text-base sm:tracking-[0.3em] lg:text-xl 2xl:text-2xl">
-            Piyush Bholla
+          {/* On phones the name wraps to two lines so it never collides with
+              the icons; from sm upward it sits on one line. */}
+          <span className="mt-1.5 text-center font-cinzel text-lg font-bold uppercase leading-tight tracking-[0.15em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-4xl lg:tracking-[0.25em] 2xl:text-5xl 2xl:tracking-[0.3em]">
+            Piyush
+            <br className="sm:hidden" />
+            <span className="hidden sm:inline">&nbsp;</span>
+            Bholla
           </span>
         </Link>
 
         {/* Right: Wishlist / Bag / Login */}
-        <div className="-mr-2 flex items-center sm:gap-2 lg:gap-4">
+        <div className="-mr-2 flex items-center sm:gap-1 lg:gap-4">
           {iconLinks.map(({ label, href, Icon }) => {
             const isBag = label === "Bag"
             return (
@@ -154,13 +160,13 @@ export default function Navbar() {
                 aria-label={
                   isBag && bagCount > 0 ? `${label}, ${bagCount} items` : label
                 }
-                className="relative rounded p-2 text-white transition-colors hover:text-white/70 focus-visible:ring-white"
+                className="relative rounded p-1.5 text-black transition-colors hover:text-black/60 focus-visible:ring-black sm:p-2"
               >
-                <Icon className={ICON_CLASS} strokeWidth={1.5} aria-hidden />
+                <Icon className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
                 {isBag && bagCount > 0 && (
                   <span
                     aria-hidden
-                    className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-semibold leading-none text-black lg:h-5 lg:min-w-5 lg:text-[11px]"
+                    className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[11px] font-semibold leading-none text-white lg:h-6 lg:min-w-6 lg:text-xs 2xl:h-7 2xl:min-w-7 2xl:text-sm"
                   >
                     {bagCount}
                   </span>
