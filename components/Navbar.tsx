@@ -68,7 +68,7 @@ export default function Navbar() {
     <header className="fixed top-0 z-50 w-full bg-black text-white">
       <nav
         aria-label="Primary"
-        className="container-max grid h-[72px] grid-cols-[1fr_auto_1fr] items-center lg:h-[88px]"
+        className="grid h-24 w-full grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:h-28 lg:px-10"
       >
         {/* Left: Menu */}
         <div
@@ -90,7 +90,7 @@ export default function Navbar() {
             ) : (
               <Menu className="h-6 w-6" strokeWidth={1.5} aria-hidden />
             )}
-            <span className="hidden font-cinzel text-xs tracking-[0.25em] sm:inline">
+            <span className="hidden font-cinzel text-xs uppercase tracking-[0.25em] sm:inline">
               Menu
             </span>
           </button>
@@ -132,15 +132,15 @@ export default function Navbar() {
             width={213}
             height={320}
             priority
-            className="h-9 w-auto transition-transform duration-300 ease-out group-hover:scale-105 lg:h-11"
+            className="h-11 w-auto transition-transform duration-300 ease-out group-hover:scale-105 lg:h-14"
           />
-          <span className="mt-1 font-cinzel text-[11px] font-medium uppercase tracking-[0.35em] lg:text-xs">
+          <span className="mt-1.5 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.3em] text-brand-gold lg:text-xl">
             Piyush Bholla
           </span>
         </Link>
 
         {/* Right: Wishlist / Bag / Login */}
-        <div className="flex items-center gap-1 justify-self-end sm:gap-3">
+        <div className="-mr-2 flex items-center gap-1 justify-self-end sm:gap-3">
           {iconLinks.map(({ label, href, Icon }) => {
             const isBag = label === "Bag"
             return (

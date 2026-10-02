@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         "fashion-gold": "#a08339",
         "fashion-black": "#1a1a1a",
+        "brand-gold": "#D4AF37",
       },
       fontFamily: {
         serif: ["Playfair Display", "serif"],
