@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import SplashScreen from "@/components/SplashScreen"
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -10,6 +11,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <>
+      {!isAdmin && <SplashScreen />}
       {!isAdmin && <Navbar />}
       <main className="flex-grow">{children}</main>
       {!isAdmin && <Footer />}

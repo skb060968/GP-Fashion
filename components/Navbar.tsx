@@ -90,11 +90,11 @@ export default function Navbar() {
             className="group -ml-2 flex items-center gap-2 rounded p-2 text-black transition-colors hover:text-black/60 focus-visible:ring-black lg:gap-4"
           >
             {menuOpen ? (
-              <X className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
+              <X className={ICON_CLASS} strokeWidth={2} aria-hidden />
             ) : (
-              <Menu className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
+              <Menu className={ICON_CLASS} strokeWidth={2} aria-hidden />
             )}
-            <span className="hidden font-cinzel text-sm uppercase tracking-[0.25em] sm:inline sm:text-base lg:text-xl 2xl:text-2xl">
+            <span className="hidden font-cinzel text-base font-bold uppercase tracking-[0.2em] sm:inline sm:text-lg lg:text-2xl 2xl:text-3xl">
               Menu
             </span>
           </button>
@@ -103,7 +103,7 @@ export default function Navbar() {
           <div
             id="primary-menu"
             role="menu"
-            className={`absolute left-0 top-full mt-3 min-w-[240px] origin-top-left border border-black/10 bg-white py-3 shadow-2xl transition-all duration-200 ease-out lg:min-w-[300px] ${
+            className={`absolute left-0 top-full mt-3 min-w-[260px] origin-top-left border border-black/10 bg-white py-3 shadow-2xl transition-all duration-200 ease-out lg:min-w-[360px] lg:py-4 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -116,7 +116,7 @@ export default function Navbar() {
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
                 onClick={() => setMenuOpen(false)}
-                className="block px-6 py-3 font-cinzel text-sm uppercase tracking-[0.25em] text-black/70 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black lg:px-8 lg:py-4 lg:text-base"
+                className="block px-6 py-3.5 font-cinzel text-base font-bold uppercase tracking-[0.2em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black lg:px-8 lg:py-4 lg:text-xl 2xl:text-2xl"
               >
                 {link.label}
               </Link>

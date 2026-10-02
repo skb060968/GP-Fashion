@@ -236,3 +236,27 @@ img {
 .animate-slideDown {
   animation: slideDown 0.3s ease-out forwards;
 }
+
+/* -----------------------------
+   Splash / preloader
+----------------------------- */
+@keyframes splash-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-splash-pulse {
+  animation: splash-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-splash-pulse {
+    animation: none;
+  }
+}
