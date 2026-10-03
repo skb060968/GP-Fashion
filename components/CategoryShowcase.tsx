@@ -69,33 +69,11 @@ export default function CategoryShowcase({
           >
             {description}
           </p>
-          <Link
-            href={ctaHref}
-            className={`group mt-8 inline-flex items-center gap-3 font-jost text-sm font-semibold uppercase tracking-[0.2em] sm:text-base ${
-              dark ? "focus-visible:ring-white" : "focus-visible:ring-black"
-            }`}
-          >
-            <span
-              className={`border-b pb-1 transition-colors ${
-                dark
-                  ? "border-white/50 group-hover:border-white"
-                  : "border-black/40 group-hover:border-black"
-              }`}
-            >
-              {ctaLabel}
-            </span>
-            <span
-              aria-hidden
-              className="inline-block transition-transform duration-300 group-hover:translate-x-1"
-            >
-              →
-            </span>
-          </Link>
         </FadeIn>
       </div>
 
       {/* Full-bleed image */}
-      <FadeIn delay={120} className="mt-12 sm:mt-16 lg:mt-20">
+      <FadeIn delay={120} className="mt-10 sm:mt-12 lg:mt-16">
         <div className="relative h-[70svh] min-h-[440px] w-full overflow-hidden bg-stone-100 lg:h-[85vh]">
           <Image
             src={image}
@@ -107,6 +85,32 @@ export default function CategoryShowcase({
             className="object-cover object-center"
           />
         </div>
+      </FadeIn>
+
+      {/* Call to action, closing the section */}
+      <FadeIn className="flex justify-center px-4 py-12 sm:py-14 lg:py-16">
+        <Link
+          href={ctaHref}
+          className={`group inline-flex items-center gap-3 font-jost text-sm font-semibold uppercase tracking-[0.2em] sm:text-base ${
+            dark ? "focus-visible:ring-white" : "focus-visible:ring-black"
+          }`}
+        >
+          <span
+            className={`border-b pb-1 transition-colors ${
+              dark
+                ? "border-white/50 group-hover:border-white"
+                : "border-black/40 group-hover:border-black"
+            }`}
+          >
+            {ctaLabel}
+          </span>
+          <span
+            aria-hidden
+            className="inline-block transition-transform duration-300 group-hover:translate-x-1"
+          >
+            →
+          </span>
+        </Link>
       </FadeIn>
     </section>
   )
