@@ -1,85 +1,87 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import { Instagram, Mail, Phone } from 'lucide-react'
-import { content } from '@/lib/data'
+import Link from "next/link"
+import Image from "next/image"
+import { Instagram, Mail, Phone } from "lucide-react"
+import { content } from "@/lib/data"
 
 export default function Footer() {
-  const { footer, siteInfo, contact } = content
+  const { footer, contact } = content
+  const year = new Date().getFullYear()
 
   return (
-    <footer className="bg-stone-100 border-t border-gray-200">
-      <div className="container-max py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 group mb-4">
-             <Image
-  src="/payments/logo.png"
-  alt="GP Fashion logo"
-  width={60}
-  height={60}
-  className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
-   
-/>
-              <span className="font-serif text-2xl font-bold tracking-tight text-fashion-black">
-                {siteInfo.siteName}
+    <footer className="border-t border-black/10 bg-white text-black">
+      <div className="container-max py-16 sm:py-20">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-4 md:gap-10">
+          {/* Brand: logo + wordmark stacked, as in the navbar */}
+          <div className="flex flex-col items-center text-center md:col-span-2 md:items-start md:text-left">
+            <Link
+              href="/"
+              aria-label="Piyush Bholla, home"
+              className="group flex flex-col items-center rounded focus-visible:ring-black"
+            >
+              <Image
+                src="/images/brand/logo-mark.png"
+                alt=""
+                width={213}
+                height={320}
+                className="h-16 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20"
+              />
+              <span className="mt-2 whitespace-nowrap font-cinzel text-lg font-bold uppercase tracking-[0.25em] sm:text-xl">
+                Piyush Bholla
               </span>
             </Link>
 
-            <p className="text-gray-600 max-w-md mb-6">
-              {footer.brandDescription}
-            </p>
-
-            <div className="flex items-center gap-4 text-gray-600">
+            <div className="mt-6 flex items-center gap-5 text-black/70">
               <a
-                href="https://instagram.com"
+                href={contact.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="hover:text-black transition-colors"
+                className="transition-colors hover:text-black focus-visible:ring-black"
               >
-                <Instagram size={22} />
+                <Instagram size={22} strokeWidth={1.5} />
               </a>
-
               <a
                 href={`mailto:${contact.email}`}
                 aria-label="Email"
-                className="hover:text-black transition-colors"
+                className="transition-colors hover:text-black focus-visible:ring-black"
               >
-                <Mail size={22} />
+                <Mail size={22} strokeWidth={1.5} />
               </a>
-
               <a
                 href={`tel:${contact.phone}`}
                 aria-label="Phone"
-                className="hover:text-black transition-colors"
+                className="transition-colors hover:text-black focus-visible:ring-black"
               >
-                <Phone size={22} />
+                <Phone size={22} strokeWidth={1.5} />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="font-serif text-lg font-semibold mb-4">
+          <div className="text-center md:text-left">
+            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
               {footer.quickLinksHeading}
             </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link href="/collections" className="hover:text-black">Collections</Link></li>
-              <li><Link href="/about" className="hover:text-black">About</Link></li>
-              <li><Link href="/services" className="hover:text-black">Services</Link></li>
-              <li><Link href="/journal" className="hover:text-black">Journal</Link></li>
-              <li><Link href="/contact" className="hover:text-black">Contact</Link></li>
+            <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
+              {footer.quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="transition-colors hover:text-black">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Services */}
-          <div>
-            <h3 className="font-serif text-lg font-semibold mb-4">
+          <div className="text-center md:text-left">
+            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
               {footer.servicesHeading}
             </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              {footer.servicesList.map((service, index) => (
-                <li key={index}>
-                  <Link href={service.href} className="hover:text-black">
+            <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
+              {footer.servicesList.map((service) => (
+                <li key={service.href}>
+                  <Link href={service.href} className="transition-colors hover:text-black">
                     {service.label}
                   </Link>
                 </li>
@@ -89,8 +91,8 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-          © {siteInfo.copyright}
+        <div className="mt-14 border-t border-black/10 pt-6 text-center font-jost text-xs tracking-wide text-black/50 sm:text-sm">
+          © {year} Piyush Bholla. All rights reserved.
         </div>
       </div>
     </footer>

@@ -16,27 +16,25 @@ export default function AboutUs() {
     >
       <div className="container-max">
         {/* Brand story */}
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-          <FadeIn className="lg:col-span-4">
-            <h2
-              id="about-us-heading"
-              className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-5xl lg:tracking-[0.25em]"
-            >
-              {heading}
-            </h2>
-            <span aria-hidden className="mt-6 block h-px w-16 bg-black/30" />
-          </FadeIn>
+        <FadeIn className="text-center">
+          <h2
+            id="about-us-heading"
+            className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em] 2xl:text-7xl"
+          >
+            {heading}
+          </h2>
+          <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
+        </FadeIn>
 
-          <FadeIn delay={120} className="lg:col-span-8">
-            <div className="space-y-6 font-jost text-base leading-relaxed text-black/75 sm:text-lg lg:text-xl lg:leading-relaxed">
-              {paragraphs.map((text, i) => (
-                <p key={i} className={i === 0 ? "text-black" : undefined}>
-                  {text}
-                </p>
-              ))}
-            </div>
-          </FadeIn>
-        </div>
+        <FadeIn delay={120} className="mx-auto mt-12 max-w-3xl lg:mt-16">
+          <div className="space-y-6 text-center font-jost text-base leading-relaxed text-black/75 sm:text-lg lg:text-xl lg:leading-relaxed">
+            {paragraphs.map((text, i) => (
+              <p key={i} className={i === 0 ? "text-black" : undefined}>
+                {text}
+              </p>
+            ))}
+          </div>
+        </FadeIn>
 
         {/* Values */}
         <div className="mt-20 border-t border-black/10 pt-16 sm:mt-24 lg:mt-32 lg:pt-20">

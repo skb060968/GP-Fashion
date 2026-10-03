@@ -14,7 +14,7 @@ export const aboutUs = {
     {
       title: "Individuality",
       description:
-        "We celebrate a distinct point of view. Every PIYUSH BHOLLA piece is designed to express character, presence, and an unmistakable sense of self.",
+        "We celebrate a distinct point of view. Every piece is designed to express character, presence, and an unmistakable sense of self.",
     },
     {
       title: "Sensuality",

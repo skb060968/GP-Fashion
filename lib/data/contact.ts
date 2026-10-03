@@ -10,6 +10,7 @@ export const contact = {
   subDescription:
     "Whether you’re a brand, designer, photographer, or individual client, I’m open to collaborations, consultations, and creative partnerships.",
 
+  instagram: "https://www.instagram.com/piyushbholla.label",
   email: "piyushbholla@gmail.com",
   phone: "+91 9821818352",
   location: "Delhi, India",

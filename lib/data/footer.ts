@@ -2,9 +2,13 @@
 // SINGLE SOURCE OF TRUTH — FOOTER CONTENT
 
 export const footer = {
-  brandDescription: "Celebrating the beauty of Indian fashion.",
-
   quickLinksHeading: "Quick Links",
+  // Mirrors the navbar menu. Extend as revamped pages come online.
+  quickLinks: [
+    { label: "Menswear", href: "/#menswear" },
+    { label: "Womenswear", href: "/#womenswear" },
+    { label: "About Us", href: "/#about-us" },
+  ],
 
   servicesHeading: "Services Offered",
   servicesList: [
