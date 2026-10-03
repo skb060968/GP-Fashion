@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Hero from "@/components/Hero"
+import CategoryShowcase from "@/components/CategoryShowcase"
 import About from "@/components/About"
 import Link from "next/link"
 import SectionHeading from "@/components/SectionHeading"
@@ -33,6 +34,21 @@ export default function Home() {
     <main>
       {/* Hero */}
       <Hero />
+
+      {/* Menswear / Womenswear showcases (anchored from the navbar menu) */}
+      <CategoryShowcase
+        id="menswear"
+        title="Menswear"
+        image="/images/home/menswear.jpg"
+        imageAlt="Model wearing a look from the menswear collection"
+        priority
+      />
+      <CategoryShowcase
+        id="womenswear"
+        title="Womenswear"
+        image="/images/home/womenswear.jpg"
+        imageAlt="Model wearing a look from the womenswear collection"
+      />
 
       {/* About Section */}
       <section className="bg-stone-50">

@@ -9,8 +9,8 @@ import { useCart } from "@/context/CartContext"
 
 // Design-only for now: destinations will be wired up in a later pass.
 const menuLinks = [
-  { label: "Menswear", href: "#" },
-  { label: "Womenswear", href: "#" },
+  { label: "Menswear", href: "/#menswear" },
+  { label: "Womenswear", href: "/#womenswear" },
   { label: "About Us", href: "#" },
 ]
 
@@ -37,6 +37,44 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
+
+  // Hide on scroll down, reveal on scroll up. Always shown near the top of the
+  // page and while the menu is open.
+  const [hidden, setHidden] = useState(false)
+  useEffect(() => {
+    let lastY = window.scrollY
+    let ticking = false
+    const THRESHOLD = 8 // ignore tiny jitters
+
+    const update = () => {
+      ticking = false
+      const y = window.scrollY
+      const delta = y - lastY
+
+      if (y < 80) {
+        setHidden(false)
+      } else if (delta > THRESHOLD) {
+        setHidden(true)
+        setMenuOpen(false)
+      } else if (delta < -THRESHOLD) {
+        setHidden(false)
+      }
+
+      if (Math.abs(delta) > THRESHOLD) lastY = y
+    }
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(update)
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  const navHidden = hidden && !menuOpen
 
   // Close on outside click / Escape
   useEffect(() => {
@@ -73,7 +111,11 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-black/10 bg-white text-black">
+    <header
+      className={`fixed top-0 z-50 w-full border-b border-black/10 bg-white text-black transition-transform duration-300 ease-out motion-reduce:transition-none ${
+        navHidden ? "-translate-y-full" : "translate-y-0"
+      }`}
+    >
       <nav
         aria-label="Primary"
         className="relative flex h-28 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"

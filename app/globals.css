@@ -29,6 +29,13 @@ h1, h2, h3, h4, h5, h6 {
 [id] {
   scroll-margin-top: 8rem;
 }
+
+/* Full-bleed showcase sections sit flush at the top of the viewport when
+   jumped to; the navbar hides itself on the downward scroll. */
+section[id="menswear"],
+section[id="womenswear"] {
+  scroll-margin-top: 0;
+}
  
 /* -----------------------------
    Disable Context Menu / Selection
