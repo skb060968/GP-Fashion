@@ -6,7 +6,15 @@
    Base
 ----------------------------- */
 html {
-  /* scroll-behavior managed via data-scroll-behavior attribute on <html> */
+  /* data-scroll-behavior="smooth" on <html> tells Next to honour this during
+     hash navigation instead of jumping. */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -30,8 +38,8 @@ h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: 8rem;
 }
 
-/* Full-bleed showcase sections sit flush at the top of the viewport when
-   jumped to; the navbar hides itself on the downward scroll. */
+/* Showcase sections carry their own top padding and the navbar hides itself
+   on the downward scroll, so they can land flush at the top of the viewport. */
 section[id="menswear"],
 section[id="womenswear"] {
   scroll-margin-top: 0;

@@ -164,7 +164,19 @@ export default function Navbar() {
                 href={link.href}
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  setMenuOpen(false)
+                  // Same-page anchor: scroll smoothly instead of jumping.
+                  const hash = link.href.startsWith("/#") ? link.href.slice(1) : null
+                  if (hash && pathname === "/") {
+                    const target = document.querySelector<HTMLElement>(hash)
+                    if (target) {
+                      e.preventDefault()
+                      target.scrollIntoView({ behavior: "smooth", block: "start" })
+                      history.replaceState(null, "", hash)
+                    }
+                  }
+                }}
                 className="block px-4 py-3 font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base sm:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
               >
                 {link.label}
