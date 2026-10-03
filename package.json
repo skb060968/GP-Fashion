@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "reset-db": "prisma migrate reset",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "convert-webp": "node scripts/convert-to-webp.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

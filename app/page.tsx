@@ -38,22 +38,18 @@ export default function Home() {
       {/* Menswear / Womenswear showcases (anchored from the navbar menu) */}
       <CategoryShowcase
         id="menswear"
-        index="01"
         title="Menswear"
         description="Refined tailoring that balances tradition with contemporary style. Pieces for the modern man who values quality, fit, and timeless elegance."
-        image="/images/home/menswear.jpg"
-        imageAlt="Model wearing a look from the menswear collection"
-        tone="light"
+        image="/images/home/menswear.webp"
+        imageAlt="Two models in looks from the menswear collection"
         priority
       />
       <CategoryShowcase
         id="womenswear"
-        index="02"
         title="Womenswear"
         description="Timeless silhouettes reimagined with a contemporary sensibility. Every piece tells a story of refined craftsmanship and understated luxury."
-        image="/images/home/womenswear.jpg"
-        imageAlt="Model wearing a look from the womenswear collection"
-        tone="dark"
+        image="/images/home/womenswear.webp"
+        imageAlt="Two models in trench coats from the womenswear collection"
       />
 
       {/* About Section */}
