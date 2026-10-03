@@ -1,12 +1,10 @@
 import type { Metadata } from "next"
 import Hero from "@/components/Hero"
 import CategoryShowcase from "@/components/CategoryShowcase"
-import About from "@/components/About"
+import AboutUs from "@/components/AboutUs"
 import Link from "next/link"
 import SectionHeading from "@/components/SectionHeading"
-import CollectionCard from "@/components/CollectionCard"
 import RevealWrapper from "@/components/RevealWrapper"
-import { content } from "@/lib/data"
 import { achievements } from "@/lib/data/achievements"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
@@ -25,11 +23,6 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-  const { collections, brandStory } = content
-
-  // Featured collections (first 2)
-  const featuredCollections = collections.slice(0, 2)
-
   return (
     <main>
       {/* Hero */}
@@ -52,66 +45,8 @@ export default function Home() {
         imageAlt="Two models in trench coats from the womenswear collection"
       />
 
-      {/* About Section */}
-      <section className="bg-stone-50">
-        <About />
-      </section>
-
-      {/* Featured Collections */}
-      <section className="section-padding bg-white">
-        <div className="container-max">
-          <SectionHeading
-            title="Featured Collections"
-            subtitle="Curated pieces that tell stories of heritage, innovation, and timeless elegance."
-            className="mb-16"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-            {featuredCollections.map((collection, index) => (
-              <CollectionCard
-                key={collection.slug}
-                {...collection}
-                index={index}
-              />
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/collections"
-              className="inline-block btn-secondary"
-            >
-              View All Collections
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Brand Values */}
-      <section className="section-padding bg-stone-50">
-        <div className="container-max">
-          <SectionHeading
-            title="Our Values"
-            subtitle="The principles that guide every design decision and creative choice."
-            className="mb-16"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {brandStory.values.map((value, index) => (
-              <RevealWrapper key={value.title} index={index}>
-                <div className="bg-white rounded-xl p-8 text-center hover:shadow-lg transition-shadow duration-300">
-                  <h3 className="font-serif text-xl font-bold text-fashion-black mb-4">
-                    {value.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {value.description}
-                  </p>
-                </div>
-              </RevealWrapper>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* About Us (brand story + values, anchored from the navbar menu) */}
+      <AboutUs />
 
       {/* Recognition Section */}
       <section className="section-padding bg-white">

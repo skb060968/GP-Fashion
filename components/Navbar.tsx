@@ -11,7 +11,7 @@ import { useCart } from "@/context/CartContext"
 const menuLinks = [
   { label: "Menswear", href: "/#menswear" },
   { label: "Womenswear", href: "/#womenswear" },
-  { label: "About Us", href: "#" },
+  { label: "About Us", href: "/#about-us" },
 ]
 
 const iconLinks = [
