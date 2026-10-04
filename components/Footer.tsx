@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Instagram, Mail, Phone } from "lucide-react"
 import { content } from "@/lib/data"
+import AnchorLink from "@/components/AnchorLink"
 
 export default function Footer() {
   const { footer, contact } = content
@@ -65,9 +66,9 @@ export default function Footer() {
             <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
               {footer.quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="transition-colors hover:text-black">
+                  <AnchorLink href={link.href} className="transition-colors hover:text-black">
                     {link.label}
-                  </Link>
+                  </AnchorLink>
                 </li>
               ))}
             </ul>

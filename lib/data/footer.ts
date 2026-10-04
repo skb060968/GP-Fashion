@@ -8,6 +8,7 @@ export const footer = {
     { label: "Menswear", href: "/#menswear" },
     { label: "Womenswear", href: "/#womenswear" },
     { label: "About Us", href: "/#about-us" },
+    { label: "Contact", href: "/contact" },
   ],
 
   servicesHeading: "Services Offered",

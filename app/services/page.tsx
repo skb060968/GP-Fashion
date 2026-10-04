@@ -7,19 +7,19 @@ import {
   Users,
   Briefcase,
   Leaf,
-  ArrowRight,
+  type LucideIcon,
 } from "lucide-react"
 import { content } from "@/lib/data"
-import RevealWrapper from "@/components/RevealWrapper"
+import FadeIn from "@/components/FadeIn"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 export const metadata: Metadata = {
-  title: "Services | GP Fashion",
+  title: "Services | Piyush Bholla",
   description:
     "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
   openGraph: {
-    title: "Services | GP Fashion",
+    title: "Services | Piyush Bholla",
     description:
       "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
     url: `${SITE_URL}/services`,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
 }
 
-const iconMap: { [key: string]: any } = {
+const iconMap: Record<string, LucideIcon> = {
   "Creative Design": Sparkles,
   "Technical Design": Ruler,
   "Production & Sourcing": Scissors,
@@ -40,57 +40,58 @@ export default function ServicesPage() {
   const { services, servicesPage } = content
 
   return (
-    <div>
+    <div className="bg-white text-black">
       {/* ================= HERO + SERVICES GRID ================= */}
-      <section className="section-padding bg-white">
+      <section className="section-padding">
         <div className="container-max">
-          {/* HERO */}
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h1 className="font-serif text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <FadeIn className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
+            <h1 className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em]">
               {servicesPage.heroTitle}
             </h1>
-            <p className="text-gray-800 text-lg">
+            <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
+            <p className="mt-6 font-jost text-base leading-relaxed text-black/70 sm:text-lg">
               {servicesPage.heroDescription}
             </p>
-            <div className="w-24 h-1 bg-fashion-gold mt-8 mx-auto" />
-          </div>
+          </FadeIn>
 
-          {/* SERVICES GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
             {services.map((service, index) => {
               const Icon = iconMap[service.title] || Sparkles
               return (
-                <RevealWrapper key={service.slug} index={index}>
-                  <div
+                <FadeIn key={service.slug} delay={(index % 2) * 100} className="h-full">
+                  <article
                     id={service.slug}
-                    className="card-base bg-stone-100 p-10 rounded-2xl space-y-6 hover:bg-stone-200"
+                    className="card-elevated flex h-full flex-col p-8 lg:p-10"
                   >
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-fashion-gold rounded-full flex items-center justify-center mr-4">
-                        <Icon className="w-6 h-6 text-white" />
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black">
+                        <Icon className="h-5 w-5 text-white" strokeWidth={1.5} aria-hidden />
                       </div>
-                      <h3 className="font-serif text-2xl font-semibold text-gray-900">
+                      <h2 className="font-cinzel text-lg font-bold uppercase tracking-[0.12em] sm:text-xl">
                         {service.title}
-                      </h3>
+                      </h2>
                     </div>
 
-                    <p className="text-gray-800 leading-relaxed">
+                    <p className="mt-6 font-jost text-base leading-relaxed text-black/75">
                       {service.description}
                     </p>
 
-                    <ul className="space-y-2">
-                      {service.features.map((feature, i) => (
+                    <ul className="mt-6 space-y-2.5">
+                      {service.features.map((feature) => (
                         <li
-                          key={i}
-                          className="flex items-center text-gray-700"
+                          key={feature}
+                          className="flex items-start gap-3 font-jost text-sm text-black/70 sm:text-base"
                         >
-                          <Sparkles className="w-4 h-4 text-fashion-gold mr-2" />
+                          <span
+                            aria-hidden
+                            className="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-black"
+                          />
                           {feature}
                         </li>
                       ))}
                     </ul>
-                  </div>
-                </RevealWrapper>
+                  </article>
+                </FadeIn>
               )
             })}
           </div>
@@ -98,48 +99,47 @@ export default function ServicesPage() {
       </section>
 
       {/* ================= PROCESS + CTA ================= */}
-      <section className="section-padding bg-stone-50">
-        <div className="container-max text-center">
-          {/* PROCESS */}
-          <h2 className="font-serif text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-            {servicesPage.processHeading}
-          </h2>
-          <p className="text-gray-800 max-w-2xl mx-auto mb-16">
-            {servicesPage.processDescription}
-          </p>
+      <section>
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="section-divider" />
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 items-stretch mb-20">
+        <div className="container-max section-padding text-center">
+          <FadeIn className="mx-auto max-w-2xl">
+            <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-4xl lg:tracking-[0.25em]">
+              {servicesPage.processHeading}
+            </h2>
+            <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
+            <p className="mt-6 font-jost text-base leading-relaxed text-black/70 sm:text-lg">
+              {servicesPage.processDescription}
+            </p>
+          </FadeIn>
+
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-5 lg:gap-8">
             {servicesPage.processSteps.map((step, i) => (
-              <RevealWrapper key={i} index={i}>
-                <div
-                  className="card-base p-6
-                    hover:bg-stone-50 text-center h-full"
-                >
-                  <div className="w-12 h-12 bg-fashion-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white font-bold text-lg">
-                      {i + 1}
+              <FadeIn key={step} delay={i * 80} className="h-full">
+                <div className="card-elevated flex h-full flex-col items-center p-6 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black">
+                    <span className="font-cinzel text-base font-bold text-white">
+                      {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>
-                  <p className="font-semibold text-gray-900 leading-snug">
+                  <p className="mt-4 font-jost text-sm font-semibold leading-snug sm:text-base">
                     {step}
                   </p>
                 </div>
-              </RevealWrapper>
+              </FadeIn>
             ))}
           </div>
 
-          {/* CTA */}
-          <p className="text-gray-800 mb-8 text-lg">
-            {servicesPage.ctaText}
-          </p>
-
-          <Link
-            href="/contact"
-            className="btn-secondary inline-flex items-center gap-2"
-          >
-            {servicesPage.ctaButton}
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <FadeIn className="mt-16 lg:mt-20">
+            <p className="mx-auto max-w-2xl font-jost text-base text-black/75 sm:text-lg">
+              {servicesPage.ctaText}
+            </p>
+            <Link href="/contact" className="btn-outline-dark mt-8">
+              {servicesPage.ctaButton}
+            </Link>
+          </FadeIn>
         </div>
       </section>
     </div>

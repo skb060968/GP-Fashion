@@ -279,6 +279,24 @@ img {
 }
 
 /* -----------------------------
+   Elevated card (revamp palette)
+----------------------------- */
+.card-elevated {
+  @apply rounded-2xl bg-stone-100 shadow-md ring-1 ring-black/5 transition-all duration-300;
+}
+.card-elevated:hover {
+  @apply -translate-y-1 shadow-xl;
+}
+
+/* -----------------------------
+   Solid pill button
+----------------------------- */
+.btn-solid-dark {
+  @apply inline-flex items-center justify-center rounded-full border border-black bg-black px-10 py-3.5 font-jost text-sm font-semibold uppercase tracking-[0.2em] text-white;
+  @apply transition-colors duration-300 hover:bg-white hover:text-black focus-visible:ring-black sm:px-12 sm:py-4 sm:text-base;
+}
+
+/* -----------------------------
    Outlined pill button
 ----------------------------- */
 .btn-outline-dark {

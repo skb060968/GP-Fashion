@@ -6,14 +6,17 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, X, Heart, ShoppingBag, User } from "lucide-react"
 import { useCart } from "@/context/CartContext"
+import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
 
-// Design-only for now: destinations will be wired up in a later pass.
 const menuLinks = [
   { label: "Menswear", href: "/#menswear" },
   { label: "Womenswear", href: "/#womenswear" },
   { label: "About Us", href: "/#about-us" },
+  { label: "Services", href: "/services" },
+  { label: "Contact", href: "/contact" },
 ]
 
+// Icon destinations are design-only for now; wired up in a later pass.
 const iconLinks = [
   { label: "Wishlist", href: "#", Icon: Heart },
   { label: "Bag", href: "#", Icon: ShoppingBag },
@@ -44,12 +47,21 @@ export default function Navbar() {
   useEffect(() => {
     let lastY = window.scrollY
     let ticking = false
+    // While an in-page anchor scroll is running we ignore direction, so an
+    // upward programmatic scroll (e.g. from a footer link) doesn't reveal the
+    // bar on top of the section heading.
+    let suppressUntil = 0
     const THRESHOLD = 8 // ignore tiny jitters
 
     const update = () => {
       ticking = false
       const y = window.scrollY
       const delta = y - lastY
+
+      if (performance.now() < suppressUntil) {
+        lastY = y
+        return
+      }
 
       if (y < 80) {
         setHidden(false)
@@ -70,8 +82,22 @@ export default function Navbar() {
       }
     }
 
+    const onAnchorNav = () => {
+      suppressUntil = performance.now() + 1200
+      setHidden(true)
+      setMenuOpen(false)
+    }
+
+    // Landing directly on a hash (e.g. /#about-us from another page): the
+    // browser has already scrolled, so start hidden.
+    if (window.location.hash && window.scrollY > 80) setHidden(true)
+
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    window.addEventListener(ANCHOR_NAV_EVENT, onAnchorNav)
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener(ANCHOR_NAV_EVENT, onAnchorNav)
+    }
   }, [])
 
   const navHidden = hidden && !menuOpen
@@ -159,28 +185,16 @@ export default function Navbar() {
             }`}
           >
             {menuLinks.map((link) => (
-              <Link
+              <AnchorLink
                 key={link.label}
                 href={link.href}
                 role="menuitem"
                 tabIndex={menuOpen ? 0 : -1}
-                onClick={(e) => {
-                  setMenuOpen(false)
-                  // Same-page anchor: scroll smoothly instead of jumping.
-                  const hash = link.href.startsWith("/#") ? link.href.slice(1) : null
-                  if (hash && pathname === "/") {
-                    const target = document.querySelector<HTMLElement>(hash)
-                    if (target) {
-                      e.preventDefault()
-                      target.scrollIntoView({ behavior: "smooth", block: "start" })
-                      history.replaceState(null, "", hash)
-                    }
-                  }
-                }}
+                onClick={() => setMenuOpen(false)}
                 className="block px-4 py-3 font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base sm:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
               >
                 {link.label}
-              </Link>
+              </AnchorLink>
             ))}
           </div>
         </div>
