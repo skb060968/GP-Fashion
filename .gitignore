@@ -56,3 +56,5 @@ Thumbs.db
 !/public/images/shop/items/
 !/public/images/shop/thumbnails/
 !/public/images/shop/meta/
+# raw video masters (web-optimised copies live in /public/videos)
+/public/images/hero/hero.mp4
