@@ -31,10 +31,15 @@ export default function CategoryShowcase({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className="bg-white pt-20 text-black sm:pt-24 lg:pt-32"
+      className="bg-white text-black"
     >
+      {/* Hairline separating this section from the one above */}
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="section-divider" />
+      </div>
+
       {/* Header */}
-      <div className="container-max">
+      <div className="container-max pt-20 sm:pt-24 lg:pt-32">
         <FadeIn className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <h2
             id={`${id}-heading`}
@@ -65,20 +70,9 @@ export default function CategoryShowcase({
       </FadeIn>
 
       {/* Call to action, closing the section */}
-      <FadeIn className="flex justify-center px-4 py-12 sm:py-14 lg:py-16">
-        <Link
-          href={ctaHref}
-          className="group inline-flex items-center gap-3 font-jost text-sm font-semibold uppercase tracking-[0.2em] focus-visible:ring-black sm:text-base"
-        >
-          <span className="border-b border-black/40 pb-1 transition-colors group-hover:border-black">
-            {ctaLabel}
-          </span>
-          <span
-            aria-hidden
-            className="inline-block transition-transform duration-300 group-hover:translate-x-1"
-          >
-            →
-          </span>
+      <FadeIn className="flex justify-center px-4 py-14 sm:py-16 lg:py-20">
+        <Link href={ctaHref} className="btn-outline-dark">
+          {ctaLabel}
         </Link>
       </FadeIn>
     </section>

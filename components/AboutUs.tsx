@@ -13,9 +13,14 @@ export default function AboutUs() {
     <section
       id="about-us"
       aria-labelledby="about-us-heading"
-      className="bg-white py-20 text-black sm:py-24 lg:py-32"
+      className="bg-white text-black"
     >
-      <div className="container-max">
+      {/* Hairline separating this section from the one above */}
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="section-divider" />
+      </div>
+
+      <div className="container-max py-20 sm:py-24 lg:py-32">
         {/* Brand story */}
         <FadeIn className="text-center">
           <h2

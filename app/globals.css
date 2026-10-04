@@ -271,6 +271,21 @@ img {
   animation: splash-pulse 1.6s ease-in-out infinite;
 }
 
+/* -----------------------------
+   Section divider (hairline)
+----------------------------- */
+.section-divider {
+  @apply mx-auto h-px w-full max-w-7xl bg-black/10;
+}
+
+/* -----------------------------
+   Outlined pill button
+----------------------------- */
+.btn-outline-dark {
+  @apply inline-flex items-center justify-center rounded-full border border-black px-10 py-3.5 font-jost text-sm font-semibold uppercase tracking-[0.2em] text-black;
+  @apply transition-colors duration-300 hover:bg-black hover:text-white focus-visible:ring-black sm:px-12 sm:py-4 sm:text-base;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-splash-pulse {
     animation: none;
