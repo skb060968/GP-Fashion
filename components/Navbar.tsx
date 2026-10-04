@@ -36,33 +36,47 @@ export default function Navbar() {
 
   const bagCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Close on route change
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [pathname])
-
   // Hide on scroll down, reveal on scroll up. Always shown near the top of the
   // page and while the menu is open.
   const [hidden, setHidden] = useState(false)
+
+  // Route change: close the menu and show the bar (new pages start at the top).
+  useEffect(() => {
+    setMenuOpen(false)
+    setHidden(false)
+  }, [pathname])
+
   useEffect(() => {
     let lastY = window.scrollY
     let ticking = false
+    const THRESHOLD = 8 // ignore tiny jitters
+
     // While an in-page anchor scroll is running we ignore direction, so an
     // upward programmatic scroll (e.g. from a footer link) doesn't reveal the
-    // bar on top of the section heading.
-    let suppressUntil = 0
-    const THRESHOLD = 8 // ignore tiny jitters
+    // bar on top of the section heading. Suppression lasts until the scroll
+    // position has been still for a moment, however long the scroll takes.
+    let suppressing = false
+    let settleTimer: ReturnType<typeof setTimeout> | undefined
+    let safetyTimer: ReturnType<typeof setTimeout> | undefined
+
+    const endSuppression = () => {
+      suppressing = false
+      lastY = window.scrollY
+      if (settleTimer) clearTimeout(settleTimer)
+      if (safetyTimer) clearTimeout(safetyTimer)
+    }
 
     const update = () => {
       ticking = false
       const y = window.scrollY
-      const delta = y - lastY
 
-      if (performance.now() < suppressUntil) {
-        lastY = y
+      if (suppressing) {
+        if (settleTimer) clearTimeout(settleTimer)
+        settleTimer = setTimeout(endSuppression, 150)
         return
       }
 
+      const delta = y - lastY
       if (y < 80) {
         setHidden(false)
       } else if (delta > THRESHOLD) {
@@ -71,7 +85,6 @@ export default function Navbar() {
       } else if (delta < -THRESHOLD) {
         setHidden(false)
       }
-
       if (Math.abs(delta) > THRESHOLD) lastY = y
     }
 
@@ -83,20 +96,32 @@ export default function Navbar() {
     }
 
     const onAnchorNav = () => {
-      suppressUntil = performance.now() + 1200
+      suppressing = true
       setHidden(true)
       setMenuOpen(false)
+      if (settleTimer) clearTimeout(settleTimer)
+      settleTimer = setTimeout(endSuppression, 150) // in case no scroll happens
+      if (safetyTimer) clearTimeout(safetyTimer)
+      safetyTimer = setTimeout(endSuppression, 4000)
     }
 
-    // Landing directly on a hash (e.g. /#about-us from another page): the
-    // browser has already scrolled, so start hidden.
-    if (window.location.hash && window.scrollY > 80) setHidden(true)
+    // Full page load straight onto a home-page section (e.g. /#about-us):
+    // the browser has already scrolled, so start hidden.
+    if (
+      window.location.pathname === "/" &&
+      window.location.hash &&
+      window.scrollY > 80
+    ) {
+      setHidden(true)
+    }
 
     window.addEventListener("scroll", onScroll, { passive: true })
     window.addEventListener(ANCHOR_NAV_EVENT, onAnchorNav)
     return () => {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener(ANCHOR_NAV_EVENT, onAnchorNav)
+      if (settleTimer) clearTimeout(settleTimer)
+      if (safetyTimer) clearTimeout(safetyTimer)
     }
   }, [])
 
@@ -144,7 +169,7 @@ export default function Navbar() {
     >
       <nav
         aria-label="Primary"
-        className="relative flex h-28 w-full items-center justify-between px-3 sm:h-40 sm:px-6 lg:h-48 lg:px-10 2xl:h-64 2xl:px-14"
+        className="relative flex h-[var(--nav-h)] w-full items-center justify-between px-3 sm:px-6 lg:px-10 2xl:px-14"
       >
         {/* Left: Menu */}
         {/* Wrapper spans the full bar height (not `relative`) so the dropdown

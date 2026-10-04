@@ -32,10 +32,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
  /* -----------------------------
+   Navbar height (single source of truth)
+   Used by the Navbar itself, the page offset in LayoutShell, and the
+   anchor scroll margin below. Keep in step with the navbar breakpoints.
+----------------------------- */
+:root {
+  --nav-h: 7rem; /* 112px, phones */
+}
+@media (min-width: 640px) {
+  :root { --nav-h: 10rem; } /* 160px */
+}
+@media (min-width: 1024px) {
+  :root { --nav-h: 12rem; } /* 192px */
+}
+@media (min-width: 1536px) {
+  :root { --nav-h: 16rem; } /* 256px */
+}
+
+/* -----------------------------
    Anchor Scroll Offset
+   Anchored elements land just below the navbar when it is visible.
 ----------------------------- */
 [id] {
-  scroll-margin-top: 8rem;
+  scroll-margin-top: calc(var(--nav-h) + 1.5rem);
 }
 
 /* Showcase sections carry their own top padding and the navbar hides itself

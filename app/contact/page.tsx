@@ -26,7 +26,7 @@ export default function ContactPage() {
 
   return (
     <div className="bg-white text-black">
-      <section className="section-padding">
+      <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
         <div className="container-max">
           {/* ================= HEADER ================= */}
           <FadeIn className="mx-auto max-w-3xl text-center">

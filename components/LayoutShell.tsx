@@ -12,7 +12,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   // The navbar is fixed. The home page runs its hero video underneath it;
   // every other page needs top padding equal to the navbar height.
-  const offset = isAdmin || isHome ? "" : "pt-28 sm:pt-40 lg:pt-48 2xl:pt-64"
+  const offset = isAdmin || isHome ? "" : "pt-[var(--nav-h)]"
 
   return (
     <>

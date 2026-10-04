@@ -42,7 +42,7 @@ export default function ServicesPage() {
   return (
     <div className="bg-white text-black">
       {/* ================= HERO + SERVICES GRID ================= */}
-      <section className="section-padding">
+      <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
         <div className="container-max">
           <FadeIn className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h1 className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em]">
