@@ -224,8 +224,17 @@ video {
     min-height: 0 !important;
   }
 
-  nav, footer, .navbar, .footer {
+  header, nav, footer, .navbar, .footer {
     display: none !important;
+  }
+
+  /* The invoice sheet's own <header>/<footer> must still print. */
+  .invoice-card header,
+  .invoice-card footer {
+    display: block !important;
+  }
+  .invoice-card header {
+    display: flex !important;
   }
 
   .invoice-card {

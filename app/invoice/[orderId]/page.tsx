@@ -1,209 +1,231 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Image from "next/image"
+import Link from "next/link"
+import { Download, Printer } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
+import { paymentLabel, statusLabel } from "@/lib/orders/labels"
+import { content } from "@/lib/data"
 
 type Order = {
-  orderCode: string        // 👈 use orderCode instead of id
-  amount: number           // final paid amount
-  discount?: number        // discount applied
-  couponCode?: string | null
+  orderCode: string
+  amount: number
+  discount: number
+  couponCode: string | null
   paymentMethod: string
   status: string
   createdAt: string
   address: {
     fullName: string
     phone: string
+    email: string | null
     addressLine1: string
+    addressLine2: string | null
     city: string
     state: string
     pincode: string
-  }
-  items: {
-    name: string
-    size: string
-    price: number
-    quantity: number
-  }[]
+  } | null
+  items: { id: string; name: string; size: string; price: number; quantity: number }[]
 }
 
 export default function InvoicePage() {
-  const { orderId } = useParams<{ orderId: string }>() // this is actually orderCode now
-  const router = useRouter()
+  const { orderId } = useParams<{ orderId: string }>()
   const [order, setOrder] = useState<Order | null>(null)
+  const [loading, setLoading] = useState(true)
+  const { contact } = content
 
   useEffect(() => {
     fetch(`/api/orders/${orderId}`)
-      .then(res => res.json())
+      .then((r) => (r.ok ? r.json() : null))
       .then(setOrder)
+      .catch(() => setOrder(null))
+      .finally(() => setLoading(false))
   }, [orderId])
 
-  // Set document title for PDF filename when printing
+  // Document title becomes the default PDF filename when printing.
   useEffect(() => {
-    if (order) {
-      document.title = `Invoice-${order.orderCode}`
+    if (order) document.title = `Invoice-${order.orderCode}`
+    return () => {
+      document.title = "Piyush Bholla"
     }
-    return () => { document.title = "Piyush Bholla" }
   }, [order])
 
-  const handlePrint = () => {
-    const originalTitle = document.title
-    document.title = `Invoice-${order?.orderCode ?? orderId}`
-    // Small delay to ensure title is applied before print dialog opens
-    setTimeout(() => {
-      window.print()
-      document.title = originalTitle
-    }, 100)
+  if (loading) {
+    return (
+      <p className="py-40 text-center font-jost text-black/60" aria-live="polite">
+        Loading invoice…
+      </p>
+    )
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
-        Loading invoice…
+      <div className="mx-auto max-w-md px-4 py-32 text-center">
+        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em]">Invoice not found</h1>
+        <p className="mt-4 font-jost text-black/65">We couldn&apos;t find an order with that number.</p>
+        <Link href="/track-order" className="btn-outline-dark mt-8">
+          Track an order
+        </Link>
       </div>
     )
   }
 
-  // Use DB values directly
-  const subtotal = order.amount + (order.discount ?? 0)
-  const discountAmount = order.discount ?? 0
-  const orderTotal = order.amount
+  const subtotal = order.amount + order.discount
 
   return (
-    <div className="bg-white px-4 pt-32 pb-10 print:pt-0 print:pb-0 print:px-0">
-      <div
-        id="invoice"
-        className="invoice-card max-w-3xl mx-auto bg-white p-10 print:p-6 rounded-xl shadow print:shadow-none border-2 border-fashion-gold print:border-0"
-      >
-        {/* HEADER BAR */}
-        <div className="flex justify-between items-center border-b pb-4 mb-8">
-          <div className="flex items-center gap-4">
-        <Image
-  src="/payments/logo.png"
-  alt="Company Logo"
-  width={80}
-  height={80}
-  className="object-contain"
-  priority
-/>
-            <div>
-              <h1 className="text-2xl font-bold text-fashion-black">GP Fashion</h1>
-              <p className="text-sm text-gray-600">New Delhi, India</p>
+    <div className="bg-white text-black">
+      <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20 print:p-0">
+        <div className="container-max">
+          {/* Actions (screen only) */}
+          <div className="mx-auto mb-8 flex max-w-3xl flex-col items-center gap-4 print:hidden sm:flex-row sm:justify-between">
+            <Link
+              href="/track-order"
+              className="font-jost text-sm text-black/60 underline-offset-4 transition-colors hover:text-black hover:underline"
+            >
+              ← Track order
+            </Link>
+            <div className="flex flex-col items-center gap-3 sm:flex-row">
+              <button type="button" onClick={() => window.print()} className="btn-outline-dark">
+                <Printer className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
+                Print
+              </button>
+              <a href={`/api/invoice/${order.orderCode}.pdf`} download className="btn-solid-dark">
+                <Download className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
+                Download PDF
+              </a>
             </div>
           </div>
-          <div className="text-right">
-            <h2 className="text-2xl font-bold text-fashion-gold">INVOICE</h2>
-            <p className="text-sm text-gray-600">
-              Date: {formatDateDDMMYYYY(order.createdAt)}
-            </p>
-          </div>
-        </div>
 
-        {/* META */}
-        <div className="text-lg text-gray-800 space-y-2 mb-8">
-          <p>
-            <span className="font-medium">Order Code :</span>{" "}
-            <span className="font-mono">{order.orderCode}</span>
-          </p>
-          <p>
-            <span className="font-medium">Status :</span> {order.status}
-          </p>
-          <p>
-            <span className="font-medium">Payment Method :</span>{" "}
-            {order.paymentMethod}
-          </p>
-        </div>
+          {/* Invoice sheet */}
+          <article className="invoice-card mx-auto max-w-3xl border border-black/10 bg-white p-8 sm:p-12 print:border-0 print:p-0">
+            {/* Header */}
+            <header className="flex flex-col items-start justify-between gap-8 border-b border-black/10 pb-8 sm:flex-row sm:items-center">
+              <div className="flex flex-col items-center">
+                <Image
+                  src="/images/brand/logo-mark.png"
+                  alt=""
+                  width={213}
+                  height={320}
+                  priority
+                  className="h-14 w-auto"
+                />
+                <span className="mt-2 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.25em]">
+                  Piyush Bholla
+                </span>
+              </div>
+              <div className="font-jost sm:text-right">
+                <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.25em]">Invoice</h1>
+                <p className="mt-2 text-sm text-black/60">
+                  No. <span className="font-semibold text-black">{order.orderCode}</span>
+                </p>
+                <p className="text-sm text-black/60">Date {formatDateDDMMYYYY(order.createdAt)}</p>
+              </div>
+            </header>
 
-        {/* ADDRESS */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">Billing Address</h2>
-          <p className="text-base text-gray-700">{order.address.fullName}</p>
-          <p className="text-base text-gray-700">{order.address.phone}</p>
-          <p className="text-base text-gray-700">{order.address.addressLine1}</p>
-          <p className="text-base text-gray-700">
-            {order.address.city}, {order.address.state}
-          </p>
-          <p className="text-base text-gray-700">{order.address.pincode}</p>
-        </div>
+            {/* Parties */}
+            <div className="grid grid-cols-1 gap-8 py-8 font-jost text-sm sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Billed to</p>
+                {order.address && (
+                  <address className="mt-3 not-italic leading-relaxed text-black/75">
+                    <span className="font-semibold text-black">{order.address.fullName}</span>
+                    <br />
+                    {order.address.addressLine1}
+                    {order.address.addressLine2 ? `, ${order.address.addressLine2}` : ""}
+                    <br />
+                    {order.address.city}, {order.address.state} {order.address.pincode}
+                    <br />
+                    <span className="text-black/60">{order.address.phone}</span>
+                    {order.address.email && (
+                      <>
+                        <br />
+                        <span className="text-black/60">{order.address.email}</span>
+                      </>
+                    )}
+                  </address>
+                )}
+              </div>
+              <div className="sm:text-right">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">From</p>
+                <address className="mt-3 not-italic leading-relaxed text-black/75">
+                  <span className="font-semibold text-black">Piyush Bholla Label</span>
+                  <br />
+                  {contact.location}
+                  <br />
+                  <span className="text-black/60">{contact.email}</span>
+                  <br />
+                  <span className="text-black/60">{contact.phone}</span>
+                </address>
+                <dl className="mt-5 space-y-1 text-black/75">
+                  <div className="flex justify-between gap-6 sm:justify-end">
+                    <dt className="text-black/50">Payment</dt>
+                    <dd>{paymentLabel(order.paymentMethod)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-6 sm:justify-end">
+                    <dt className="text-black/50">Status</dt>
+                    <dd>{statusLabel(order.status)}</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
 
-        {/* ITEMS */}
-        <table className="w-full text-base border-t border-b mb-8">
-          <thead className="text-left bg-gray-50">
-            <tr>
-              <th className="py-3 px-2">Item</th>
-              <th className="py-3 px-2">Size</th>
-              <th className="py-3 px-2 text-right">Unit Price</th>
-              <th className="py-3 px-2 text-right">Qty</th>
-              <th className="py-3 px-2 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.items.map((item, i) => (
-              <tr key={i} className="border-t">
-                <td className="py-3 px-2">{item.name}</td>
-                <td className="py-3 px-2">{item.size}</td>
-                <td className="py-3 px-2 text-right">
-                  {formatRupees(item.price)}
-                </td>
-                <td className="py-3 px-2 text-right">{item.quantity}</td>
-                <td className="py-3 px-2 text-right">
-                  {formatRupees(item.price * item.quantity)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            {/* Items */}
+            <table className="w-full border-t border-black/10 font-jost text-sm">
+              <thead>
+                <tr className="text-left text-xs font-semibold uppercase tracking-[0.15em] text-black/50">
+                  <th scope="col" className="py-3 pr-4 font-semibold">Item</th>
+                  <th scope="col" className="py-3 pr-4 font-semibold">Size</th>
+                  <th scope="col" className="py-3 pr-4 text-right font-semibold">Price</th>
+                  <th scope="col" className="py-3 pr-4 text-right font-semibold">Qty</th>
+                  <th scope="col" className="py-3 text-right font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/10 border-y border-black/10">
+                {order.items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="py-3 pr-4 font-semibold">{item.name}</td>
+                    <td className="py-3 pr-4 text-black/70">{item.size}</td>
+                    <td className="py-3 pr-4 text-right tabular-nums text-black/70">{formatRupees(item.price)}</td>
+                    <td className="py-3 pr-4 text-right tabular-nums text-black/70">{item.quantity}</td>
+                    <td className="py-3 text-right tabular-nums">{formatRupees(item.price * item.quantity)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        {/* TOTALS */}
-        <div className="text-right text-lg font-semibold mb-10 space-y-1">
-          <p>Subtotal : {formatRupees(subtotal)}</p>
-          {discountAmount > 0 && (
-            <p className="text-gray-700">
-              Discount : -{formatRupees(discountAmount)}
-              {order.couponCode && (
-                <span className="text-sm text-gray-500 ml-1">({order.couponCode})</span>
+            {/* Totals */}
+            <dl className="ml-auto mt-6 max-w-xs space-y-2 font-jost text-sm text-black/70">
+              <div className="flex justify-between">
+                <dt>Subtotal</dt>
+                <dd className="tabular-nums text-black">{formatRupees(subtotal)}</dd>
+              </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between">
+                  <dt>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt>
+                  <dd className="tabular-nums text-black">−{formatRupees(order.discount)}</dd>
+                </div>
               )}
-            </p>
-          )}
-          <p className="text-fashion-black font-bold">
-            Amount Paid : {formatRupees(orderTotal)}
-          </p>
-        </div>
+              <div className="flex justify-between">
+                <dt>Shipping</dt>
+                <dd className="text-black/50">Complimentary</dd>
+              </div>
+              <div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold text-black">
+                <dt className="uppercase tracking-[0.15em]">Total</dt>
+                <dd className="tabular-nums">{formatRupees(order.amount)}</dd>
+              </div>
+            </dl>
 
-        {/* FOOTER NOTES */}
-        <div className="text-sm text-gray-600 space-y-2 mb-8">
-          <p>Thank you for shopping with us!</p>
-          <p>
-            This invoice is generated electronically and does not require a
-            signature.
-          </p>
+            {/* Footer */}
+            <footer className="mt-12 border-t border-black/10 pt-6 text-center font-jost text-xs leading-relaxed text-black/50">
+              <p>Thank you for shopping with Piyush Bholla.</p>
+              <p>This invoice is generated electronically and does not require a signature.</p>
+            </footer>
+          </article>
         </div>
-
-        {/* ACTION BUTTONS */}
-        <div className="flex gap-4 justify-center print:hidden">
-          <button
-            onClick={handlePrint}
-            className="btn-primary"
-          >
-            Print / Save PDF
-          </button>
-          <button
-            onClick={() => router.push("/shop")}
-            className="btn-secondary"
-          >
-            Continue Shopping
-          </button>
-          <button
-            onClick={() => router.push("/")}
-            className="btn-secondary"
-          >
-            Go to Home
-          </button>
-        </div>
-      </div>
+      </section>
     </div>
   )
 }

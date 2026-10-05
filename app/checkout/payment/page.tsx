@@ -3,33 +3,24 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import Script from "next/script"
+import Link from "next/link"
+import { AlertCircle, Check, CreditCard, QrCode } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { formatRupees } from "@/lib/money"
+import CheckoutSteps from "@/components/checkout/CheckoutSteps"
+import OrderSummary from "@/components/checkout/OrderSummary"
+import PageHeading from "@/components/PageHeading"
+import FadeIn from "@/components/FadeIn"
+import { ADDRESS_STORAGE_KEY, type CheckoutAddress as Address } from "@/lib/checkout"
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
-type Address = {
-  fullName: string
-  phone: string
-  email: string
-  addressLine1: string
-  addressLine2?: string
-  city: string
-  state: string
-  pincode: string
-}
+type PaymentMethod = "UPI_MANUAL" | "RAZORPAY"
 
 const COUPON_ERROR_MESSAGES: Record<string, string> = {
-  NOT_FOUND: "Coupon not found",
-  EXPIRED: "Coupon has expired",
-  USAGE_LIMIT: "Coupon usage limit reached",
-  MIN_ORDER_NOT_MET: "Minimum order amount not met",
-  INACTIVE: "Coupon is not active",
+  NOT_FOUND: "We couldn't find that code.",
+  EXPIRED: "This code has expired.",
+  USAGE_LIMIT: "This code has reached its usage limit.",
+  MIN_ORDER_NOT_MET: "Your order doesn't meet the minimum for this code.",
+  INACTIVE: "This code is no longer active.",
 }
 
 export default function PaymentPage() {
@@ -37,69 +28,78 @@ export default function PaymentPage() {
   const { cart, clearCart } = useCart()
 
   const [address, setAddress] = useState<Address | null>(null)
-  const [confirmChecked, setConfirmChecked] = useState(false)
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
-  // Coupon state
-  const [couponCode, setCouponCode] = useState("")
-  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [method, setMethod] = useState<PaymentMethod>("UPI_MANUAL")
+  const [confirmed, setConfirmed] = useState(false)
+  const [placing, setPlacing] = useState(false)
+  const [orderError, setOrderError] = useState("")
+
+  const [couponInput, setCouponInput] = useState("")
+  const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null)
   const [couponError, setCouponError] = useState("")
-  const [couponApplied, setCouponApplied] = useState(false)
   const [couponLoading, setCouponLoading] = useState(false)
 
-  // Payment method state
-  const [paymentMethod, setPaymentMethod] = useState<"UPI_MANUAL" | "RAZORPAY" | null>(null)
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const total = Math.max(0, subtotal - (coupon?.discount ?? 0))
 
-  // Razorpay state
-  const [razorpayLoading, setRazorpayLoading] = useState(false)
-  const [razorpayError, setRazorpayError] = useState("")
-
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const orderTotal = totalAmount - couponDiscount
-
+  // Load address; bounce back if a step was skipped.
   useEffect(() => {
-    const storedAddress = localStorage.getItem("checkout_address")
-    if (!storedAddress) return
-    setAddress(JSON.parse(storedAddress))
+    try {
+      const stored = localStorage.getItem(ADDRESS_STORAGE_KEY)
+      if (stored) setAddress(JSON.parse(stored))
+    } catch {
+      /* ignore */
+    }
+    setHydrated(true)
   }, [])
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return
+  useEffect(() => {
+    if (!hydrated || placing) return
+    if (cart.length === 0) router.replace("/bag")
+    else if (!address) router.replace("/checkout/address")
+  }, [hydrated, cart.length, address, router, placing])
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase()
+    if (!code) return
     setCouponError("")
     setCouponLoading(true)
     try {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode.trim().toUpperCase(), subtotal: totalAmount }),
+        body: JSON.stringify({ code, subtotal }),
       })
       const data = await res.json()
       if (data.valid) {
-        setCouponDiscount(data.discountAmount ?? 0)
-        setCouponApplied(true)
-        setCouponError("")
+        setCoupon({ code, discount: data.discountAmount ?? 0 })
       } else {
-        setCouponDiscount(0)
-        setCouponApplied(false)
-        setCouponError(COUPON_ERROR_MESSAGES[data.error] ?? "Invalid coupon")
+        setCoupon(null)
+        setCouponError(COUPON_ERROR_MESSAGES[data.error] ?? "That code isn't valid.")
       }
     } catch {
-      setCouponDiscount(0)
-      setCouponApplied(false)
-      setCouponError("Failed to validate coupon")
+      setCoupon(null)
+      setCouponError("Couldn't check the code. Please try again.")
     } finally {
       setCouponLoading(false)
     }
   }
 
-  const handlePlaceOrder = async () => {
-    if (!address || cart.length === 0 || !confirmChecked) return
-    try {
-      setIsPlacingOrder(true)
-      // 🔥 Step 1: Warm-up query (wake Neon branch)
-      await fetch("/api/warmup", { method: "POST" })
+  const removeCoupon = () => {
+    setCoupon(null)
+    setCouponInput("")
+    setCouponError("")
+  }
 
-      // 🔥 Step 2: Place actual order (retry up to 2 times for cold DB)
+  const placeOrder = async () => {
+    if (!address || cart.length === 0 || !confirmed || placing) return
+    setOrderError("")
+    setPlacing(true)
+    try {
+      // Wake the database (Neon cold start) before the real request.
+      await fetch("/api/warmup", { method: "POST" }).catch(() => {})
+
       let res: Response | null = null
       for (let attempt = 0; attempt < 3; attempt++) {
         res = await fetch("/api/orders", {
@@ -108,386 +108,324 @@ export default function PaymentPage() {
           body: JSON.stringify({
             items: cart,
             address,
-            amount: totalAmount,
+            amount: subtotal,
             paymentMethod: "UPI_MANUAL",
-            ...(couponApplied && couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
+            ...(coupon ? { couponCode: coupon.code } : {}),
           }),
         })
         if (res.ok || res.status < 500) break
-        // Wait before retrying on server errors (likely cold DB)
         await new Promise((r) => setTimeout(r, 1500))
       }
-      if (!res || !res.ok) throw new Error("Order creation failed")
-      const data = await res.json()
-      clearCart()
-      localStorage.removeItem("checkout_address")
-      router.push(`/checkout/success?orderId=${data.orderId}`)
-      // ✅ keep isPlacingOrder true until navigation
-    } catch (err) {
-      alert("Something went wrong while placing your order.")
-      setIsPlacingOrder(false) // only reset on error
-    }
-  }
 
-  const handleRazorpayPayment = async () => {
-    if (!address || cart.length === 0) return
-    setRazorpayError("")
-    setRazorpayLoading(true)
+      if (!res) throw new Error("no response")
 
-    try {
-      // Step 1: Warm-up query (wake Neon branch)
-      await fetch("/api/warmup", { method: "POST" })
-
-      // Step 2: Create Razorpay order
-      const createRes = await fetch("/api/razorpay/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: orderTotal * 100 }), // convert to paise
-      })
-
-      if (!createRes.ok) {
-        setRazorpayError("Unable to initiate payment. Please try again.")
-        setRazorpayLoading(false)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 429) {
+          setOrderError("Too many attempts. Please wait a few minutes and try again.")
+        } else if (data?.code && COUPON_ERROR_MESSAGES[data.code]) {
+          setOrderError(`${COUPON_ERROR_MESSAGES[data.code]} Remove the code and try again.`)
+          setCoupon(null)
+        } else if (data?.errors) {
+          const first = Object.values(data.errors as Record<string, string>)[0]
+          setOrderError(first ? `Please check your details: ${first}` : "Please check your details and try again.")
+        } else {
+          setOrderError("We couldn't place your order. Please try again.")
+        }
+        setPlacing(false)
         return
       }
 
-      const { razorpayOrderId, amount, currency } = await createRes.json()
-
-      // Step 3: Open Razorpay checkout modal
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        order_id: razorpayOrderId,
-        amount,
-        currency,
-        name: "GP Fashion",
-        description: "Order Payment",
-        prefill: {
-          name: address.fullName,
-          email: address.email,
-          contact: address.phone,
-        },
-        handler: async (response: {
-          razorpay_payment_id: string
-          razorpay_order_id: string
-          razorpay_signature: string
-        }) => {
-          // Step 4: Verify payment
-          try {
-            const verifyRes = await fetch("/api/razorpay/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                orderData: {
-                  items: cart,
-                  address,
-                  amount: totalAmount,
-                  paymentMethod: "RAZORPAY",
-                  ...(couponApplied && couponCode.trim()
-                    ? { couponCode: couponCode.trim() }
-                    : {}),
-                },
-              }),
-            })
-
-            if (verifyRes.status === 400) {
-              setRazorpayError(
-                "Payment verification failed. Please contact support if amount was deducted."
-              )
-              setRazorpayLoading(false)
-              return
-            }
-
-            if (!verifyRes.ok) {
-              await verifyRes.json().catch(() => ({}))
-              setRazorpayError(
-                `Something went wrong. Please contact support. Reference: ${response.razorpay_payment_id}`
-              )
-              setRazorpayLoading(false)
-              return
-            }
-
-            const data = await verifyRes.json()
-            clearCart()
-            localStorage.removeItem("checkout_address")
-            router.push(`/checkout/success?orderId=${data.orderId}`)
-          } catch {
-            setRazorpayError(
-              `Something went wrong. Please contact support. Reference: ${response.razorpay_payment_id}`
-            )
-            setRazorpayLoading(false)
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setRazorpayError("Payment was not completed. You can try again.")
-            setRazorpayLoading(false)
-          },
-        },
-      }
-
-      const rzp = new window.Razorpay(options)
-
-      rzp.on("payment.failed", (response: any) => {
-        setRazorpayError(
-          response?.error?.description ||
-            "Payment failed. Please try again."
-        )
-        setRazorpayLoading(false)
-      })
-
-      rzp.open()
+      const data = await res.json()
+      clearCart()
+      localStorage.removeItem(ADDRESS_STORAGE_KEY)
+      router.push(`/checkout/success?orderId=${data.orderId}`)
+      // keep `placing` true until navigation completes
     } catch {
-      setRazorpayError("Unable to initiate payment. Please try again.")
-      setRazorpayLoading(false)
+      setOrderError("We couldn't place your order. Please check your connection and try again.")
+      setPlacing(false)
     }
   }
 
-  if (!address) return null
+  if (!hydrated || !address || cart.length === 0) return null
 
   return (
-    <section className="bg-white pt-28 pb-16">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      <div className="mx-auto max-w-3xl space-y-8 px-4">
-        <h1 className="font-serif text-3xl font-bold">Payment</h1>
+    <div className="bg-white text-black">
+      <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
+        <div className="container-max">
+          <PageHeading title="Checkout" />
 
-        {/* Cart Items */}
-        <div className="bg-white rounded-xl shadow p-6 space-y-6">
-          <h2 className="font-semibold text-lg">Order Items</h2>
+          <div className="mt-10 lg:mt-12">
+            <CheckoutSteps current="payment" />
+          </div>
 
-          {cart.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 bg-white rounded-xl shadow-sm p-4 border-b last:border-none"
-            >
-              <div className="flex items-start gap-4">
-                <Image
-                  src={item.coverThumbnail}
-                  alt={item.name}
-                  width={60}
-                  height={80}
-                  className="rounded-md object-cover sm:w-[150px] sm:h-[200px]"
-                />
-                <div>
-                  <p className="font-serif text-lg font-semibold text-fashion-black">
-                    {item.name}
-                  </p>
-                  <p className="text-sm text-gray-600">Size: {item.size}</p>
-                  <p className="text-sm text-gray-600">
-                    Unit Price: {formatRupees(item.price)}
-                  </p>
-                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+          <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
+            {/* Main column */}
+            <div className="space-y-12 lg:col-span-7">
+              {/* Shipping to */}
+              <FadeIn>
+                <div className="flex items-baseline justify-between">
+                  <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
+                    Shipping to
+                  </h2>
+                  <Link
+                    href="/checkout/address"
+                    className="font-jost text-sm text-black/60 underline-offset-4 transition-colors hover:text-black hover:underline"
+                  >
+                    Change
+                  </Link>
                 </div>
-              </div>
+                <address className="mt-4 rounded-lg border border-black/10 p-5 font-jost text-sm not-italic leading-relaxed text-black/75 sm:text-base">
+                  <p className="font-semibold text-black">{address.fullName}</p>
+                  <p>
+                    {address.addressLine1}
+                    {address.addressLine2 ? `, ${address.addressLine2}` : ""}
+                  </p>
+                  <p>
+                    {address.city}, {address.state} {address.pincode}
+                  </p>
+                  <p className="mt-2 text-black/60">
+                    {address.phone} · {address.email}
+                  </p>
+                </address>
+              </FadeIn>
 
-              <div className="mt-2 sm:mt-0 sm:text-right font-medium text-fashion-black self-end">
-                Line Total: {formatRupees(item.price * item.quantity)}
-              </div>
-            </div>
-          ))}
-        </div>
+              {/* Payment method */}
+              <FadeIn delay={80}>
+                <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
+                  Payment method
+                </h2>
 
-        {/* Address */}
-        <div className="bg-white rounded-xl shadow p-6 space-y-2">
-          <div className="flex justify-between items-start">
-            <h2 className="font-semibold text-lg">Shipping To</h2>
-            <button
-              onClick={() => router.push("/checkout/address")}
-              className="text-sm text-fashion-gold hover:underline"
-            >
-              Change
-            </button>
-          </div>
-          <p className="font-medium">{address.fullName}</p>
-          <p className="text-sm text-gray-700">{address.phone}</p>
-          <p className="text-sm text-gray-700">{address.email}</p>
-          <p className="text-sm text-gray-700">
-            {address.addressLine1}
-            {address.addressLine2 && `, ${address.addressLine2}`}
-          </p>
-          <p className="text-sm text-gray-700">
-            {address.city}, {address.state} – {address.pincode}
-          </p>
-        </div>
+                <div role="radiogroup" aria-label="Payment method" className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <MethodOption
+                    icon={QrCode}
+                    title="UPI"
+                    description="Scan the QR code with any UPI app."
+                    selected={method === "UPI_MANUAL"}
+                    onSelect={() => setMethod("UPI_MANUAL")}
+                  />
+                  <MethodOption
+                    icon={CreditCard}
+                    title="Cards, net banking & wallets"
+                    description="Secure online payment."
+                    badge="Coming soon"
+                    disabled
+                    selected={false}
+                    onSelect={() => {}}
+                  />
+                </div>
 
-        {/* Amount Summary */}
-        <div className="bg-white rounded-xl shadow p-6 space-y-4">
-          <div className="flex justify-between">
-            <span className="font-medium">Total Amount</span>
-            <span className="font-semibold">{formatRupees(totalAmount)}</span>
-          </div>
+                {/* UPI details */}
+                <div className="mt-6 rounded-lg border border-black/10 p-6 sm:p-8">
+                  <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[auto_1fr]">
+                    <div className="mx-auto w-56 shrink-0 overflow-hidden rounded-lg border border-black/10 bg-white p-2 sm:w-60">
+                      <Image
+                        src="/payments/upi.jpg"
+                        alt="UPI QR code for Piyush Bholla"
+                        width={300}
+                        height={300}
+                        className="h-auto w-full"
+                      />
+                    </div>
+                    <div className="font-jost">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">
+                        Amount to pay
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold tabular-nums">{formatRupees(total)}</p>
+                      <ol className="mt-6 space-y-3 text-sm leading-relaxed text-black/75">
+                        <li className="flex gap-3">
+                          <span className="font-semibold text-black">1.</span>
+                          Open any UPI app (Paytm, Google Pay, PhonePe, BHIM) and scan the code.
+                        </li>
+                        <li className="flex gap-3">
+                          <span className="font-semibold text-black">2.</span>
+                          Pay exactly {formatRupees(total)}.
+                        </li>
+                        <li className="flex gap-3">
+                          <span className="font-semibold text-black">3.</span>
+                          Confirm below and place your order. We verify the payment and email you once it is confirmed.
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
 
-          {/* Coupon Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Coupon Code</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="Enter coupon code"
-                disabled={couponApplied || couponLoading}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-fashion-gold disabled:bg-gray-100"
-              />
-              {couponApplied ? (
-                <button
-                  onClick={() => {
-                    setCouponApplied(false)
-                    setCouponDiscount(0)
-                    setCouponCode("")
-                    setCouponError("")
-                  }}
-                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition"
+                  <label className="mt-8 flex cursor-pointer items-start gap-3 border-t border-black/10 pt-6">
+                    <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={confirmed}
+                        onChange={(e) => setConfirmed(e.target.checked)}
+                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-black/30 transition-colors checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                      />
+                      <Check
+                        className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100"
+                        strokeWidth={3}
+                        aria-hidden
+                      />
+                    </span>
+                    <span className="font-jost text-sm leading-relaxed text-black/80">
+                      I have completed the UPI payment of {formatRupees(total)} and confirm my order details are correct.
+                    </span>
+                  </label>
+                </div>
+              </FadeIn>
+
+              {orderError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 font-jost text-sm text-red-800"
                 >
-                  Remove
-                </button>
-              ) : (
-                <button
-                  onClick={handleApplyCoupon}
-                  disabled={couponLoading}
-                  className="rounded-lg bg-fashion-gold px-4 py-2 text-sm font-medium text-white hover:bg-fashion-gold/90 transition disabled:opacity-50"
-                >
-                  {couponLoading ? "Applying..." : "Apply"}
-                </button>
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                  <p>{orderError}</p>
+                </div>
               )}
             </div>
-            {couponError && (
-              <p className="text-sm text-red-600">{couponError}</p>
-            )}
-            {couponApplied && (
-              <p className="text-sm text-green-600">Coupon applied successfully!</p>
-            )}
-          </div>
 
-          {couponApplied && (
-            <div className="flex justify-between text-gray-700">
-              <span>Coupon Discount</span>
-              <span>-{formatRupees(couponDiscount)}</span>
-            </div>
+            {/* Summary */}
+            <FadeIn delay={120} className="lg:col-span-5">
+              <OrderSummary
+                discount={coupon?.discount ?? 0}
+                footer={
+                  <>
+                    <button
+                      type="button"
+                      onClick={placeOrder}
+                      disabled={!confirmed || placing}
+                      className="btn-solid-dark w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white"
+                    >
+                      {placing ? "Placing order…" : "Place order"}
+                    </button>
+                    {!confirmed && (
+                      <p className="mt-3 text-center font-jost text-xs text-black/50">
+                        Confirm your UPI payment above to continue.
+                      </p>
+                    )}
+                  </>
+                }
+              >
+                {/* Coupon */}
+                <div>
+                  <p className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">
+                    Promo code
+                  </p>
+                  {coupon ? (
+                    <div className="mt-2 flex items-center justify-between rounded-lg border border-black bg-black/[0.03] px-4 py-3 font-jost text-sm">
+                      <span>
+                        <span className="font-semibold tracking-wide">{coupon.code}</span>
+                        <span className="ml-2 text-black/60">−{formatRupees(coupon.discount)}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-black/60 underline-offset-4 hover:text-black hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        applyCoupon()
+                      }}
+                      className="mt-2 flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value.toUpperCase())
+                          setCouponError("")
+                        }}
+                        placeholder="Enter code"
+                        aria-label="Promo code"
+                        aria-invalid={Boolean(couponError)}
+                        className={`min-w-0 flex-1 rounded-lg border bg-white px-4 py-2.5 font-jost text-sm uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal placeholder:text-black/35 focus:outline-none focus:ring-1 ${
+                          couponError
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : "border-black/15 focus:border-black focus:ring-black"
+                        }`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!couponInput.trim() || couponLoading}
+                        className="btn-outline-dark !px-5 !py-2.5 !text-xs disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-black"
+                      >
+                        {couponLoading ? "…" : "Apply"}
+                      </button>
+                    </form>
+                  )}
+                  {couponError && (
+                    <p role="alert" className="mt-2 font-jost text-xs text-red-600">
+                      {couponError}
+                    </p>
+                  )}
+                </div>
+              </OrderSummary>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function MethodOption({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  selected,
+  disabled = false,
+  onSelect,
+}: {
+  icon: typeof QrCode
+  title: string
+  description: string
+  badge?: string
+  selected: boolean
+  disabled?: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      aria-disabled={disabled}
+      disabled={disabled}
+      onClick={onSelect}
+      className={`relative flex items-start gap-4 rounded-lg border p-5 text-left transition-colors focus-visible:ring-black ${
+        selected
+          ? "border-black bg-black/[0.03]"
+          : disabled
+            ? "cursor-not-allowed border-black/10 opacity-60"
+            : "border-black/15 hover:border-black"
+      }`}
+    >
+      <span
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+          selected ? "bg-black text-white" : "border border-black/20 text-black/60"
+        }`}
+      >
+        <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+      </span>
+      <span className="min-w-0 font-jost">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold sm:text-base">{title}</span>
+          {badge && (
+            <span className="rounded-full border border-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-black/60">
+              {badge}
+            </span>
           )}
-
-          <div className="flex justify-between text-lg font-bold text-fashion-black">
-            <span>Order Total</span>
-            <span>{formatRupees(orderTotal)}</span>
-          </div>
-        </div>
-
-        {/* Payment Method Selector */}
-        <div className="bg-white rounded-xl shadow p-6 space-y-4">
-          <h2 className="font-semibold text-lg">Select Payment Method</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Manual UPI Card */}
-            <button
-              type="button"
-              onClick={() => {
-                setPaymentMethod("UPI_MANUAL")
-                setRazorpayError("")
-              }}
-              className={`rounded-xl border-2 p-4 text-left transition ${
-                paymentMethod === "UPI_MANUAL"
-                  ? "border-fashion-gold bg-fashion-gold/5"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "UPI_MANUAL"
-                      ? "border-fashion-gold"
-                      : "border-gray-400"
-                  }`}
-                >
-                  {paymentMethod === "UPI_MANUAL" && (
-                    <div className="h-2 w-2 rounded-full bg-fashion-gold" />
-                  )}
-                </div>
-                <span className="font-medium text-fashion-black">Manual UPI</span>
-              </div>
-              <p className="mt-2 text-sm text-gray-600 ml-7">
-                Scan QR code and confirm payment manually
-              </p>
-            </button>
-
-            {/* Online Payment Card */}
-            <button
-              type="button"
-              onClick={() => {
-                setPaymentMethod("RAZORPAY")
-                setRazorpayError("")
-              }}
-              className={`rounded-xl border-2 p-4 text-left transition ${
-                paymentMethod === "RAZORPAY"
-                  ? "border-fashion-gold bg-fashion-gold/5"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "RAZORPAY"
-                      ? "border-fashion-gold"
-                      : "border-gray-400"
-                  }`}
-                >
-                  {paymentMethod === "RAZORPAY" && (
-                    <div className="h-2 w-2 rounded-full bg-fashion-gold" />
-                  )}
-                </div>
-                <span className="font-medium text-fashion-black">Online Payment</span>
-              </div>
-              <p className="mt-2 text-sm text-gray-600 ml-7">
-                Pay via cards, net banking, UPI, or wallets
-              </p>
-            </button>
-          </div>
-        </div>
-
-        {/* Manual UPI Section — shown only when UPI_MANUAL selected */}
-        {paymentMethod === "UPI_MANUAL" && (
-          <>
-            <div className="bg-white rounded-xl shadow p-6 text-center space-y-4">
-              <h2 className="font-semibold text-lg">Pay via UPI</h2>
-              <Image
-                src="/payments/upi.jpg"
-                alt="UPI QR Code"
-                width={300}
-                height={300}
-                className="mx-auto object-contain"
-              />
-              <label className="flex items-center justify-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={confirmChecked}
-                  onChange={(e) => setConfirmChecked(e.target.checked)}
-                />
-                I confirm the order details are correct and I have completed the UPI payment.
-              </label>
-            </div>
-
-            <button
-              onClick={handlePlaceOrder}
-              disabled={!confirmChecked || isPlacingOrder}
-              className="btn-primary w-full disabled:opacity-50"
-            >
-              {isPlacingOrder ? "Placing Order..." : "Place Order"}
-            </button>
-          </>
-        )}
-
-        {/* Razorpay Section — shown only when RAZORPAY selected */}
-        {paymentMethod === "RAZORPAY" && (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-fashion-gold/30 bg-fashion-gold/5 p-6 text-center">
-              <p className="text-lg font-semibold text-fashion-black mb-2">Online Payment Coming Soon</p>
-              <p className="text-sm text-gray-600">
-                We're setting up secure online payments. For now, please use Manual UPI to complete your order.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+        </span>
+        <span className="mt-1 block text-xs leading-relaxed text-black/60 sm:text-sm">{description}</span>
+      </span>
+      {selected && (
+        <span className="absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full bg-black" aria-hidden>
+          <Check className="h-3 w-3 text-white" strokeWidth={3} />
+        </span>
+      )}
+    </button>
   )
 }

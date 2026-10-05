@@ -31,6 +31,7 @@ export default function Home() {
         description="Refined tailoring that balances tradition with contemporary style. Pieces for the modern man who values quality, fit, and timeless elegance."
         image="/images/home/menswear.webp"
         imageAlt="Two models in looks from the menswear collection"
+        ctaHref="/menswear"
         priority
       />
       <CategoryShowcase
@@ -39,6 +40,7 @@ export default function Home() {
         description="Timeless silhouettes reimagined with a contemporary sensibility. Every piece tells a story of refined craftsmanship and understated luxury."
         image="/images/home/womenswear.webp"
         imageAlt="Two models in trench coats from the womenswear collection"
+        ctaHref="/womenswear"
       />
 
       {/* About Us (brand story + values, anchored from the navbar menu) */}

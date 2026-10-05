@@ -9,6 +9,7 @@ import { dresses } from "@/lib/data/shop"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
 import GoldCornerFrame from "@/components/GoldCornerFrame"
+import WishlistButton from "@/components/WishlistButton"
 
 type Dress = (typeof dresses)[number]
 
@@ -26,7 +27,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
   const handleInquire = () => router.push(`/contact?design=${dress.slug}`)
 
   return (
-    <section className="pt-24 sm:pt-32 pb-16 sm:pb-28 bg-white">
+    <section className="pt-10 sm:pt-16 pb-16 sm:pb-28 bg-white">
       <div className="container-max">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-24 items-start">
           {/* ================= IMAGE COLUMN ================= */}
@@ -108,9 +109,22 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
 
           {/* CONTENT COLUMN */}
           <div className="w-full max-w-xl px-4 sm:px-0">
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-fashion-black mb-3">
-              {dress.name}
-            </h1>
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-fashion-black">
+                {dress.name}
+              </h1>
+              <WishlistButton
+                variant="inline"
+                className="mt-1 shrink-0"
+                item={{
+                  slug: dress.slug,
+                  name: dress.name,
+                  price: dress.price,
+                  coverThumbnail: dress.coverThumbnail,
+                  sizes: dress.sizes,
+                }}
+              />
+            </div>
 
             <p className="text-xl sm:text-2xl text-gray-700 mb-6 sm:mb-8">
               {formatRupees(dress.price)}
@@ -234,7 +248,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
               quantity,
             })
             setShowModal(false)
-            router.push("/cart")
+            router.push("/bag")
           }}
           className="flex-1 btn-primary"
         >

@@ -16,10 +16,10 @@ const menuLinks = [
   { label: "Contact", href: "/contact" },
 ]
 
-// Icon destinations are design-only for now; wired up in a later pass.
+// Login is design-only for now; wired up in a later pass.
 const iconLinks = [
-  { label: "Wishlist", href: "#", Icon: Heart },
-  { label: "Bag", href: "#", Icon: ShoppingBag },
+  { label: "Wishlist", href: "/wishlist", Icon: Heart },
+  { label: "Bag", href: "/bag", Icon: ShoppingBag },
   { label: "Login", href: "#", Icon: User },
 ]
 
