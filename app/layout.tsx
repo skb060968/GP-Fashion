@@ -1,20 +1,22 @@
-import { Cinzel, Jost } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import ClientGuards from "@/components/ClientGuards"
 import LayoutShell from "@/components/LayoutShell"
 import { CartProvider } from "@/context/CartContext"
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+// Fonts are self-hosted (app/fonts) so the build never depends on fetching
+// from Google Fonts. Both are variable fonts covering the latin subset.
+const cinzel = localFont({
+  src: "./fonts/Cinzel-Variable.woff2",
+  weight: "400 900",
   display: "swap",
   variable: "--font-cinzel",
 })
 
 // Geometric sans for navigation / UI labels, paired with Cinzel for the wordmark.
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const jost = localFont({
+  src: "./fonts/Jost-Variable.woff2",
+  weight: "100 900",
   display: "swap",
   variable: "--font-jost",
 })
