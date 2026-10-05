@@ -1,149 +1,79 @@
-import { formatRupees } from "@/lib/money";
-import { formatDateDDMMYYYY } from "@/lib/date";
+// lib/emails/orderPlaced.ts
+// "New order" emails. Returns { subject, html } so call sites stay in sync.
 
-type OrderEmailData = {
-  orderCode: string;     // 👈 use orderCode instead of id
-  amount: number;        // final total after discount
-  discount?: number;     // discount applied
-  status: string;
-  createdAt: Date;
-  paymentMethod: string;
-  customer: {
-    fullName: string;
-    phone: string;
-    email?: string;
-    addressLine1: string;
-    addressLine2?: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-  items: {
-    name: string;
-    size: string;
-    price: number;
-    quantity: number;
-    coverThumbnail: string;
-  }[];
-};
+import type { OrderEmailData } from "@/lib/types/OrderEmailData"
+import { paymentLabel } from "@/lib/orders/labels"
+import { formatRupees } from "@/lib/money"
+import {
+  address,
+  button,
+  escapeHtml,
+  heading,
+  itemsTable,
+  orderFacts,
+  orderNumber,
+  paragraph,
+  shell,
+  siteUrl,
+} from "./layout"
 
-// ✅ Admin email version
-export function orderPlacedEmailAdmin(order: OrderEmailData) {
-  const subtotal = order.amount + (order.discount ?? 0);
+const firstName = (full: string) => full.trim().split(/\s+/)[0] || "there"
 
-  return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-      <h2 style="margin-bottom: 12px; font-size:18px;">🛒 A new order has been placed successfully.</h2>
-      <p>Please verify payment status.</p>
+/* ------------------------------ customer ------------------------------ */
 
-      <p><strong>Order Code:</strong><br />${order.orderCode}</p>
-      <p><strong>Date:</strong><br />${formatDateDDMMYYYY(order.createdAt)}</p>
-      <p><strong>Subtotal:</strong><br />${formatRupees(subtotal)}</p>
-      ${order.discount ? `<p><strong>Discount:</strong><br />-${formatRupees(order.discount)}</p>` : ""}
-      <p><strong>Amount Paid:</strong><br />${formatRupees(order.amount)}</p>
-      <p><strong>Status:</strong><br />${order.status.replace(/_/g, " ")}</p>
-      <p><strong>Payment Method:</strong><br />${order.paymentMethod}</p>
+export function orderPlacedEmailCustomer(order: OrderEmailData) {
+  const site = siteUrl()
+  const isManual = order.paymentMethod === "UPI_MANUAL"
 
-      <h3 style="margin-top:20px; font-size:16px;">Customer Details</h3>
-      <p>
-        ${order.customer.fullName}<br />
-        ${order.customer.phone}<br />
-        ${order.customer.email ? order.customer.email + "<br />" : ""}
-        ${order.customer.addressLine1}${order.customer.addressLine2 ? ", " + order.customer.addressLine2 : ""}<br />
-        ${order.customer.city}, ${order.customer.state} – ${order.customer.pincode}
-      </p>
+  const intro = isManual
+    ? `We have received your order and are verifying your UPI payment. You will hear from us again as soon as it is confirmed, usually within one working day.`
+    : `We have received your order and your payment is confirmed. We will let you know as soon as it is on its way.`
 
-      <h3 style="margin-top:20px; font-size:16px;">Order Items</h3>
-      <table style="width:100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Item</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Size</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Qty</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${order.items.map(item => `
-            <tr>
-              <td style="padding:6px;">${item.name}</td>
-              <td style="padding:6px;">${item.size}</td>
-              <td style="padding:6px;">${item.quantity}</td>
-              <td style="padding:6px;">${formatRupees(item.price)}</td>
-            </tr>`).join("")}
-        </tbody>
-      </table>
+  const html = shell({
+    preheader: `Order ${order.orderCode} received. Total ${formatRupees(order.amount)}.`,
+    sections: [
+      heading(`Thank you, ${firstName(order.customer.fullName)}`) + paragraph(intro),
+      orderNumber(order.orderCode),
+      orderFacts(order),
+      itemsTable(order),
+      address(order.customer),
+      button("Track your order", `${site}/track-order`, "outline"),
+    ],
+    footerNote: `Questions about your order? Reply to this email or write to us at <a href="mailto:piyushbholla@gmail.com" style="color:#666666;">piyushbholla@gmail.com</a>, quoting order ${escapeHtml(order.orderCode)}.`,
+  })
 
-      <br />
-      <a
-        href="${process.env.SITE_URL}"
-        style="
-          display: inline-block;
-          padding: 10px 16px;
-          background: #b35fbb;
-          color: #fff;
-          text-decoration: none;
-          border-radius: 4px;
-        "
-      >
-        Go to Admin Dashboard
-      </a>
-
-      <br /><br />
-      <p style="color:#555;">GP Fashion</p>
-    </div>
-  `;
+  return {
+    subject: `Order ${order.orderCode} received`,
+    html,
+  }
 }
 
-// ✅ Customer email version
-export function orderPlacedEmailCustomer(order: OrderEmailData) {
-  const subtotal = order.amount + (order.discount ?? 0);
+/* ------------------------------- admin ------------------------------- */
 
-  return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-      <h2 style="margin-bottom: 12px; font-size:18px;">Thank you for shopping with GP Fashion!</h2>
-      <p> We’ve received your order and will keep you updated on its status.</p>
+export function orderPlacedEmailAdmin(order: OrderEmailData) {
+  const site = siteUrl()
+  const isManual = order.paymentMethod === "UPI_MANUAL"
 
-      <p><strong>Order Code:</strong><br />${order.orderCode}</p>
-      <p><strong>Date:</strong><br />${formatDateDDMMYYYY(order.createdAt)}</p>
-      <p><strong>Subtotal:</strong><br />${formatRupees(subtotal)}</p>
-      ${order.discount ? `<p><strong>Discount:</strong><br />-${formatRupees(order.discount)}</p>` : ""}
-      <p><strong>Amount Paid:</strong><br />${formatRupees(order.amount)}</p>
-      <p><strong>Status:</strong><br />${order.status.replace(/_/g, " ")}</p>
-      <p><strong>Payment Method:</strong><br />${order.paymentMethod}</p>
+  const action = isManual
+    ? paragraph(
+        `Customer has confirmed a UPI payment of <strong>${formatRupees(order.amount)}</strong>. Check the account for a matching credit, then verify or reject the order in the admin.`
+      )
+    : paragraph(`Paid via ${escapeHtml(paymentLabel(order.paymentMethod))}. Ready to process.`)
 
-      <h3 style="margin-top:20px; font-size:16px;">Shipping To</h3>
-      <p>
-        ${order.customer.fullName}<br />
-        ${order.customer.phone}<br />
-        ${order.customer.email ? order.customer.email + "<br />" : ""}
-        ${order.customer.addressLine1}${order.customer.addressLine2 ? ", " + order.customer.addressLine2 : ""}<br />
-        ${order.customer.city}, ${order.customer.state} – ${order.customer.pincode}
-      </p>
+  const html = shell({
+    preheader: `New order ${order.orderCode} from ${order.customer.fullName}. ${formatRupees(order.amount)}.`,
+    sections: [
+      heading("New order") + action,
+      orderNumber(order.orderCode),
+      orderFacts(order),
+      itemsTable(order),
+      address(order.customer, "Customer"),
+      button("Open in admin", `${site}/admin/orders/${order.orderCode}`),
+    ],
+  })
 
-      <h3 style="margin-top:20px; font-size:16px;">Order Items</h3>
-      <table style="width:100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Item</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Size</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Qty</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${order.items.map(item => `
-            <tr>
-              <td style="padding:6px;">${item.name}</td>
-              <td style="padding:6px;">${item.size}</td>
-              <td style="padding:6px;">${item.quantity}</td>
-              <td style="padding:6px;">${formatRupees(item.price)}</td>
-            </tr>`).join("")}
-        </tbody>
-      </table>
-
-      <br /><br />
-      <p style="color:#555;">GP Fashion</p>
-    </div>
-  `;
+  return {
+    subject: `New order ${order.orderCode} · ${formatRupees(order.amount)} · ${order.customer.fullName}`,
+    html,
+  }
 }

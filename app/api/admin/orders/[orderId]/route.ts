@@ -8,9 +8,7 @@ import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer"
 
 async function verifyAdmin(req: NextRequest) {
   const token = req.cookies.get("admin_session")?.value;
-
   if (!token) return false;
-
   return validateSession(token);
 }
 
@@ -67,19 +65,25 @@ export async function PATCH(
     }
 
     const updatedOrder = await updateOrderStatus(orderId, parsed.data.status);
+    if (!updatedOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
 
-    // Send status email after response using Next.js after()
-    if (updatedOrder?.address?.email) {
-      const emailData = buildOrderEmailData(updatedOrder as any);
+    // Notify the customer after the response has been sent.
+    const to = updatedOrder.address?.email;
+    if (to) {
+      const emailData = buildOrderEmailData(updatedOrder);
       after(async () => {
         try {
-          const html = orderStatusEmailCustomer(emailData);
-          const subject = `Order Status: ${parsed.data.status.replace(/_/g, " ")}`;
-          await sendMail({ to: emailData.customer.email!, subject, html });
+          const { subject, html } = orderStatusEmailCustomer(emailData);
+          await sendMail({ to, subject, html });
+          console.log(`STATUS_EMAIL_SENT ${updatedOrder.orderCode} -> ${parsed.data.status}`);
         } catch (err) {
           console.error("STATUS_EMAIL_FAILED:", err);
         }
       });
+    } else {
+      console.warn(`STATUS_EMAIL_SKIPPED ${updatedOrder.orderCode}: no customer email on order`);
     }
 
     return NextResponse.json(updatedOrder);

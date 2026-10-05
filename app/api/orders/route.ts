@@ -1,11 +1,7 @@
 import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OrderStatus, PaymentMethod } from "@prisma/client";
-import { sendMail } from "@/lib/mailer";
-import {
-  orderPlacedEmailAdmin,
-  orderPlacedEmailCustomer,
-} from "@/lib/emails/orderPlaced";
+import { sendOrderPlacedEmails } from "@/lib/emails/sendOrderPlaced";
 import { createOrderSchema, formatZodErrors } from "@/lib/validation/schemas";
 import { createRateLimiter } from "@/lib/security/rateLimiter";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
@@ -149,75 +145,7 @@ export async function POST(req: Request) {
           console.error("COUPON_APPLY_FAILED:", error);
         }
       }
-      try {
-        // Admin notification
-        if (process.env.ADMIN_EMAIL) {
-          await sendMail({
-            to: process.env.ADMIN_EMAIL,
-            subject: "🛒 New order placed",
-            html: orderPlacedEmailAdmin({
-              orderCode: order.orderCode,
-              amount: order.amount,
-              discount: order.discount,
-              status: order.status,
-              createdAt: order.createdAt,
-              paymentMethod: order.paymentMethod,
-              customer: {
-                fullName: order.address!.fullName,
-                phone: order.address!.phone,
-                email: order.address!.email ?? "",
-                addressLine1: order.address!.addressLine1,
-                addressLine2: order.address!.addressLine2 ?? "",
-                city: order.address!.city,
-                state: order.address!.state,
-                pincode: order.address!.pincode,
-              },
-              items: order.items.map((item) => ({
-                name: item.name,
-                size: item.size,
-                price: item.price,
-                quantity: item.quantity,
-                coverThumbnail: item.coverThumbnail ?? "",
-              })),
-            }),
-          });
-        }
-
-        // Customer notification
-        if (order.address?.email) {
-          await sendMail({
-            to: order.address.email,
-            subject: "✅ Your order has been placed",
-            html: orderPlacedEmailCustomer({
-              orderCode: order.orderCode,
-              amount: order.amount,
-              discount: order.discount,
-              status: order.status,
-              createdAt: order.createdAt,
-              paymentMethod: order.paymentMethod,
-              customer: {
-                fullName: order.address.fullName,
-                phone: order.address.phone,
-                email: order.address.email,
-                addressLine1: order.address.addressLine1,
-                addressLine2: order.address.addressLine2 ?? "",
-                city: order.address.city,
-                state: order.address.state,
-                pincode: order.address.pincode,
-              },
-              items: order.items.map((item) => ({
-                name: item.name,
-                size: item.size,
-                price: item.price,
-                quantity: item.quantity,
-                coverThumbnail: item.coverThumbnail ?? "",
-              })),
-            }),
-          });
-        }
-      } catch (error) {
-        console.error("ORDER_EMAIL_FAILED:", error);
-      }
+      await sendOrderPlacedEmails(order);
     });
 
     return response;

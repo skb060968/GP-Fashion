@@ -1,82 +1,98 @@
-// /src/emails/orderStatusEmailCustomer.ts
-import { formatRupees } from "@/lib/money";
-import { OrderEmailData } from "../types/OrderEmailData";
-import { formatDateDDMMYYYY } from "@/lib/date";
+// lib/emails/orderStatusEmailCustomer.ts
+// Sent to the customer whenever the admin changes an order's status.
+
+import type { OrderEmailData } from "@/lib/types/OrderEmailData"
+import { formatRupees } from "@/lib/money"
+import { address, button, heading, itemsTable, orderFacts, orderNumber, paragraph, shell, siteUrl } from "./layout"
+
+const firstName = (full: string) => full.trim().split(/\s+/)[0] || "there"
+
+type Copy = { subject: string; title: string; body: string; cta?: { text: string; href: string } }
+
+function copyFor(order: OrderEmailData, site: string): Copy {
+  const code = order.orderCode
+  const name = firstName(order.customer.fullName)
+  const track = { text: "Track your order", href: `${site}/track-order` }
+
+  switch (order.status) {
+    case "VERIFIED":
+      return {
+        subject: `Payment confirmed for order ${code}`,
+        title: `Payment confirmed`,
+        body: `Thank you, ${name}. Your payment of ${formatRupees(order.amount)} has been verified and your order is now with our atelier. We will write again when it is being prepared.`,
+        cta: track,
+      }
+    case "PROCESSING":
+      return {
+        subject: `Order ${code} is being prepared`,
+        title: `In the making`,
+        body: `${name}, your pieces are being prepared. Each garment is finished by hand, so please allow a little time. You will receive a note the moment your order ships.`,
+        cta: track,
+      }
+    case "SHIPPED":
+      return {
+        subject: `Order ${code} has shipped`,
+        title: `On its way`,
+        body: `Good news, ${name}. Your order has left us and is on its way to the address below.`,
+        cta: track,
+      }
+    case "DELIVERED":
+      return {
+        subject: `Order ${code} delivered`,
+        title: `Delivered`,
+        body: `${name}, your order has been delivered. We hope you love wearing it. If anything is not as expected, reply to this email and we will put it right.`,
+        cta: { text: "Visit the collection", href: site },
+      }
+    case "REJECTED":
+      return {
+        subject: `Action needed on order ${code}`,
+        title: `We could not verify your payment`,
+        body: `${name}, we were unable to match a UPI payment to this order. If you have paid, reply to this email with the transaction reference and we will sort it out straight away. If not, you can place the order again at any time.`,
+        cta: { text: "Contact us", href: `${site}/contact` },
+      }
+    case "CANCELLED":
+      return {
+        subject: `Order ${code} cancelled`,
+        title: `Order cancelled`,
+        body: `${name}, your order has been cancelled. If a payment was made, a refund will follow and we will confirm it by email. If this was unexpected, please get in touch.`,
+        cta: { text: "Contact us", href: `${site}/contact` },
+      }
+    case "REFUNDED":
+      return {
+        subject: `Refund issued for order ${code}`,
+        title: `Refund issued`,
+        body: `${name}, a refund of ${formatRupees(order.amount)} has been issued for this order. Depending on your bank it may take a few working days to appear.`,
+      }
+    case "UNDER_VERIFICATION":
+    default:
+      return {
+        subject: `Update on order ${code}`,
+        title: `Order update`,
+        body: `${name}, there is an update on your order. The current status is shown below.`,
+        cta: track,
+      }
+  }
+}
 
 export function orderStatusEmailCustomer(order: OrderEmailData) {
-  const headerMap: Record<string, string> = {
-    UNDER_VERIFICATION: "✅ Order Under Verification",
-    VERIFIED: "✅ Payment Verified",
-    REJECTED: "❌ Payment Rejected",
-    PROCESSING: "🧵 Order Processing",
-    SHIPPED: "📦 Order Shipped",
-    DELIVERED: "🎉 Order Delivered",
-    CANCELLED: "⚠️ Order Cancelled",
-    REFUNDED: "💸 Refund Processed",
-  };
+  const site = siteUrl()
+  const c = copyFor(order, site)
 
-  const messageMap: Record<string, string> = {
-    UNDER_VERIFICATION: `We’ve received your order. Payment is under verification.`,
-    VERIFIED: `Your payment for order has been verified.`,
-    REJECTED: `Unfortunately, your payment for order could not be verified.`,
-    PROCESSING: `Your order is being prepared.`,
-    SHIPPED: `Your order has been shipped.`,
-    DELIVERED: `Your order has been delivered successfully.`,
-    CANCELLED: `Your order has been cancelled.`,
-    REFUNDED: `Your refund for order has been processed.`,
-  };
+  const sections = [
+    heading(c.title) + paragraph(c.body),
+    orderNumber(order.orderCode),
+    orderFacts(order),
+    itemsTable(order),
+    address(order.customer),
+  ]
+  if (c.cta) sections.push(button(c.cta.text, c.cta.href, "outline"))
 
-  const header = headerMap[order.status] || "ℹ️ Order Update";
-  const message = messageMap[order.status] || `Order status changed to ${order.status}.`;
-
-  // Subtotal = amount + discount
-  const subtotal = order.amount + (order.discount ?? 0);
-
-  return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-      <h2 style="margin-bottom: 12px; font-size:18px;">${header}</h2>
-      <p>${message}</p>
-
-      <p><strong>Order Code:</strong><br />${order.orderCode}</p>
-      <p><strong>Date:</strong><br />${formatDateDDMMYYYY(order.createdAt)}</p>
-      <p><strong>Subtotal:</strong><br />${formatRupees(subtotal)}</p>
-      ${order.discount ? `<p><strong>Discount:</strong><br />-${formatRupees(order.discount)}</p>` : ""}
-      <p><strong>Amount Paid:</strong><br />${formatRupees(order.amount)}</p>
-      <p><strong>Status:</strong><br />${order.status.replace(/_/g, " ")}</p>
-      <p><strong>Payment Method:</strong><br />${order.paymentMethod}</p>
-
-      <h3 style="margin-top:20px; font-size:16px;">Shipping To</h3>
-      <p>
-        ${order.customer.fullName}<br />
-        ${order.customer.phone}<br />
-        ${order.customer.email ? order.customer.email + "<br />" : ""}
-        ${order.customer.addressLine1}${order.customer.addressLine2 ? ", " + order.customer.addressLine2 : ""}<br />
-        ${order.customer.city}, ${order.customer.state} – ${order.customer.pincode}
-      </p>
-
-      <h3 style="margin-top:20px; font-size:16px;">Order Items</h3>
-      <table style="width:100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Item</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Size</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Qty</th>
-            <th align="left" style="border-bottom:1px solid #ccc; padding:6px;">Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${order.items.map(item => `
-            <tr>
-              <td style="padding:6px;">${item.name}</td>
-              <td style="padding:6px;">${item.size}</td>
-              <td style="padding:6px;">${item.quantity}</td>
-              <td style="padding:6px;">${formatRupees(item.price)}</td>
-            </tr>`).join("")}
-        </tbody>
-      </table>
-
-      <br /><br />
-      <p style="color:#555;">GP Fashion</p>
-    </div>
-  `;
+  return {
+    subject: c.subject,
+    html: shell({
+      preheader: `${c.title}. Order ${order.orderCode}.`,
+      sections,
+      footerNote: `Questions? Reply to this email quoting order ${order.orderCode}.`,
+    }),
+  }
 }
