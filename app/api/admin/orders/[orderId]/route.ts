@@ -1,32 +1,30 @@
 import { NextResponse, NextRequest, after } from "next/server";
-import { updateOrderStatus, buildOrderEmailData } from "@/lib/services/orderStatusService";
+import {
+  updateOrderStatus,
+  updateOrderNotes,
+  buildOrderEmailData,
+  InvalidTransitionError,
+} from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
-import { validateSession } from "@/lib/security/session";
-import { updateStatusSchema } from "@/lib/validation/schemas";
+import { requireAdmin } from "@/lib/security/adminAuth";
+import { adminOrderPatchSchema } from "@/lib/validation/schemas";
 import { sendMail } from "@/lib/mailer";
 import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer";
-
-async function verifyAdmin(req: NextRequest) {
-  const token = req.cookies.get("admin_session")?.value;
-  if (!token) return false;
-  return validateSession(token);
-}
 
 // GET
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
 ) {
-  if (!(await verifyAdmin(req))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
 
   try {
-    const { orderId } = await context.params; // ✅ IMPORTANT FIX
+    const { orderId } = await context.params;
 
     const order = await prisma.order.findUnique({
       where: { orderCode: orderId },
-      include: { items: true, address: true, history: true },
+      include: { items: true, address: true, history: { orderBy: { changedAt: "asc" } } },
     });
 
     if (!order) {
@@ -36,62 +34,66 @@ export async function GET(
     return NextResponse.json(order);
   } catch (error) {
     console.error("ADMIN ORDER FETCH ERROR:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
   }
 }
 
-// PATCH
+// PATCH: { action: "status", status, note?, notifyCustomer? } | { action: "notes", notes }
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
 ) {
-  if (!(await verifyAdmin(req))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
 
   try {
-    const { orderId } = await context.params; // ✅ IMPORTANT FIX
-    const body = await req.json();
+    const { orderId } = await context.params;
+    const body = await req.json().catch(() => null);
 
-    const parsed = updateStatusSchema.safeParse(body);
+    const parsed = adminOrderPatchSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid status value" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const updatedOrder = await updateOrderStatus(orderId, parsed.data.status);
+    if (parsed.data.action === "notes") {
+      const updated = await updateOrderNotes(orderId, parsed.data.notes);
+      if (!updated) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json(updated);
+    }
+
+    const { status, note, notifyCustomer = true } = parsed.data;
+
+    let updatedOrder;
+    try {
+      updatedOrder = await updateOrderStatus(orderId, status, note);
+    } catch (err) {
+      if (err instanceof InvalidTransitionError) {
+        return NextResponse.json({ error: err.message }, { status: 409 });
+      }
+      throw err;
+    }
     if (!updatedOrder) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Notify the customer after the response has been sent.
     const to = updatedOrder.address?.email;
-    if (to) {
+    if (notifyCustomer && to) {
       const emailData = buildOrderEmailData(updatedOrder);
+      const code = updatedOrder.orderCode;
       after(async () => {
         try {
           const { subject, html } = orderStatusEmailCustomer(emailData);
           await sendMail({ to, subject, html });
-          console.log(`STATUS_EMAIL_SENT ${updatedOrder.orderCode} -> ${parsed.data.status}`);
+          console.log(`STATUS_EMAIL_SENT ${code} -> ${status}`);
         } catch (err) {
           console.error("STATUS_EMAIL_FAILED:", err);
         }
       });
-    } else {
-      console.warn(`STATUS_EMAIL_SKIPPED ${updatedOrder.orderCode}: no customer email on order`);
     }
 
     return NextResponse.json(updatedOrder);
   } catch (err) {
     console.error("ADMIN STATUS UPDATE ERROR", err);
-    return NextResponse.json(
-      { error: "Failed to update status" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }

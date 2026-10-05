@@ -1,12 +1,16 @@
 /**
  * Pure CSV export helper for order data.
- * Converts order objects to a CSV string with proper escaping.
+ * Money is written in rupees (two decimals) and dates in IST, so the file
+ * opens readably in Excel / Sheets without conversion.
  */
+
+import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
 
 export interface CsvOrderItem {
   name: string;
   size: string;
   quantity: number;
+  price?: number;
 }
 
 export interface CsvOrder {
@@ -15,85 +19,100 @@ export interface CsvOrder {
     fullName: string;
     phone: string;
     email?: string | null;
+    addressLine1?: string;
+    addressLine2?: string | null;
+    city?: string;
+    state?: string;
+    pincode?: string;
   } | null;
   amount: number;
   discount: number;
+  couponCode?: string | null;
   paymentMethod: string;
   status: string;
   createdAt: Date | string;
   items: CsvOrderItem[];
 }
 
-const CSV_COLUMNS = [
+export const CSV_COLUMNS = [
   "orderCode",
+  "placedAt",
+  "status",
+  "paymentMethod",
   "customerName",
   "phone",
   "email",
-  "amount",
-  "discount",
-  "paymentMethod",
-  "status",
-  "createdAt",
+  "address",
+  "city",
+  "state",
+  "pincode",
   "items",
+  "subtotal",
+  "discount",
+  "couponCode",
+  "total",
 ] as const;
 
-/**
- * Escape a CSV field value. If the value contains a comma, double quote,
- * or newline, wrap it in double quotes and escape internal double quotes
- * by doubling them.
- */
 export function escapeCsvField(value: string): string {
-  if (
-    value.includes(",") ||
-    value.includes('"') ||
-    value.includes("\n") ||
-    value.includes("\r")
-  ) {
+  if (value.includes(",") || value.includes('"') || value.includes("\n") || value.includes("\r")) {
     return `"${value.replace(/"/g, '""')}"`;
   }
   return value;
 }
 
-/**
- * Format order items as a semicolon-separated string.
- * Example: "Style 1 (M x2); Style 3 (L x1)"
- */
+/** "Style 1 (M x2); Style 3 (L x1)" */
 export function formatItems(items: CsvOrderItem[]): string {
-  return items
-    .map((item) => `${item.name} (${item.size} x${item.quantity})`)
-    .join("; ");
+  return items.map((item) => `${item.name} (${item.size} x${item.quantity})`).join("; ");
 }
 
-/**
- * Convert an array of orders to a CSV string.
- * Returns header-only CSV when the array is empty.
- */
+/** Paise → "1299.00" */
+export function formatCsvMoney(paise: number): string {
+  return (paise / 100).toFixed(2);
+}
+
+/** "2026-10-05 19:45" in IST */
+export function formatCsvDate(d: Date | string): string {
+  const date = d instanceof Date ? d : new Date(d);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
+}
+
 export function ordersToCsv(orders: CsvOrder[]): string {
   const header = CSV_COLUMNS.join(",");
-  if (orders.length === 0) {
-    return header + "\n";
-  }
+  if (orders.length === 0) return header + "\n";
 
-  const rows = orders.map((order) => {
-    const createdAt =
-      order.createdAt instanceof Date
-        ? order.createdAt.toISOString()
-        : order.createdAt;
-
+  const rows = orders.map((o) => {
+    const a = o.address;
+    const addressLine = [a?.addressLine1, a?.addressLine2].filter(Boolean).join(", ");
     const fields: string[] = [
-      escapeCsvField(order.orderCode),
-      escapeCsvField(order.address?.fullName ?? ""),
-      escapeCsvField(order.address?.phone ?? ""),
-      escapeCsvField(order.address?.email ?? ""),
-      escapeCsvField(String(order.amount)),
-      escapeCsvField(String(order.discount)),
-      escapeCsvField(order.paymentMethod),
-      escapeCsvField(order.status),
-      escapeCsvField(createdAt),
-      escapeCsvField(formatItems(order.items)),
+      o.orderCode,
+      formatCsvDate(o.createdAt),
+      adminStatusLabel(o.status),
+      paymentLabel(o.paymentMethod),
+      a?.fullName ?? "",
+      a?.phone ?? "",
+      a?.email ?? "",
+      addressLine,
+      a?.city ?? "",
+      a?.state ?? "",
+      a?.pincode ?? "",
+      formatItems(o.items),
+      formatCsvMoney(o.amount + o.discount),
+      formatCsvMoney(o.discount),
+      o.couponCode ?? "",
+      formatCsvMoney(o.amount),
     ];
-
-    return fields.join(",");
+    return fields.map(escapeCsvField).join(",");
   });
 
   return header + "\n" + rows.join("\n") + "\n";

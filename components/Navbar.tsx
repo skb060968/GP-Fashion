@@ -6,6 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, X, Heart, ShoppingBag, User } from "lucide-react"
 import { useCart } from "@/context/CartContext"
+import { useUser } from "@/context/UserContext"
 import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
 
 const menuLinks = [
@@ -17,11 +18,10 @@ const menuLinks = [
   { label: "Track Order", href: "/track-order" },
 ]
 
-// Login is design-only for now; wired up in a later pass.
 const iconLinks = [
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
   { label: "Bag", href: "/bag", Icon: ShoppingBag },
-  { label: "Login", href: "#", Icon: User },
+  { label: "Account", href: "/account", Icon: User },
 ]
 
 // Shared icon sizing so Menu and the right-hand icons scale together.
@@ -34,6 +34,7 @@ export default function Navbar() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
   const { cart } = useCart()
+  const { user } = useUser()
 
   const bagCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -254,16 +255,19 @@ export default function Navbar() {
         <div className="-mr-2 flex items-center sm:gap-1 lg:gap-4">
           {iconLinks.map(({ label, href, Icon }) => {
             const isBag = label === "Bag"
+            const isAccount = label === "Account"
+            const ariaLabel = isBag && bagCount > 0 ? `${label}, ${bagCount} items` : isAccount ? (user ? `Account, ${user.email}` : "Sign in") : label
             return (
               <Link
                 key={label}
-                href={href}
-                aria-label={
-                  isBag && bagCount > 0 ? `${label}, ${bagCount} items` : label
-                }
+                href={isAccount && !user ? "/login" : href}
+                aria-label={ariaLabel}
                 className="relative rounded p-1.5 text-black transition-colors hover:text-black/60 focus-visible:ring-black sm:p-2"
               >
                 <Icon className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
+                {isAccount && user && (
+                  <span aria-hidden className="absolute right-1 top-1 h-2 w-2 rounded-full bg-black ring-2 ring-white lg:h-2.5 lg:w-2.5" />
+                )}
                 {isBag && bagCount > 0 && (
                   <span
                     aria-hidden

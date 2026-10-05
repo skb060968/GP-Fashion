@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react"
+import OrdersListClient from "./OrdersListClient"
 
-export default function OrdersIndexPage() {
-  redirect("/admin");
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={null}>
+      <OrdersListClient />
+    </Suspense>
+  )
 }

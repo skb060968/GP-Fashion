@@ -15,8 +15,8 @@ const validPincodeArb = fc
   .array(fc.integer({ min: 0, max: 9 }), { minLength: 6, maxLength: 6 })
   .map((digits) => digits.join(""));
 
+// Email is required: order confirmations are sent to it.
 const validEmailArb = fc.constantFrom(
-  "",
   "test@example.com",
   "user@domain.co",
   "hello@shop.in",

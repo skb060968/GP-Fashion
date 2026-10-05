@@ -1,304 +1,270 @@
-"use client";
+"use client"
 
-import { useState, FormEvent } from "react";
-
-interface Coupon {
-  id: string;
-  code: string;
-  discountType: "PERCENTAGE" | "FIXED";
-  discountValue: number;
-  minOrderAmount: number | null;
-  maxUses: number | null;
-  currentUses: number;
-  expiresAt: string | null;
-  isActive: boolean;
-  createdAt: string;
-}
+import { useState, type FormEvent } from "react"
+import { Check } from "lucide-react"
+import { Alert, Dialog, btn, input } from "@/components/admin/ui"
+import { adminFetch, AdminApiError } from "@/lib/admin/fetch"
+import type { Coupon } from "./types"
 
 interface CouponFormProps {
-  coupon?: Coupon;
-  onClose: () => void;
-  onSaved: () => void;
+  coupon?: Coupon
+  onClose: () => void
+  onSaved: (coupon: Coupon) => void
 }
 
-interface FieldErrors {
-  [key: string]: string;
+type FieldErrors = Record<string, string>
+
+/** ISO instant → yyyy-mm-dd in IST, for the date input. */
+function toDateInput(iso: string | null): string {
+  if (!iso) return ""
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
 }
 
-function toDateInputValue(iso: string | null): string {
-  if (!iso) return "";
-  try {
-    return new Date(iso).toISOString().split("T")[0];
-  } catch {
-    return "";
-  }
+/** yyyy-mm-dd → end of that day in IST, as an ISO instant. */
+function endOfDayIST(date: string): string {
+  return new Date(`${date}T23:59:59.999+05:30`).toISOString()
 }
+
+const paiseToRupeeInput = (paise: number | null | undefined) => (paise == null ? "" : String(paise / 100))
+const rupeeInputToPaise = (v: string) => Math.round(Number(v) * 100)
 
 export default function CouponForm({ coupon, onClose, onSaved }: CouponFormProps) {
-  const isEdit = !!coupon;
+  const isEdit = Boolean(coupon)
 
-  const [code, setCode] = useState(coupon?.code ?? "");
-  const [discountType, setDiscountType] = useState<"PERCENTAGE" | "FIXED">(
-    coupon?.discountType ?? "PERCENTAGE"
-  );
+  const [code, setCode] = useState(coupon?.code ?? "")
+  const [discountType, setDiscountType] = useState<"PERCENTAGE" | "FIXED">(coupon?.discountType ?? "PERCENTAGE")
   const [discountValue, setDiscountValue] = useState(
-    coupon?.discountValue?.toString() ?? ""
-  );
-  const [minOrderAmount, setMinOrderAmount] = useState(
-    coupon?.minOrderAmount != null ? coupon.minOrderAmount.toString() : ""
-  );
-  const [maxUses, setMaxUses] = useState(
-    coupon?.maxUses != null ? coupon.maxUses.toString() : ""
-  );
-  const [expiresAt, setExpiresAt] = useState(toDateInputValue(coupon?.expiresAt ?? null));
+    coupon ? (coupon.discountType === "PERCENTAGE" ? String(coupon.discountValue) : paiseToRupeeInput(coupon.discountValue)) : ""
+  )
+  const [minOrder, setMinOrder] = useState(paiseToRupeeInput(coupon?.minOrderAmount))
+  const [maxUses, setMaxUses] = useState(coupon?.maxUses != null ? String(coupon.maxUses) : "")
+  const [expiresAt, setExpiresAt] = useState(toDateInput(coupon?.expiresAt ?? null))
+  const [isActive, setIsActive] = useState(coupon?.isActive ?? true)
 
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [generalError, setGeneralError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const switchType = (t: "PERCENTAGE" | "FIXED") => {
+    setDiscountType(t)
+    setDiscountValue("")
+    setErrors((e) => ({ ...e, discountValue: "" }))
+  }
 
   function validate(): FieldErrors {
-    const errors: FieldErrors = {};
+    const e: FieldErrors = {}
+    const c = code.trim()
+    if (!c) e.code = "Enter a code."
+    else if (!/^[A-Z0-9-]+$/.test(c)) e.code = "Use capital letters, numbers and hyphens only."
 
-    // Code validation
-    const trimmedCode = code.trim();
-    if (!trimmedCode) {
-      errors.code = "Code is required";
-    } else if (!/^[A-Z0-9-]+$/.test(trimmedCode)) {
-      errors.code = "Code must contain only uppercase letters, numbers, and hyphens";
+    const dv = Number(discountValue)
+    if (discountValue === "" || Number.isNaN(dv) || dv <= 0) e.discountValue = "Enter a value above 0."
+    else if (discountType === "PERCENTAGE" && (!Number.isInteger(dv) || dv > 100)) e.discountValue = "Whole number between 1 and 100."
+
+    if (minOrder !== "") {
+      const m = Number(minOrder)
+      if (Number.isNaN(m) || m < 0) e.minOrderAmount = "Enter 0 or more."
     }
-
-    // Discount value validation
-    const dv = Number(discountValue);
-    if (!discountValue || isNaN(dv) || !Number.isInteger(dv) || dv < 1) {
-      errors.discountValue = "Discount value must be a positive integer";
-    } else if (discountType === "PERCENTAGE" && (dv < 1 || dv > 100)) {
-      errors.discountValue = "Percentage discount must be between 1 and 100";
-    }
-
-    // Min order amount validation (optional)
-    if (minOrderAmount !== "") {
-      const moa = Number(minOrderAmount);
-      if (isNaN(moa) || !Number.isInteger(moa) || moa < 0) {
-        errors.minOrderAmount = "Minimum order amount must be a non-negative integer";
-      }
-    }
-
-    // Max uses validation (optional)
     if (maxUses !== "") {
-      const mu = Number(maxUses);
-      if (isNaN(mu) || !Number.isInteger(mu) || mu < 1) {
-        errors.maxUses = "Max uses must be a positive integer";
-      }
+      const u = Number(maxUses)
+      if (!Number.isInteger(u) || u < 1) e.maxUses = "Whole number, 1 or more."
+      else if (coupon && u < coupon.currentUses) e.maxUses = `Already used ${coupon.currentUses} times.`
     }
-
-    return errors;
+    return e
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setFieldErrors({});
-    setGeneralError(null);
+  async function handleSubmit(ev: FormEvent) {
+    ev.preventDefault()
+    setGeneralError(null)
+    const e = validate()
+    setErrors(e)
+    if (Object.values(e).some(Boolean)) return
 
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    const body: Record<string, unknown> = {
+    const body = {
       code: code.trim(),
       discountType,
-      discountValue: Number(discountValue),
-      minOrderAmount: minOrderAmount !== "" ? Number(minOrderAmount) : null,
+      discountValue: discountType === "PERCENTAGE" ? Number(discountValue) : rupeeInputToPaise(discountValue),
+      minOrderAmount: minOrder !== "" ? rupeeInputToPaise(minOrder) : null,
       maxUses: maxUses !== "" ? Number(maxUses) : null,
-      expiresAt: expiresAt ? new Date(expiresAt + "T23:59:59.999Z").toISOString() : null,
-    };
+      expiresAt: expiresAt ? endOfDayIST(expiresAt) : null,
+      isActive,
+    }
 
-    setSubmitting(true);
+    setSubmitting(true)
     try {
-      const url = isEdit
-        ? `/api/admin/coupons/${coupon.id}`
-        : "/api/admin/coupons";
-      const method = isEdit ? "PATCH" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        if (res.status === 400 && data?.fieldErrors) {
-          setFieldErrors(data.fieldErrors);
-          return;
-        }
-        throw new Error(data?.error || `Failed to ${isEdit ? "update" : "create"} coupon`);
+      const url = isEdit ? `/api/admin/coupons/${coupon!.id}` : "/api/admin/coupons"
+      const res = await fetch(url, { method: isEdit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      if (res.status === 401) {
+        window.location.href = `/admin-login?next=${encodeURIComponent("/admin/coupons")}&expired=1`
+        return
       }
-
-      onSaved();
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (data?.fieldErrors) setErrors(data.fieldErrors)
+        setGeneralError(data?.fieldErrors ? null : data?.error || "Could not save the coupon.")
+        return
+      }
+      onSaved(data.coupon)
     } catch (err) {
-      setGeneralError(err instanceof Error ? err.message : "Something went wrong");
+      setGeneralError(err instanceof AdminApiError ? err.message : "Could not save the coupon. Check your connection.")
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">
-          {isEdit ? "Edit Coupon" : "Create Coupon"}
-        </h2>
+  const field = (label: string, name: string, control: React.ReactNode, hint?: string) => (
+    <div>
+      <label htmlFor={`coupon-${name}`} className="block font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">
+        {label}
+      </label>
+      <div className="mt-1.5">{control}</div>
+      {errors[name] ? (
+        <p className="mt-1 font-jost text-xs text-red-600">{errors[name]}</p>
+      ) : hint ? (
+        <p className="mt-1 font-jost text-xs text-black/45">{hint}</p>
+      ) : null}
+    </div>
+  )
+  const cls = (name: string) => `${input} w-full ${errors[name] ? "!border-red-500 focus:!ring-red-500" : ""}`
 
-        {generalError && (
-          <div className="mb-4 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
-            {generalError}
-          </div>
+  return (
+    <Dialog
+      open
+      onClose={() => !submitting && onClose()}
+      title={isEdit ? `Edit ${coupon!.code}` : "New coupon"}
+      footer={
+        <>
+          <button type="button" onClick={onClose} disabled={submitting} className={btn.secondary}>
+            Cancel
+          </button>
+          <button type="submit" form="coupon-form" disabled={submitting} className={btn.primary}>
+            {submitting ? "Saving…" : isEdit ? "Save changes" : "Create coupon"}
+          </button>
+        </>
+      }
+    >
+      <form id="coupon-form" onSubmit={handleSubmit} noValidate className="space-y-5">
+        {generalError && <Alert onDismiss={() => setGeneralError(null)}>{generalError}</Alert>}
+
+        {field(
+          "Code",
+          "code",
+          <input
+            id="coupon-code"
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s+/g, "-"))}
+            placeholder="FESTIVE-25"
+            autoComplete="off"
+            className={`${cls("code")} font-mono tracking-wider`}
+          />,
+          "What the customer types at checkout."
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Code */}
-          <div>
-            <label htmlFor="coupon-code" className="block text-sm font-medium text-gray-700 mb-1">
-              Code
-            </label>
-            <input
-              id="coupon-code"
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="e.g. SUMMER-2024"
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold ${
-                fieldErrors.code ? "border-red-400" : "border-stone-300"
-              }`}
-            />
-            {fieldErrors.code && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.code}</p>
-            )}
+        {/* Type segmented control */}
+        <div>
+          <span className="block font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Discount</span>
+          <div role="radiogroup" className="mt-1.5 grid grid-cols-2 gap-2">
+            {(["PERCENTAGE", "FIXED"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="radio"
+                aria-checked={discountType === t}
+                onClick={() => switchType(t)}
+                className={`rounded-md border px-3 py-2 font-jost text-sm transition-colors ${
+                  discountType === t ? "border-black bg-black text-white" : "border-black/15 text-black/70 hover:border-black"
+                }`}
+              >
+                {t === "PERCENTAGE" ? "Percentage" : "Fixed amount"}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Discount Type */}
-          <div>
-            <label htmlFor="discount-type" className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Type
-            </label>
-            <select
-              id="discount-type"
-              value={discountType}
-              onChange={(e) => setDiscountType(e.target.value as "PERCENTAGE" | "FIXED")}
-              className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold"
-            >
-              <option value="PERCENTAGE">Percentage</option>
-              <option value="FIXED">Fixed Amount</option>
-            </select>
-          </div>
+        <div className="grid grid-cols-2 gap-4">
+          {field(
+            discountType === "PERCENTAGE" ? "Percent off" : "Amount off",
+            "discountValue",
+            <div className="relative">
+              {discountType === "FIXED" && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-jost text-sm text-black/50">₹</span>}
+              <input
+                id="coupon-discountValue"
+                type="number"
+                inputMode="decimal"
+                min={discountType === "PERCENTAGE" ? 1 : 0.01}
+                max={discountType === "PERCENTAGE" ? 100 : undefined}
+                step={discountType === "PERCENTAGE" ? 1 : 0.01}
+                value={discountValue}
+                onChange={(e) => setDiscountValue(e.target.value)}
+                placeholder={discountType === "PERCENTAGE" ? "15" : "500"}
+                className={`${cls("discountValue")} ${discountType === "FIXED" ? "pl-7" : ""}`}
+              />
+              {discountType === "PERCENTAGE" && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-jost text-sm text-black/50">%</span>}
+            </div>
+          )}
+          {field(
+            "Minimum order",
+            "minOrderAmount",
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-jost text-sm text-black/50">₹</span>
+              <input
+                id="coupon-minOrderAmount"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={1}
+                value={minOrder}
+                onChange={(e) => setMinOrder(e.target.value)}
+                placeholder="None"
+                className={`${cls("minOrderAmount")} pl-7`}
+              />
+            </div>,
+            "Optional"
+          )}
+        </div>
 
-          {/* Discount Value */}
-          <div>
-            <label htmlFor="discount-value" className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Value {discountType === "PERCENTAGE" ? "(1–100%)" : "(in paise)"}
-            </label>
+        <div className="grid grid-cols-2 gap-4">
+          {field(
+            "Usage limit",
+            "maxUses",
             <input
-              id="discount-value"
+              id="coupon-maxUses"
               type="number"
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 50000"}
-              min="1"
-              step="1"
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold ${
-                fieldErrors.discountValue ? "border-red-400" : "border-stone-300"
-              }`}
-            />
-            {fieldErrors.discountValue && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.discountValue}</p>
-            )}
-          </div>
-
-          {/* Min Order Amount */}
-          <div>
-            <label htmlFor="min-order" className="block text-sm font-medium text-gray-700 mb-1">
-              Min Order Amount <span className="text-gray-400">(optional, in paise)</span>
-            </label>
-            <input
-              id="min-order"
-              type="number"
-              value={minOrderAmount}
-              onChange={(e) => setMinOrderAmount(e.target.value)}
-              placeholder="e.g. 100000"
-              min="0"
-              step="1"
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold ${
-                fieldErrors.minOrderAmount ? "border-red-400" : "border-stone-300"
-              }`}
-            />
-            {fieldErrors.minOrderAmount && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.minOrderAmount}</p>
-            )}
-          </div>
-
-          {/* Max Uses */}
-          <div>
-            <label htmlFor="max-uses" className="block text-sm font-medium text-gray-700 mb-1">
-              Max Uses <span className="text-gray-400">(optional)</span>
-            </label>
-            <input
-              id="max-uses"
-              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
               value={maxUses}
               onChange={(e) => setMaxUses(e.target.value)}
-              placeholder="e.g. 100"
-              min="1"
-              step="1"
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold ${
-                fieldErrors.maxUses ? "border-red-400" : "border-stone-300"
-              }`}
-            />
-            {fieldErrors.maxUses && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.maxUses}</p>
-            )}
-          </div>
+              placeholder="Unlimited"
+              className={cls("maxUses")}
+            />,
+            coupon ? `Used ${coupon.currentUses} ${coupon.currentUses === 1 ? "time" : "times"} so far` : "Optional"
+          )}
+          {field(
+            "Expires",
+            "expiresAt",
+            <input id="coupon-expiresAt" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className={cls("expiresAt")} />,
+            "Optional · valid until the end of that day"
+          )}
+        </div>
 
-          {/* Expiration Date */}
-          <div>
-            <label htmlFor="expires-at" className="block text-sm font-medium text-gray-700 mb-1">
-              Expiration Date <span className="text-gray-400">(optional)</span>
-            </label>
+        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-black/10 p-3">
+          <span className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
             <input
-              id="expires-at"
-              type="date"
-              value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold ${
-                fieldErrors.expiresAt ? "border-red-400" : "border-stone-300"
-              }`}
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-black/30 checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
             />
-            {fieldErrors.expiresAt && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.expiresAt}</p>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="px-4 py-2 text-sm rounded-md border border-stone-300 hover:bg-stone-100 transition disabled:opacity-40"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 text-sm rounded-md bg-stone-800 text-white hover:bg-stone-700 transition disabled:opacity-40"
-            >
-              {submitting ? "Saving…" : isEdit ? "Update" : "Create"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+            <Check className="pointer-events-none absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden />
+          </span>
+          <span className="font-jost text-sm">
+            <span className="font-medium">Active</span>
+            <span className="mt-0.5 block text-xs text-black/55">Customers can apply this code. Untick to pause it without deleting.</span>
+          </span>
+        </label>
+      </form>
+    </Dialog>
+  )
 }

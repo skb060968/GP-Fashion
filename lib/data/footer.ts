@@ -10,6 +10,7 @@ export const footer = {
     { label: "About Us", href: "/#about-us" },
     { label: "Contact", href: "/contact" },
     { label: "Track Order", href: "/track-order" },
+    { label: "My Account", href: "/account" },
   ],
 
   servicesHeading: "Services Offered",

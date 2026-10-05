@@ -1,366 +1,366 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import CouponForm from "./CouponForm";
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Pause, Pencil, Play, Plus, Search, Trash2, X } from "lucide-react"
+import CouponForm from "./CouponForm"
+import type { Coupon } from "./types"
+import { AdminPageHeader } from "@/components/admin/AdminShell"
+import { Alert, Dialog, EmptyRow, Skeleton, btn, input } from "@/components/admin/ui"
+import { adminFetch } from "@/lib/admin/fetch"
+import { COUPON_STATE_LABEL, discountSummary, minOrderSummary, type CouponState } from "@/lib/admin/couponStatus"
 
-interface Coupon {
-  id: string;
-  code: string;
-  discountType: "PERCENTAGE" | "FIXED";
-  discountValue: number;
-  minOrderAmount: number | null;
-  maxUses: number | null;
-  currentUses: number;
-  expiresAt: string | null;
-  isActive: boolean;
-  createdAt: string;
+type ListResponse = {
+  coupons: Coupon[]
+  counts: Record<string, number>
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
 }
 
-interface CouponsResponse {
-  coupons: Coupon[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+const CHIPS: { key: "All" | CouponState; label: string }[] = [
+  { key: "All", label: "All" },
+  { key: "ACTIVE", label: COUPON_STATE_LABEL.ACTIVE },
+  { key: "INACTIVE", label: COUPON_STATE_LABEL.INACTIVE },
+  { key: "EXPIRED", label: COUPON_STATE_LABEL.EXPIRED },
+  { key: "EXHAUSTED", label: COUPON_STATE_LABEL.EXHAUSTED },
+]
+
+const STATE_STYLE: Record<CouponState, string> = {
+  ACTIVE: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  INACTIVE: "bg-stone-100 text-stone-700 ring-stone-200",
+  EXPIRED: "bg-amber-50 text-amber-800 ring-amber-200",
+  EXHAUSTED: "bg-stone-100 text-stone-700 ring-stone-200",
 }
 
-const STATUS_OPTIONS = ["All", "Active", "Inactive"] as const;
-
-function formatMoney(paise: number): string {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+function StatePill({ state }: { state: CouponState }) {
+  return (
+    <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 font-jost text-xs font-medium ring-1 ring-inset ${STATE_STYLE[state]}`}>
+      {COUPON_STATE_LABEL[state]}
+    </span>
+  )
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "Asia/Kolkata",
-  });
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" })
+
+function Usage({ c }: { c: Coupon }) {
+  if (c.maxUses == null) return <span className="font-jost text-sm tabular-nums">{c.currentUses}</span>
+  const pct = Math.min(100, Math.round((c.currentUses / c.maxUses) * 100))
+  return (
+    <div className="min-w-[6rem]">
+      <div className="flex justify-between font-jost text-xs tabular-nums">
+        <span>
+          {c.currentUses} / {c.maxUses}
+        </span>
+        <span className="text-black/45">{pct}%</span>
+      </div>
+      <div className="mt-1 h-1 overflow-hidden rounded-full bg-black/10">
+        <div className={`h-full ${pct >= 100 ? "bg-black/40" : "bg-black"}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
 }
 
 export default function CouponListClient() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const sp = useSearchParams()
+  const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1)
+  const state = sp.get("state") ?? "All"
+  const search = sp.get("search") ?? ""
 
-  // Modal state
-  const [showForm, setShowForm] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<Coupon | undefined>(undefined);
+  const [searchInput, setSearchInput] = useState(search)
+  const [data, setData] = useState<ListResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [flash, setFlash] = useState<string | null>(null)
 
-  // Delete confirmation state
-  const [deletingCoupon, setDeletingCoupon] = useState<Coupon | null>(null);
+  const [form, setForm] = useState<{ open: boolean; coupon?: Coupon }>({ open: false })
+  const [deleting, setDeleting] = useState<Coupon | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
 
-  const fetchCoupons = useCallback(async (p: number, s: string, st: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      params.set("page", String(p));
-      if (s) params.set("search", s);
-      if (st !== "All") params.set("status", st);
-
-      const res = await fetch(`/api/admin/coupons?${params.toString()}`);
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Failed to fetch coupons");
+  const setParams = useCallback(
+    (patch: Record<string, string | null>, resetPage = true) => {
+      const next = new URLSearchParams(sp.toString())
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === "" || (k === "state" && v === "All")) next.delete(k)
+        else next.set(k, v)
       }
-      const data: CouponsResponse = await res.json();
-      setCoupons(data.coupons);
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      if (resetPage) next.delete("page")
+      router.replace(`/admin/coupons${next.toString() ? `?${next}` : ""}`, { scroll: false })
+    },
+    [router, sp]
+  )
+
+  useEffect(() => {
+    if (searchInput === search) return
+    const t = setTimeout(() => setParams({ search: searchInput.trim() }), 300)
+    return () => clearTimeout(t)
+  }, [searchInput, search, setParams])
+
+  const query = useMemo(() => {
+    const q = new URLSearchParams({ page: String(page) })
+    if (search) q.set("search", search)
+    if (state !== "All") q.set("state", state)
+    return q.toString()
+  }, [page, search, state])
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      setData(await adminFetch<ListResponse>(`/api/admin/coupons?${query}`))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load coupons")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [query])
 
-  // Fetch when page or status changes immediately
   useEffect(() => {
-    fetchCoupons(page, search, status);
-  }, [page, status]); // eslint-disable-line react-hooks/exhaustive-deps
+    load()
+  }, [load])
 
-  // Debounce search input
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchCoupons(1, search, status);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!flash) return
+    const t = setTimeout(() => setFlash(null), 4000)
+    return () => clearTimeout(t)
+  }, [flash])
 
-  const handleToggle = async (coupon: Coupon) => {
-    const previousActive = coupon.isActive;
-    // Optimistic update
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === coupon.id ? { ...c, isActive: !c.isActive } : c))
-    );
+  const toggle = async (c: Coupon) => {
+    setBusyId(c.id)
     try {
-      const res = await fetch(`/api/admin/coupons/${coupon.id}/toggle`, {
-        method: "PATCH",
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Failed to toggle coupon");
-      }
-      const data = await res.json();
-      setCoupons((prev) =>
-        prev.map((c) => (c.id === coupon.id ? data.coupon : c))
-      );
-    } catch (err) {
-      // Rollback optimistic update
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === coupon.id ? { ...c, isActive: previousActive } : c
-        )
-      );
-      setError(err instanceof Error ? err.message : "Failed to toggle coupon");
+      const { coupon } = await adminFetch<{ coupon: Coupon }>(`/api/admin/coupons/${c.id}/toggle`, { method: "PATCH" })
+      setData((d) => d && { ...d, coupons: d.coupons.map((x) => (x.id === c.id ? coupon : x)) })
+      setFlash(`${c.code} ${coupon.isActive ? "resumed" : "paused"}.`)
+      load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not update the coupon")
+    } finally {
+      setBusyId(null)
     }
-  };
+  }
 
-  const handleDelete = async (coupon: Coupon) => {
+  const remove = async () => {
+    if (!deleting) return
+    setBusyId(deleting.id)
     try {
-      const res = await fetch(`/api/admin/coupons/${coupon.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Failed to delete coupon");
-      }
-      setCoupons((prev) => prev.filter((c) => c.id !== coupon.id));
-      setDeletingCoupon(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete coupon");
-      setDeletingCoupon(null);
+      await adminFetch(`/api/admin/coupons/${deleting.id}`, { method: "DELETE" })
+      setFlash(`${deleting.code} deleted.`)
+      setDeleting(null)
+      load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete the coupon")
+      setDeleting(null)
+    } finally {
+      setBusyId(null)
     }
-  };
+  }
 
-  const openCreate = () => {
-    setEditingCoupon(undefined);
-    setShowForm(true);
-  };
+  const hasFilters = Boolean(search || state !== "All")
+  const counts = data?.counts ?? {}
 
-  const openEdit = (coupon: Coupon) => {
-    setEditingCoupon(coupon);
-    setShowForm(true);
-  };
-
-  const handleFormClose = () => {
-    setShowForm(false);
-    setEditingCoupon(undefined);
-  };
-
-  const handleFormSaved = () => {
-    setShowForm(false);
-    setEditingCoupon(undefined);
-    fetchCoupons(page, search, status);
-  };
+  const actions = (c: Coupon) => (
+    <div className="flex items-center gap-1">
+      <button type="button" onClick={() => setForm({ open: true, coupon: c })} aria-label={`Edit ${c.code}`} className={`${btn.ghost} !p-2`}>
+        <Pencil className="h-4 w-4" strokeWidth={1.75} />
+      </button>
+      <button
+        type="button"
+        onClick={() => toggle(c)}
+        disabled={busyId === c.id}
+        aria-label={c.isActive ? `Pause ${c.code}` : `Resume ${c.code}`}
+        className={`${btn.ghost} !p-2`}
+      >
+        {c.isActive ? <Pause className="h-4 w-4" strokeWidth={1.75} /> : <Play className="h-4 w-4" strokeWidth={1.75} />}
+      </button>
+      <button type="button" onClick={() => setDeleting(c)} aria-label={`Delete ${c.code}`} className={`${btn.ghost} !p-2 hover:!text-red-700`}>
+        <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+      </button>
+    </div>
+  )
 
   return (
-    <section className="pt-28 px-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-serif font-bold">Coupons</h1>
-      </div>
-
-      {/* Error banner */}
-      {error && (
-        <div className="mb-4 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm flex items-center justify-between">
-          <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="ml-4 text-red-500 hover:text-red-700"
-            aria-label="Dismiss error"
-          >
-            ✕
+    <>
+      <AdminPageHeader
+        title="Coupons"
+        description={data ? `${data.totalCount} ${data.totalCount === 1 ? "coupon" : "coupons"}${hasFilters ? " match" : ""}` : undefined}
+        actions={
+          <button type="button" onClick={() => setForm({ open: true })} className={btn.primary}>
+            <Plus className="h-4 w-4" strokeWidth={2} aria-hidden /> New coupon
           </button>
+        }
+      />
+
+      <div className="-mx-4 mb-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2">
+          {CHIPS.map((c) => {
+            const active = state === c.key
+            const n = counts[c.key]
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setParams({ state: c.key })}
+                aria-pressed={active}
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 font-jost text-xs font-medium transition-colors focus-visible:ring-black ${
+                  active ? "border-black bg-black text-white" : "border-black/15 bg-white text-black/70 hover:border-black hover:text-black"
+                }`}
+              >
+                {c.label}
+                {n !== undefined && <span className={`rounded-full px-1.5 text-[10px] tabular-nums ${active ? "bg-white/20" : "bg-black/5"}`}>{n}</span>}
+              </button>
+            )
+          })}
         </div>
-      )}
-
-      {/* Controls: search, status filter, create button */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search coupon code…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-stone-300 rounded-md px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-fashion-gold"
-        />
-
-        <select
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold"
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === "All" ? "All Statuses" : s}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={openCreate}
-          className="ml-auto px-4 py-2 text-sm rounded-md bg-stone-800 text-white hover:bg-stone-700 transition"
-        >
-          Create Coupon
-        </button>
       </div>
 
-      {/* Coupons table */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-stone-100 text-sm">
-            <tr>
-              <th className="p-4">Code</th>
-              <th className="p-4">Type</th>
-              <th className="p-4">Value</th>
-              <th className="p-4">Min Order</th>
-              <th className="p-4">Max Uses</th>
-              <th className="p-4">Used</th>
-              <th className="p-4">Expires</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={9} className="p-6 text-center text-gray-500">
-                  Loading…
-                </td>
-              </tr>
-            ) : (
-              coupons.map((coupon) => (
-                <tr key={coupon.id} className="border-t hover:bg-stone-50">
-                  <td className="p-4 font-mono text-sm">{coupon.code}</td>
-                  <td className="p-4 text-sm">{coupon.discountType}</td>
-                  <td className="p-4 text-sm">
-                    {coupon.discountType === "PERCENTAGE"
-                      ? `${coupon.discountValue}%`
-                      : formatMoney(coupon.discountValue)}
-                  </td>
-                  <td className="p-4 text-sm">
-                    {coupon.minOrderAmount != null
-                      ? formatMoney(coupon.minOrderAmount)
-                      : "—"}
-                  </td>
-                  <td className="p-4 text-sm">
-                    {coupon.maxUses != null ? coupon.maxUses : "—"}
-                  </td>
-                  <td className="p-4 text-sm">{coupon.currentUses}</td>
-                  <td className="p-4 text-sm text-gray-600">
-                    {coupon.expiresAt ? formatDate(coupon.expiresAt) : "—"}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-semibold ${
-                        coupon.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {coupon.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(coupon)}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggle(coupon)}
-                        className="text-sm text-amber-600 hover:underline"
-                      >
-                        {coupon.isActive ? "Deactivate" : "Activate"}
-                      </button>
-                      <button
-                        onClick={() => setDeletingCoupon(coupon)}
-                        className="text-sm text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {!loading && coupons.length === 0 && (
-          <p className="p-6 text-center text-gray-500">No coupons found</p>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <label className="relative block min-w-[16rem] flex-1 sm:max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40" strokeWidth={1.75} aria-hidden />
+          <input type="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search code" aria-label="Search coupons" className={`${input} w-full pl-9`} />
+        </label>
+        {hasFilters && (
+          <button type="button" onClick={() => { setSearchInput(""); router.replace("/admin/coupons", { scroll: false }) }} className={`${btn.ghost} !px-3`}>
+            <X className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Clear
+          </button>
         )}
       </div>
 
-      {/* Pagination controls */}
-      {totalPages > 0 && (
-        <div className="flex items-center justify-center gap-4 mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className="px-4 py-2 text-sm rounded-md border border-stone-300 hover:bg-stone-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-700">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="px-4 py-2 text-sm rounded-md border border-stone-300 hover:bg-stone-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {error && <div className="mb-4"><Alert onDismiss={() => setError(null)}>{error}</Alert></div>}
+      {flash && <div className="mb-4"><Alert tone="success" onDismiss={() => setFlash(null)}>{flash}</Alert></div>}
 
-      {/* Delete confirmation dialog */}
-      {deletingCoupon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <h2 className="text-lg font-semibold mb-2">Delete Coupon</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Are you sure you want to delete coupon{" "}
-              <span className="font-mono font-semibold">{deletingCoupon.code}</span>?
-              This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeletingCoupon(null)}
-                className="px-4 py-2 text-sm rounded-md border border-stone-300 hover:bg-stone-100 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deletingCoupon)}
-                className="px-4 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
-            </div>
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-xl border border-black/10 bg-white md:block">
+        <table className="w-full text-left font-jost text-sm">
+          <thead className="bg-stone-50 text-[11px] uppercase tracking-[0.15em] text-black/55">
+            <tr>
+              <th className="px-4 py-3 font-semibold">Code</th>
+              <th className="px-4 py-3 font-semibold">Discount</th>
+              <th className="px-4 py-3 font-semibold">Usage</th>
+              <th className="px-4 py-3 font-semibold">Expires</th>
+              <th className="px-4 py-3 font-semibold">State</th>
+              <th className="px-4 py-3 text-right font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-black/5">
+            {loading && !data
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>{Array.from({ length: 6 }).map((__, j) => <td key={j} className="px-4 py-4"><Skeleton className="h-4 w-full" /></td>)}</tr>
+                ))
+              : data?.coupons.map((c) => (
+                  <tr key={c.id} className={`transition-colors hover:bg-stone-50 ${loading ? "opacity-60" : ""}`}>
+                    <td className="px-4 py-3">
+                      <span className="font-mono text-sm font-semibold tracking-wider">{c.code}</span>
+                      <p className="text-xs text-black/45">Created {fmtDate(c.createdAt)}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{discountSummary(c)}</p>
+                      {c.minOrderAmount ? <p className="text-xs text-black/55">{minOrderSummary(c)}</p> : null}
+                    </td>
+                    <td className="px-4 py-3"><Usage c={c} /></td>
+                    <td className="px-4 py-3 text-black/70">{c.expiresAt ? fmtDate(c.expiresAt) : "—"}</td>
+                    <td className="px-4 py-3"><StatePill state={c.state} /></td>
+                    <td className="px-4 py-3"><div className="flex justify-end">{actions(c)}</div></td>
+                  </tr>
+                ))}
+          </tbody>
+        </table>
+        {!loading && data && data.coupons.length === 0 && (
+          <EmptyRow
+            title={hasFilters ? "No coupons match" : "No coupons yet"}
+            hint={hasFilters ? "Try another search or clear the filters." : "Create a code customers can apply at checkout."}
+            action={
+              hasFilters ? (
+                <button type="button" onClick={() => { setSearchInput(""); router.replace("/admin/coupons", { scroll: false }) }} className={btn.secondary}>Clear filters</button>
+              ) : (
+                <button type="button" onClick={() => setForm({ open: true })} className={btn.primary}><Plus className="h-4 w-4" aria-hidden /> New coupon</button>
+              )
+            }
+          />
+        )}
+      </div>
+
+      {/* Mobile cards */}
+      <div className="space-y-3 md:hidden">
+        {loading && !data
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-black/10 bg-white p-4"><Skeleton className="h-4 w-1/3" /><Skeleton className="mt-3 h-4 w-2/3" /></div>
+            ))
+          : data?.coupons.map((c) => (
+              <div key={c.id} className="rounded-xl border border-black/10 bg-white p-4 font-jost">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-sm font-semibold tracking-wider">{c.code}</p>
+                    <p className="mt-0.5 text-sm">{discountSummary(c)} {c.minOrderAmount ? <span className="text-black/55">{minOrderSummary(c)}</span> : null}</p>
+                  </div>
+                  <StatePill state={c.state} />
+                </div>
+                <div className="mt-3 flex items-end justify-between gap-3">
+                  <div className="text-xs text-black/55">
+                    <Usage c={c} />
+                    <p className="mt-1">{c.expiresAt ? `Expires ${fmtDate(c.expiresAt)}` : "No expiry"}</p>
+                  </div>
+                  {actions(c)}
+                </div>
+              </div>
+            ))}
+        {!loading && data && data.coupons.length === 0 && (
+          <div className="rounded-xl border border-black/10 bg-white"><EmptyRow title={hasFilters ? "No coupons match" : "No coupons yet"} /></div>
+        )}
+      </div>
+
+      {data && data.totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between font-jost text-sm">
+          <p className="text-black/60">Showing {(data.page - 1) * data.pageSize + 1}–{Math.min(data.page * data.pageSize, data.totalCount)} of {data.totalCount}</p>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setParams({ page: String(page - 1) }, false)} disabled={page <= 1} className={btn.secondary}>Previous</button>
+            <span className="px-2 tabular-nums text-black/60">{data.page} / {data.totalPages}</span>
+            <button type="button" onClick={() => setParams({ page: String(page + 1) }, false)} disabled={page >= data.totalPages} className={btn.secondary}>Next</button>
           </div>
         </div>
       )}
 
-      {/* Coupon form modal */}
-      {showForm && (
+      {form.open && (
         <CouponForm
-          coupon={editingCoupon}
-          onClose={handleFormClose}
-          onSaved={handleFormSaved}
+          coupon={form.coupon}
+          onClose={() => setForm({ open: false })}
+          onSaved={(saved) => {
+            setForm({ open: false })
+            setFlash(form.coupon ? `${saved.code} updated.` : `${saved.code} created.`)
+            load()
+          }}
         />
       )}
-    </section>
-  );
+
+      <Dialog
+        open={Boolean(deleting)}
+        onClose={() => busyId === null && setDeleting(null)}
+        title="Delete coupon"
+        size="sm"
+        footer={
+          <>
+            <button type="button" onClick={() => setDeleting(null)} disabled={busyId !== null} className={btn.secondary}>Cancel</button>
+            <button type="button" onClick={remove} disabled={busyId !== null} className={btn.danger}>{busyId ? "Deleting…" : "Delete"}</button>
+          </>
+        }
+      >
+        {deleting && (
+          <div className="space-y-3 font-jost text-sm">
+            <p>
+              Delete <span className="font-mono font-semibold">{deleting.code}</span>? This cannot be undone.
+            </p>
+            {deleting.currentUses > 0 ? (
+              <p className="rounded-md bg-amber-50 p-3 text-amber-900">
+                This code has been used on {deleting.currentUses} {deleting.currentUses === 1 ? "order" : "orders"}. Those orders keep their discount, but you will lose the ability to see this coupon&apos;s details. Pausing it instead keeps the record.
+              </p>
+            ) : (
+              <p className="text-black/60">It has never been used.</p>
+            )}
+          </div>
+        )}
+      </Dialog>
+    </>
+  )
 }

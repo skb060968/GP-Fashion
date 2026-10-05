@@ -1,42 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateSession } from "@/lib/security/session";
+import { requireAdmin } from "@/lib/security/adminAuth";
 import { ordersToCsv } from "@/lib/admin/csvExport";
+import { buildOrderWhere, parseOrderFilters } from "@/lib/admin/orderQuery";
 
-const VALID_STATUSES = [
-  "UNDER_VERIFICATION", "VERIFIED", "REJECTED", "PROCESSING",
-  "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED",
-] as const;
-
-async function verifyAdmin(req: NextRequest) {
-  const token = req.cookies.get("admin_session")?.value;
-  if (!token) return false;
-  return validateSession(token);
-}
-
+/** GET /api/admin/orders/export — same filters as the list, no pagination. */
 export async function GET(req: NextRequest) {
-  if (!(await verifyAdmin(req))) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
 
   try {
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search") || "";
-    const status = searchParams.get("status") || "All";
-
-    const where: Record<string, unknown> = {};
-
-    if (search) {
-      where.orderCode = { contains: search };
-    }
-
-    if (
-      status &&
-      status !== "All" &&
-      (VALID_STATUSES as readonly string[]).includes(status)
-    ) {
-      where.status = status;
-    }
+    const where = buildOrderWhere(parseOrderFilters(searchParams));
 
     const orders = await prisma.order.findMany({
       where,
@@ -45,8 +20,7 @@ export async function GET(req: NextRequest) {
     });
 
     const csv = ordersToCsv(orders);
-
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }); // yyyy-mm-dd
 
     return new Response(csv, {
       status: 200,
@@ -57,9 +31,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("ADMIN CSV EXPORT ERROR:", error);
-    return NextResponse.json(
-      { error: "Failed to export orders" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to export orders" }, { status: 500 });
   }
 }

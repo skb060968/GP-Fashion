@@ -1,5 +1,10 @@
-import CouponListClient from "./CouponListClient";
+import { Suspense } from "react"
+import CouponListClient from "./CouponListClient"
 
 export default function CouponsPage() {
-  return <CouponListClient />;
+  return (
+    <Suspense fallback={null}>
+      <CouponListClient />
+    </Suspense>
+  )
 }

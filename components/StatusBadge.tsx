@@ -1,29 +1,40 @@
 // components/StatusBadge.tsx
-import React from "react";
+// Order status pill. One source of truth for colours and wording.
 
-type StatusBadgeProps = {
-  status: string;
-};
+import { adminStatusLabel } from "@/lib/orders/labels"
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
-  const colors: Record<string, string> = {
-    UNDER_VERIFICATION: "bg-yellow-100 text-yellow-800",
-    VERIFIED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    PROCESSING: "bg-blue-100 text-blue-800",
-    SHIPPED: "bg-indigo-100 text-indigo-800",
-    DELIVERED: "bg-green-200 text-green-900",
-    CANCELLED: "bg-gray-200 text-gray-800",
-    REFUNDED: "bg-purple-100 text-purple-800",
-  };
+const STYLES: Record<string, string> = {
+  UNDER_VERIFICATION: "bg-amber-50 text-amber-800 ring-amber-200",
+  VERIFIED: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  REJECTED: "bg-red-50 text-red-800 ring-red-200",
+  PROCESSING: "bg-sky-50 text-sky-800 ring-sky-200",
+  SHIPPED: "bg-indigo-50 text-indigo-800 ring-indigo-200",
+  DELIVERED: "bg-black text-white ring-black",
+  CANCELLED: "bg-stone-100 text-stone-700 ring-stone-200",
+  REFUNDED: "bg-stone-100 text-stone-700 ring-stone-200",
+}
 
+const DOTS: Record<string, string> = {
+  UNDER_VERIFICATION: "bg-amber-500",
+  VERIFIED: "bg-emerald-500",
+  REJECTED: "bg-red-500",
+  PROCESSING: "bg-sky-500",
+  SHIPPED: "bg-indigo-500",
+  DELIVERED: "bg-white",
+  CANCELLED: "bg-stone-400",
+  REFUNDED: "bg-stone-400",
+}
+
+export default function StatusBadge({ status, size = "sm" }: { status: string; size?: "sm" | "md" }) {
+  const style = STYLES[status] ?? "bg-stone-100 text-stone-700 ring-stone-200"
+  const dot = DOTS[status] ?? "bg-stone-400"
+  const dims = size === "md" ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
   return (
     <span
-      className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-        colors[status] || "bg-gray-100 text-gray-800"
-      }`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-jost font-medium ring-1 ring-inset ${dims} ${style}`}
     >
-      {status}
+      <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+      {adminStatusLabel(status)}
     </span>
-  );
+  )
 }

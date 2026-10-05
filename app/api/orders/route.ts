@@ -1,8 +1,9 @@
-import { NextResponse, after } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OrderStatus, PaymentMethod } from "@prisma/client";
 import { sendOrderPlacedEmails } from "@/lib/emails/sendOrderPlaced";
 import { createOrderSchema, formatZodErrors } from "@/lib/validation/schemas";
+import { getUserFromRequest } from "@/lib/security/userSession";
 import { createRateLimiter } from "@/lib/security/rateLimiter";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 
@@ -84,12 +85,16 @@ export async function POST(req: Request) {
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
 
+    // Link to the customer's account when they are signed in (guest checkout stays possible).
+    const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
+
     // 1️⃣ Create order with relations + initial history, returning the
     //    relations in the same call so no second round trip is needed.
     const order = await prisma.order.create({
       include: { address: true, items: true },
       data: {
         orderCode, // 👈 new short code
+        userId: sessionUser?.id ?? null,
         amount: finalAmount,
         discount,
         paymentMethod: paymentMethod as PaymentMethod, // Zod validates the enum value

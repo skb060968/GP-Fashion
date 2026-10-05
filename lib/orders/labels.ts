@@ -12,6 +12,44 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
   REFUNDED: "Refunded",
 }
 
+/** Shorter labels for the admin, where "payment" context is implied. */
+export const ADMIN_STATUS_LABEL: Record<string, string> = {
+  UNDER_VERIFICATION: "Awaiting verification",
+  VERIFIED: "Verified",
+  REJECTED: "Rejected",
+  PROCESSING: "Processing",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+  REFUNDED: "Refunded",
+}
+
+/** Subject line of the customer email sent when an order reaches a status. */
+export function statusEmailSubject(status: string, orderCode: string): string {
+  switch (status) {
+    case "VERIFIED":
+      return `Payment confirmed for order ${orderCode}`
+    case "PROCESSING":
+      return `Order ${orderCode} is being prepared`
+    case "SHIPPED":
+      return `Order ${orderCode} has shipped`
+    case "DELIVERED":
+      return `Order ${orderCode} delivered`
+    case "REJECTED":
+      return `Action needed on order ${orderCode}`
+    case "CANCELLED":
+      return `Order ${orderCode} cancelled`
+    case "REFUNDED":
+      return `Refund issued for order ${orderCode}`
+    default:
+      return `Update on order ${orderCode}`
+  }
+}
+
+export function adminStatusLabel(status: string) {
+  return ADMIN_STATUS_LABEL[status] ?? status.replace(/_/g, " ").toLowerCase()
+}
+
 export const PAYMENT_METHOD_LABEL: Record<string, string> = {
   UPI_MANUAL: "UPI",
   RAZORPAY: "Online payment",

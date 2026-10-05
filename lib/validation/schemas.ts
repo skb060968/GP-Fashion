@@ -21,6 +21,12 @@ export const addressSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/, "Invalid pincode. Must be a 6-digit number"),
 });
 
+/** Saved address in a customer's address book. */
+export const userAddressSchema = addressSchema.omit({ email: true }).extend({
+  label: z.string().trim().max(40).optional().or(z.literal("")),
+  isDefault: z.boolean().optional(),
+});
+
 export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
@@ -31,7 +37,20 @@ export const createOrderSchema = z.object({
 
 export const updateStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),
+  note: z.string().max(500).optional(),
+  /** Defaults to true; the admin can suppress the customer email. */
+  notifyCustomer: z.boolean().optional(),
 });
+
+export const updateNotesSchema = z.object({
+  notes: z.string().max(5000),
+});
+
+/** PATCH /api/admin/orders/[orderId] accepts either a status change or a notes update. */
+export const adminOrderPatchSchema = z.union([
+  updateStatusSchema.extend({ action: z.literal("status") }),
+  updateNotesSchema.extend({ action: z.literal("notes") }),
+]);
 
 export const couponSchema = z.object({
   code: z.string().min(1, "Code is required").regex(
@@ -42,7 +61,8 @@ export const couponSchema = z.object({
   discountValue: z.number().int().positive("Discount value must be a positive integer"),
   minOrderAmount: z.number().int().min(0).nullable().optional(),
   maxUses: z.number().int().positive().nullable().optional(),
-  expiresAt: z.string().datetime().nullable().optional(),
+  expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
+  isActive: z.boolean().optional(),
 }).refine(
   (data) => data.discountType !== "PERCENTAGE" || (data.discountValue >= 1 && data.discountValue <= 100),
   { message: "Percentage discount must be between 1 and 100", path: ["discountValue"] }

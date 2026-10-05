@@ -8,20 +8,31 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       findUnique: vi.fn(),
       delete: vi.fn(),
+      deleteMany: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
 import { prisma } from "@/lib/prisma";
-import { createSession, validateSession, deleteSession } from "../session";
+import { createSession, validateSession, deleteSession, SESSION_DURATION_MS } from "../session";
 
 const mockedPrisma = prisma as unknown as {
   adminSession: {
     create: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
+    deleteMany: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
   };
 };
+
+/** The session helpers fire best-effort housekeeping calls; give them resolved mocks. */
+function resetMocks() {
+  vi.clearAllMocks();
+  mockedPrisma.adminSession.deleteMany.mockResolvedValue({ count: 0 });
+  mockedPrisma.adminSession.update.mockResolvedValue({});
+}
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -29,7 +40,7 @@ function hashToken(token: string): string {
 
 describe("createSession", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetMocks();
   });
 
   it("generates a 64-character hex token (32 bytes)", async () => {
@@ -55,15 +66,15 @@ describe("createSession", () => {
     expect(callArg.data.tokenHash).toMatch(/^[0-9a-f]{64}$/);
 
     const expiresAt = callArg.data.expiresAt.getTime();
-    // expiresAt should be ~1 hour from now
-    expect(expiresAt).toBeGreaterThanOrEqual(before + 3600000);
-    expect(expiresAt).toBeLessThanOrEqual(after + 3600000);
+    // expiresAt should be SESSION_DURATION_MS from now
+    expect(expiresAt).toBeGreaterThanOrEqual(before + SESSION_DURATION_MS);
+    expect(expiresAt).toBeLessThanOrEqual(after + SESSION_DURATION_MS);
   });
 });
 
 describe("validateSession", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetMocks();
   });
 
   it("returns true for a valid, non-expired session", async () => {
@@ -83,7 +94,12 @@ describe("validateSession", () => {
 
   it("returns false when no session is found", async () => {
     mockedPrisma.adminSession.findUnique.mockResolvedValue(null);
+    expect(await validateSession(crypto.randomBytes(32).toString("hex"))).toBe(false);
+  });
+
+  it("returns false for malformed tokens without touching the database", async () => {
     expect(await validateSession("nonexistent")).toBe(false);
+    expect(mockedPrisma.adminSession.findUnique).not.toHaveBeenCalled();
   });
 
   it("returns false and deletes an expired session", async () => {
@@ -105,7 +121,7 @@ describe("validateSession", () => {
 
 describe("deleteSession", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetMocks();
   });
 
   it("deletes the session by tokenHash", async () => {
@@ -127,14 +143,14 @@ import * as fc from "fast-check";
 // Feature: website-improvements, Property 6: Session tokens are unique and validate via round-trip
 describe("Property 6: Session tokens are unique and validate via round-trip", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetMocks();
   });
 
   // **Validates: Requirements 2.5, 2.6**
   it("each created session token is at least 64 hex characters and unique", async () => {
     await fc.assert(
       fc.asyncProperty(fc.integer({ min: 2, max: 5 }), async (count) => {
-        vi.clearAllMocks();
+        resetMocks();
         mockedPrisma.adminSession.create.mockResolvedValue({});
 
         const tokens: string[] = [];
@@ -161,7 +177,7 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
   it("validateSession returns true for a created token and false for a different token", async () => {
     await fc.assert(
       fc.asyncProperty(fc.constant(null), async () => {
-        vi.clearAllMocks();
+        resetMocks();
         mockedPrisma.adminSession.create.mockResolvedValue({});
 
         const { token, hashedToken } = await createSession();

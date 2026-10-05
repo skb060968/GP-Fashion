@@ -10,6 +10,7 @@ import CheckoutSteps from "@/components/checkout/CheckoutSteps"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
+import { useUser } from "@/context/UserContext"
 
 type Order = {
   orderCode: string
@@ -34,6 +35,7 @@ type Order = {
 
 function SuccessContent() {
   const orderId = useSearchParams().get("orderId")
+  const { user } = useUser()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -181,8 +183,8 @@ function SuccessContent() {
                 <a href={`/api/invoice/${order.orderCode}.pdf`} download className="btn-outline-dark w-full sm:w-auto">
                   Download invoice
                 </a>
-                <Link href="/track-order" className="btn-outline-dark w-full sm:w-auto">
-                  Track order
+                <Link href={user ? "/account" : "/track-order"} className="btn-outline-dark w-full sm:w-auto">
+                  {user ? "My orders" : "Track order"}
                 </Link>
                 <Link href="/" className="btn-solid-dark w-full sm:w-auto">
                   Continue browsing

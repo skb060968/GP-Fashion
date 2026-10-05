@@ -4,6 +4,7 @@ import ClientGuards from "@/components/ClientGuards"
 import LayoutShell from "@/components/LayoutShell"
 import { CartProvider } from "@/context/CartContext"
 import { WishlistProvider } from "@/context/WishlistContext"
+import { UserProvider } from "@/context/UserContext"
 
 // Fonts are self-hosted (app/fonts) so the build never depends on fetching
 // from Google Fonts. Both are variable fonts covering the latin subset.
@@ -35,12 +36,14 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${cinzel.variable} ${jost.variable}`}>
       <body className="flex min-h-screen flex-col">
-        <CartProvider>
-          <WishlistProvider>
-            <ClientGuards />
-            <LayoutShell>{children}</LayoutShell>
-          </WishlistProvider>
-        </CartProvider>
+        <UserProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <ClientGuards />
+              <LayoutShell>{children}</LayoutShell>
+            </WishlistProvider>
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   )

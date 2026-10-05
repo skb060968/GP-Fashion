@@ -43,7 +43,8 @@ const nonEmptyStringArb = (minLen: number, maxLen: number) =>
 const validAddressArb = fc.record({
   fullName: nonEmptyStringArb(2, 100),
   phone: validPhoneArb,
-  email: fc.constantFrom("", "test@example.com", "user@domain.co"),
+  // Email is required: order confirmations are sent to it.
+  email: fc.constantFrom("test@example.com", "user@domain.co", "hello@shop.in"),
   addressLine1: nonEmptyStringArb(5, 200),
   addressLine2: fc.constantFrom("", "Apt 4B", "Floor 2"),
   city: nonEmptyStringArb(1, 50),

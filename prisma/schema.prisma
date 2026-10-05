@@ -16,13 +16,83 @@ model Order {
   paymentMethod PaymentMethod
   status        OrderStatus
   createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
+  notes         String?                             // internal admin notes, never shown to customers
 
   razorpayPaymentId  String?
   razorpayOrderId    String?
 
+  // Set when a signed-in customer places the order. Guest orders stay null and
+  // are matched to an account by email at read time.
+  user          User?           @relation(fields: [userId], references: [id])
+  userId        String?
+
   address       Address?
   items         OrderItem[]
   history       StatusHistory[]
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Customer accounts (passwordless: email + one-time code)
+// ---------------------------------------------------------------------------
+
+model User {
+  id          String        @id @default(cuid())
+  email       String        @unique                  // stored lower-cased
+  name        String?
+  phone       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
+  lastLoginAt DateTime?
+
+  orders      Order[]
+  addresses   UserAddress[]
+  sessions    UserSession[]
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique                           // sha256 of the cookie token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@index([userId])
+}
+
+model LoginCode {
+  id         String    @id @default(cuid())
+  email      String                                    // lower-cased
+  codeHash   String                                    // sha256(email:code)
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
+model UserAddress {
+  id           String   @id @default(cuid())
+  label        String?                                 // "Home", "Office"
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  pincode      String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  @@index([userId])
 }
 
 model Address {
@@ -57,6 +127,7 @@ model StatusHistory {
   id        String      @id @default(cuid())
   status    OrderStatus
   changedAt DateTime    @default(now())
+  note      String?                           // optional reason recorded with the change
 
   order     Order       @relation(fields: [orderId], references: [id])
   orderId   String
