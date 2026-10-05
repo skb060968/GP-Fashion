@@ -13,7 +13,10 @@ export default function Footer() {
       <div className="container-max py-16 sm:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4 md:gap-10">
           {/* Brand: logo + wordmark stacked, as in the navbar */}
-          <div className="flex flex-col items-center text-center md:col-span-2 md:items-start md:text-left">
+          <div className="flex flex-col items-center md:col-span-2 md:items-start">
+           {/* Shrink-to-fit column so the icon row centres under the wordmark
+               regardless of whether the block is left- or centre-aligned. */}
+           <div className="inline-flex flex-col items-center">
             <Link
               href="/"
               aria-label="Piyush Bholla, home"
@@ -56,6 +59,7 @@ export default function Footer() {
                 <Phone size={22} strokeWidth={1.5} />
               </a>
             </div>
+           </div>
           </div>
 
           {/* Quick Links */}
