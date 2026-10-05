@@ -9,6 +9,7 @@ export const footer = {
     { label: "Womenswear", href: "/#womenswear" },
     { label: "About Us", href: "/#about-us" },
     { label: "Contact", href: "/contact" },
+    { label: "Track Order", href: "/track-order" },
   ],
 
   servicesHeading: "Services Offered",

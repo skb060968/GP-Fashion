@@ -73,7 +73,7 @@ function WishlistCard({ item }: { item: WishlistItem }) {
       <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
         <Link href={`/shop/${item.slug}`} className="absolute inset-0">
           <Image
-            src={item.coverThumbnail}
+            src={item.coverImage ?? item.coverThumbnail}
             alt={item.name}
             fill
             sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"

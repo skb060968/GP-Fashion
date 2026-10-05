@@ -6,7 +6,11 @@ export type WishlistItem = {
   slug: string
   name: string
   price: number
+  /** Small (75×100) preview, used when adding to the bag. */
   coverThumbnail: string
+  /** Full-size cover (750×1000), used for the wishlist card. Older saved
+      items may lack it; fall back to coverThumbnail. */
+  coverImage?: string
   /** Available sizes, so the wishlist page can add straight to the bag. */
   sizes: string[]
 }

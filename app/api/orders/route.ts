@@ -88,8 +88,10 @@ export async function POST(req: Request) {
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
 
-    // 1️⃣ Create order with relations + initial history
-    const createdOrder = await prisma.order.create({
+    // 1️⃣ Create order with relations + initial history, returning the
+    //    relations in the same call so no second round trip is needed.
+    const order = await prisma.order.create({
+      include: { address: true, items: true },
       data: {
         orderCode, // 👈 new short code
         amount: finalAmount,
@@ -131,36 +133,22 @@ export async function POST(req: Request) {
       },
     });
 
-    // 🎟️ Increment coupon usage after successful order creation
-    if (validCoupon && couponCode) {
-      await applyCoupon(couponCode);
-    }
-
-    // 2️⃣ Re-fetch order WITH relations
-    const order = await prisma.order.findUnique({
-      where: { id: createdOrder.id },
-      include: {
-        address: true,
-        items: true,
-        history: true,
-      },
-    });
-
-    if (!order) {
-      return NextResponse.json(
-        { error: "Order not found after creation" },
-        { status: 500 }
-      );
-    }
-
-    // ✅ Return immediately to frontend
+    // ✅ Return immediately to frontend. The full order is included so the
+    //    confirmation page can render without fetching it again.
     const response = NextResponse.json(
-      { success: true, orderId: order.orderCode }, // 👈 return short code
+      { success: true, orderId: order.orderCode, order },
       { status: 201 }
     );
 
-    // 🔔 Send emails after response (kept alive by Next.js `after`)
+    // 🔔 Coupon bookkeeping + emails after the response (kept alive by `after`)
     after(async () => {
+      if (validCoupon && couponCode) {
+        try {
+          await applyCoupon(couponCode);
+        } catch (error) {
+          console.error("COUPON_APPLY_FAILED:", error);
+        }
+      }
       try {
         // Admin notification
         if (process.env.ADMIN_EMAIL) {

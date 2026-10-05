@@ -121,6 +121,7 @@ export default function DressDetailClient({ dress }: { dress: Dress }) {
                   name: dress.name,
                   price: dress.price,
                   coverThumbnail: dress.coverThumbnail,
+                  coverImage: dress.coverImage,
                   sizes: dress.sizes,
                 }}
               />

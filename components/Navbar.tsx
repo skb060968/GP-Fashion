@@ -14,6 +14,7 @@ const menuLinks = [
   { label: "About Us", href: "/#about-us" },
   { label: "Services", href: "/services" },
   { label: "Contact", href: "/contact" },
+  { label: "Track Order", href: "/track-order" },
 ]
 
 // Login is design-only for now; wired up in a later pass.

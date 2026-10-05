@@ -31,6 +31,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             name: product.name,
             price: product.price,
             coverThumbnail: product.coverThumbnail,
+            coverImage: product.coverImage,
             sizes: product.sizes,
           }}
           className="absolute right-2 top-2"

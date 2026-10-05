@@ -52,6 +52,9 @@ export default function PaymentPage() {
       /* ignore */
     }
     setHydrated(true)
+    // Wake the database and the API function while the customer is still
+    // reading the page, so "Place order" doesn't pay for a cold start.
+    fetch("/api/warmup", { method: "POST" }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -97,9 +100,6 @@ export default function PaymentPage() {
     setOrderError("")
     setPlacing(true)
     try {
-      // Wake the database (Neon cold start) before the real request.
-      await fetch("/api/warmup", { method: "POST" }).catch(() => {})
-
       let res: Response | null = null
       for (let attempt = 0; attempt < 3; attempt++) {
         res = await fetch("/api/orders", {
@@ -137,6 +137,15 @@ export default function PaymentPage() {
       }
 
       const data = await res.json()
+      // Hand the order to the confirmation page so it renders instantly
+      // instead of fetching it again.
+      if (data.order) {
+        try {
+          sessionStorage.setItem(`order:${data.orderId}`, JSON.stringify(data.order))
+        } catch {
+          /* storage full or disabled: confirmation page will fetch instead */
+        }
+      }
       clearCart()
       localStorage.removeItem(ADDRESS_STORAGE_KEY)
       router.push(`/checkout/success?orderId=${data.orderId}`)

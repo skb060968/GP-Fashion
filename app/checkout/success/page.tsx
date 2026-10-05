@@ -42,6 +42,17 @@ function SuccessContent() {
       setLoading(false)
       return
     }
+    // The payment step stashes the created order so we can render at once.
+    try {
+      const cached = sessionStorage.getItem(`order:${orderId}`)
+      if (cached) {
+        setOrder(JSON.parse(cached))
+        setLoading(false)
+        return
+      }
+    } catch {
+      /* fall through to fetch */
+    }
     fetch(`/api/orders/${orderId}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setOrder(data))
