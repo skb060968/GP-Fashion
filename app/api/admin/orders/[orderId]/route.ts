@@ -4,6 +4,7 @@ import {
   updateOrderNotes,
   buildOrderEmailData,
   InvalidTransitionError,
+  MissingTransitionNoteError,
 } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/security/adminAuth";
@@ -69,6 +70,9 @@ export async function PATCH(
     } catch (err) {
       if (err instanceof InvalidTransitionError) {
         return NextResponse.json({ error: err.message }, { status: 409 });
+      }
+      if (err instanceof MissingTransitionNoteError) {
+        return NextResponse.json({ error: err.message }, { status: 400 });
       }
       throw err;
     }

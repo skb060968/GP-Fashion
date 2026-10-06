@@ -13,7 +13,16 @@ function monthBoundsIST(now = new Date()) {
   return { startOfMonth, startOfPrevMonth };
 }
 
-const PAID_STATUSES: OrderStatus[] = ["VERIFIED", "PROCESSING", "SHIPPED", "DELIVERED"];
+const PAID_STATUSES: OrderStatus[] = [
+  "VERIFIED",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "RETURN_REQUESTED",
+  "RETURN_RECEIVED",
+  "EXCHANGE_DISPATCHED",
+  "EXCHANGE_COMPLETED",
+];
 
 const customerSelect = { fullName: true, phone: true, email: true, city: true } as const;
 const rowSelect = {
@@ -22,6 +31,7 @@ const rowSelect = {
   status: true,
   paymentMethod: true,
   createdAt: true,
+  updatedAt: true,
   address: { select: customerSelect },
   items: { select: { quantity: true } },
 } as const;
@@ -35,7 +45,7 @@ export async function GET(req: NextRequest) {
     const { startOfMonth, startOfPrevMonth } = monthBoundsIST();
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [grouped, thisMonth, prevMonth, thisMonthOrders, shippedWeek, awaiting, recent] = await Promise.all([
+    const [grouped, thisMonth, prevMonth, thisMonthOrders, shippedWeek, awaiting, returns, recent] = await Promise.all([
       prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
       prisma.order.aggregate({
         where: { status: { in: PAID_STATUSES }, createdAt: { gte: startOfMonth } },
@@ -51,6 +61,12 @@ export async function GET(req: NextRequest) {
       prisma.order.findMany({
         where: { status: "UNDER_VERIFICATION" },
         orderBy: { createdAt: "asc" },
+        take: 8,
+        select: rowSelect,
+      }),
+      prisma.order.findMany({
+        where: { status: { in: ["RETURN_REQUESTED", "RETURN_RECEIVED", "EXCHANGE_DISPATCHED"] } },
+        orderBy: { updatedAt: "asc" },
         take: 8,
         select: rowSelect,
       }),
@@ -73,6 +89,7 @@ export async function GET(req: NextRequest) {
       },
       shippedLast7Days: shippedWeek,
       awaiting: shape(awaiting),
+      returns: shape(returns),
       recent: shape(recent),
       generatedAt: new Date().toISOString(),
     });

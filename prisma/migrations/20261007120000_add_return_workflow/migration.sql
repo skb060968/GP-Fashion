@@ -1,0 +1,5 @@
+-- Add a whole-order return/exchange workflow without changing existing rows.
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'RETURN_REQUESTED';
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'RETURN_RECEIVED';
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'EXCHANGE_DISPATCHED';
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'EXCHANGE_COMPLETED';

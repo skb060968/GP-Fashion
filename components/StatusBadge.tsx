@@ -10,6 +10,10 @@ const STYLES: Record<string, string> = {
   PROCESSING: "bg-sky-50 text-sky-800 ring-sky-200",
   SHIPPED: "bg-indigo-50 text-indigo-800 ring-indigo-200",
   DELIVERED: "bg-black text-white ring-black",
+  RETURN_REQUESTED: "bg-amber-50 text-amber-800 ring-amber-200",
+  RETURN_RECEIVED: "bg-violet-50 text-violet-800 ring-violet-200",
+  EXCHANGE_DISPATCHED: "bg-indigo-50 text-indigo-800 ring-indigo-200",
+  EXCHANGE_COMPLETED: "bg-emerald-50 text-emerald-800 ring-emerald-200",
   CANCELLED: "bg-stone-100 text-stone-700 ring-stone-200",
   REFUNDED: "bg-stone-100 text-stone-700 ring-stone-200",
 }
@@ -21,6 +25,10 @@ const DOTS: Record<string, string> = {
   PROCESSING: "bg-sky-500",
   SHIPPED: "bg-indigo-500",
   DELIVERED: "bg-white",
+  RETURN_REQUESTED: "bg-amber-500",
+  RETURN_RECEIVED: "bg-violet-500",
+  EXCHANGE_DISPATCHED: "bg-indigo-500",
+  EXCHANGE_COMPLETED: "bg-emerald-500",
   CANCELLED: "bg-stone-400",
   REFUNDED: "bg-stone-400",
 }

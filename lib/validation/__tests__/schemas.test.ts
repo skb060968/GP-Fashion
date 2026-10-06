@@ -7,17 +7,9 @@ import {
   formatZodErrors,
 } from "../schemas";
 
-// The OrderStatus enum values from Prisma schema
-const ORDER_STATUS_VALUES = [
-  "UNDER_VERIFICATION",
-  "VERIFIED",
-  "REJECTED",
-  "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-  "REFUNDED",
-] as const;
+import { ORDER_STATUSES } from "@/lib/orders/transitions";
+
+const ORDER_STATUS_VALUES = ORDER_STATUSES;
 
 const VALID_SIZES = ["S", "M", "L", "XL"] as const;
 const VALID_PAYMENT_METHODS = ["UPI_MANUAL", "COD", "RAZORPAY"] as const;

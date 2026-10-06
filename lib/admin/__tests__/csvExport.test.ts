@@ -10,6 +10,7 @@ import {
   type CsvOrderItem,
 } from "../csvExport";
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
+import { ORDER_STATUSES } from "@/lib/orders/transitions";
 
 // --- Simple CSV parser for round-trip verification ---
 
@@ -105,9 +106,7 @@ const csvOrderArb: fc.Arbitrary<CsvOrder> = fc.record({
   discount: fc.integer({ min: 0, max: 100_000 }),
   couponCode: fc.option(fc.constantFrom("WELCOME10", "FEST-25"), { nil: null }),
   paymentMethod: fc.constantFrom("UPI_MANUAL", "COD", "RAZORPAY"),
-  status: fc.constantFrom(
-    "UNDER_VERIFICATION", "VERIFIED", "REJECTED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"
-  ),
+  status: fc.constantFrom(...ORDER_STATUSES),
   createdAt: fc.date({ min: new Date("2024-01-01"), max: new Date("2026-12-31"), noInvalidDate: true }),
   items: fc.array(csvOrderItemArb, { minLength: 1, maxLength: 5 }),
 });

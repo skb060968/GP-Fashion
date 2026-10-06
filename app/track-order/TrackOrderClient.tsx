@@ -8,6 +8,7 @@ import { TRACKING_STEPS, trackingProgress, statusLabel } from "@/lib/orders/labe
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import Field from "@/components/checkout/Field"
+import ReturnTimeline from "@/components/ReturnTimeline"
 
 interface OrderItem {
   id: string
@@ -24,6 +25,7 @@ interface OrderData {
   createdAt: string
   /** Proves this lookup matched the phone number; unlocks the invoice. */
   accessToken: string
+  history: { status: string }[]
   items: OrderItem[]
 }
 
@@ -62,7 +64,8 @@ export default function TrackOrderClient() {
     }
   }
 
-  const progress = order ? trackingProgress(order.status) : -1
+  const historyStatuses = order?.history.map((h) => h.status) ?? []
+  const progress = order ? trackingProgress(order.status, historyStatuses) : -1
   const failed = order ? progress === -1 : false
 
   return (
@@ -189,6 +192,8 @@ export default function TrackOrderClient() {
                     </ol>
                   )}
                 </div>
+
+                <ReturnTimeline status={order.status} history={historyStatuses} />
 
                 {/* Items */}
                 <ul className="mt-8 divide-y divide-black/10 border-t border-black/10">

@@ -18,6 +18,7 @@ type Row = {
   status: string
   paymentMethod: string
   createdAt: string
+  updatedAt: string
   itemCount: number
   address: { fullName: string; phone: string; email: string | null; city: string } | null
 }
@@ -27,6 +28,7 @@ type Dashboard = {
   revenue: { thisMonth: number; prevMonth: number; paidOrdersThisMonth: number; ordersThisMonth: number }
   shippedLast7Days: number
   awaiting: Row[]
+  returns: Row[]
   recent: Row[]
   generatedAt: string
 }
@@ -85,6 +87,9 @@ export default function DashboardClient() {
     { label: "Ready to process", value: c.VERIFIED ?? 0, href: "/admin/orders?status=VERIFIED", tone: "plain" },
     { label: "In production", value: c.PROCESSING ?? 0, href: "/admin/orders?status=PROCESSING", tone: "plain" },
     { label: "Shipped, last 7 days", value: data?.shippedLast7Days ?? 0, href: "/admin/orders?status=SHIPPED", tone: "plain" },
+    { label: "Return requested", value: c.RETURN_REQUESTED ?? 0, href: "/admin/orders?status=RETURN_REQUESTED", tone: (c.RETURN_REQUESTED ?? 0) > 0 ? "amber" : "plain" },
+    { label: "Return received", value: c.RETURN_RECEIVED ?? 0, href: "/admin/orders?status=RETURN_RECEIVED", tone: (c.RETURN_RECEIVED ?? 0) > 0 ? "amber" : "plain" },
+    { label: "Replacement shipped", value: c.EXCHANGE_DISPATCHED ?? 0, href: "/admin/orders?status=EXCHANGE_DISPATCHED", tone: "plain" },
   ] as const
 
   return (
@@ -114,7 +119,7 @@ export default function DashboardClient() {
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-7">
         {kpis.map((k) => (
           <Link
             key={k.label}
@@ -148,8 +153,8 @@ export default function DashboardClient() {
             </>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:col-span-2 lg:grid-cols-4">
-          {(["DELIVERED", "REJECTED", "CANCELLED", "REFUNDED"] as const).map((s) => (
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:col-span-2 lg:grid-cols-5">
+          {(["DELIVERED", "EXCHANGE_COMPLETED", "REJECTED", "CANCELLED", "REFUNDED"] as const).map((s) => (
             <Link key={s} href={`/admin/orders?status=${s}`} className="rounded-xl border border-black/10 bg-white p-4 transition-colors hover:border-black">
               <StatusBadge status={s} />
               {loading && !data ? <Skeleton className="mt-3 h-6 w-10" /> : <p className="mt-2 font-jost text-2xl font-semibold tabular-nums">{c[s] ?? 0}</p>}
@@ -160,7 +165,7 @@ export default function DashboardClient() {
       </div>
 
       {/* Queues */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card
           title="Needs verification"
           padded={false}
@@ -203,6 +208,40 @@ export default function DashboardClient() {
                   </li>
                 )
               })}
+            </ul>
+          )}
+        </Card>
+
+        <Card
+          title="Returns & exchanges"
+          padded={false}
+          action={
+            <Link href="/admin/orders?status=RETURN_REQUESTED" className="inline-flex items-center gap-1 font-jost text-xs text-black/60 hover:text-black">
+              Return requests <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          }
+        >
+          {loading && !data ? (
+            <div className="space-y-3 p-5">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+            </div>
+          ) : data && data.returns.length === 0 ? (
+            <EmptyRow title="Nothing waiting" hint="No returns or exchanges need attention." />
+          ) : (
+            <ul className="divide-y divide-black/5">
+              {data?.returns.map((o) => (
+                <li key={o.orderCode}>
+                  <Link href={`/admin/orders/${o.orderCode}`} className="flex items-center gap-3 px-5 py-3 font-jost transition-colors hover:bg-stone-50">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold tracking-wide">{o.orderCode}</p>
+                      <p className="truncate text-xs text-black/60">
+                        {o.address?.fullName ?? "—"} · {o.itemCount} {o.itemCount === 1 ? "item" : "items"} · updated {age(o.updatedAt)} ago
+                      </p>
+                    </div>
+                    <StatusBadge status={o.status} />
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </Card>

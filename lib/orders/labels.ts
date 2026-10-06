@@ -1,28 +1,35 @@
-// lib/orders/labels.ts
-// Customer-facing labels for order enums, shared by confirmation, tracking and invoice.
+import type { OrderStatusValue } from "./transitions"
 
-export const ORDER_STATUS_LABEL: Record<string, string> = {
+export const ORDER_STATUS_LABEL = {
   UNDER_VERIFICATION: "Payment under verification",
   VERIFIED: "Payment verified",
   REJECTED: "Payment could not be verified",
   PROCESSING: "Being prepared",
   SHIPPED: "Shipped",
   DELIVERED: "Delivered",
+  RETURN_REQUESTED: "Return requested",
+  RETURN_RECEIVED: "Return received",
+  EXCHANGE_DISPATCHED: "Replacement shipped",
+  EXCHANGE_COMPLETED: "Exchange completed",
   CANCELLED: "Cancelled",
   REFUNDED: "Refunded",
-}
+} satisfies Record<OrderStatusValue, string>
 
-/** Shorter labels for the admin, where "payment" context is implied. */
-export const ADMIN_STATUS_LABEL: Record<string, string> = {
+/** Shorter labels for the admin, where payment and return context is visible. */
+export const ADMIN_STATUS_LABEL = {
   UNDER_VERIFICATION: "Awaiting verification",
   VERIFIED: "Verified",
   REJECTED: "Rejected",
   PROCESSING: "Processing",
   SHIPPED: "Shipped",
   DELIVERED: "Delivered",
+  RETURN_REQUESTED: "Return requested",
+  RETURN_RECEIVED: "Return received",
+  EXCHANGE_DISPATCHED: "Replacement shipped",
+  EXCHANGE_COMPLETED: "Exchange completed",
   CANCELLED: "Cancelled",
   REFUNDED: "Refunded",
-}
+} satisfies Record<OrderStatusValue, string>
 
 /** Subject line of the customer email sent when an order reaches a status. */
 export function statusEmailSubject(status: string, orderCode: string): string {
@@ -35,6 +42,14 @@ export function statusEmailSubject(status: string, orderCode: string): string {
       return `Order ${orderCode} has shipped`
     case "DELIVERED":
       return `Order ${orderCode} delivered`
+    case "RETURN_REQUESTED":
+      return `Return opened for order ${orderCode}`
+    case "RETURN_RECEIVED":
+      return `Return received for order ${orderCode}`
+    case "EXCHANGE_DISPATCHED":
+      return `Replacement for order ${orderCode} has shipped`
+    case "EXCHANGE_COMPLETED":
+      return `Exchange completed for order ${orderCode}`
     case "REJECTED":
       return `Action needed on order ${orderCode}`
     case "CANCELLED":
@@ -47,7 +62,7 @@ export function statusEmailSubject(status: string, orderCode: string): string {
 }
 
 export function adminStatusLabel(status: string) {
-  return ADMIN_STATUS_LABEL[status] ?? status.replace(/_/g, " ").toLowerCase()
+  return ADMIN_STATUS_LABEL[status as OrderStatusValue] ?? status.replace(/_/g, " ").toLowerCase()
 }
 
 export const PAYMENT_METHOD_LABEL: Record<string, string> = {
@@ -56,7 +71,7 @@ export const PAYMENT_METHOD_LABEL: Record<string, string> = {
   COD: "Cash on delivery",
 }
 
-/** Ordered milestones shown on the tracking timeline for a normal order. */
+/** Ordered milestones shown on the tracking timeline for normal fulfilment. */
 export const TRACKING_STEPS = [
   { key: "PLACED", label: "Order placed" },
   { key: "VERIFIED", label: "Payment verified" },
@@ -65,8 +80,10 @@ export const TRACKING_STEPS = [
   { key: "DELIVERED", label: "Delivered" },
 ] as const
 
-/** Index of the furthest completed milestone for a status, or -1 for terminal failures. */
-export function trackingProgress(status: string): number {
+const POST_DELIVERY_STATUSES = ["RETURN_REQUESTED", "RETURN_RECEIVED", "EXCHANGE_DISPATCHED", "EXCHANGE_COMPLETED"]
+
+/** Index of the furthest completed fulfilment milestone, or -1 for failures. */
+export function trackingProgress(status: string, historyStatuses: string[] = []): number {
   switch (status) {
     case "UNDER_VERIFICATION":
       return 0
@@ -78,13 +95,66 @@ export function trackingProgress(status: string): number {
       return 3
     case "DELIVERED":
       return 4
+    case "RETURN_REQUESTED":
+    case "RETURN_RECEIVED":
+    case "EXCHANGE_DISPATCHED":
+    case "EXCHANGE_COMPLETED":
+      return 4
+    case "REFUNDED":
+      return historyStatuses.includes("RETURN_RECEIVED") ? 4 : -1
     default:
-      return -1 // REJECTED, CANCELLED, REFUNDED
+      return -1 // REJECTED, CANCELLED, non-return refund
+  }
+}
+
+export type PostDeliveryTracking = {
+  steps: readonly { key: string; label: string }[]
+  progress: number
+}
+
+/**
+ * Return/exchange timeline for a delivered order. History disambiguates a
+ * return refund from a refund after cancellation.
+ */
+export function postDeliveryTracking(status: string, historyStatuses: string[] = []): PostDeliveryTracking | null {
+  const wasReturned = POST_DELIVERY_STATUSES.includes(status) || historyStatuses.includes("RETURN_REQUESTED")
+  if (!wasReturned) return null
+
+  if (status === "DELIVERED" && historyStatuses.includes("RETURN_REQUESTED")) {
+    return {
+      steps: [
+        { key: "RETURN_REQUESTED", label: "Return requested" },
+        { key: "RETURN_CLOSED", label: "Request closed" },
+      ],
+      progress: 1,
+    }
+  }
+
+  if (status === "EXCHANGE_DISPATCHED" || status === "EXCHANGE_COMPLETED") {
+    return {
+      steps: [
+        { key: "RETURN_REQUESTED", label: "Return requested" },
+        { key: "RETURN_RECEIVED", label: "Return received" },
+        { key: "EXCHANGE_DISPATCHED", label: "Replacement shipped" },
+        { key: "EXCHANGE_COMPLETED", label: "Exchange completed" },
+      ],
+      progress: status === "EXCHANGE_COMPLETED" ? 3 : 2,
+    }
+  }
+
+  const refunded = status === "REFUNDED"
+  return {
+    steps: [
+      { key: "RETURN_REQUESTED", label: "Return requested" },
+      { key: "RETURN_RECEIVED", label: "Return received" },
+      { key: "RESOLUTION", label: refunded ? "Refunded" : "Resolution" },
+    ],
+    progress: refunded ? 2 : status === "RETURN_RECEIVED" ? 1 : 0,
   }
 }
 
 export function statusLabel(status: string) {
-  return ORDER_STATUS_LABEL[status] ?? status.replace(/_/g, " ").toLowerCase()
+  return ORDER_STATUS_LABEL[status as OrderStatusValue] ?? status.replace(/_/g, " ").toLowerCase()
 }
 
 export function paymentLabel(method: string) {

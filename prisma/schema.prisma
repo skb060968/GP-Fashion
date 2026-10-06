@@ -188,6 +188,11 @@ enum OrderStatus {
 
   CANCELLED            // Cancelled before shipment
   REFUNDED             // Money returned to customer
+
+  RETURN_REQUESTED      // Customer requested a whole-order return or exchange
+  RETURN_RECEIVED       // Returned pieces received and inspected
+  EXCHANGE_DISPATCHED   // Replacement pieces handed to the courier
+  EXCHANGE_COMPLETED    // Replacement delivered; exchange is complete
 }
 
 

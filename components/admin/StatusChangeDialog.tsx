@@ -73,7 +73,12 @@ export default function StatusChangeDialog<T = unknown>({
           <button type="button" onClick={onClose} disabled={saving} className={btn.secondary}>
             Cancel
           </button>
-          <button type="button" onClick={confirm} disabled={saving} className={transition?.intent === "danger" ? btn.danger : btn.primary}>
+          <button
+            type="button"
+            onClick={confirm}
+            disabled={saving || Boolean(transition?.noteRequired && !note.trim())}
+            className={`${transition?.intent === "danger" ? btn.danger : btn.primary} disabled:cursor-not-allowed disabled:opacity-40`}
+          >
             {saving ? "Saving…" : transition?.label}
           </button>
         </>
@@ -88,13 +93,16 @@ export default function StatusChangeDialog<T = unknown>({
             <StatusBadge status={transition.to} />
           </p>
           <label className="block">
-            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Note (optional)</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">
+              History note{transition.noteRequired ? " (required)" : " (optional)"}
+            </span>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               maxLength={500}
-              placeholder="e.g. UTR 4123…, matched in Paytm"
+              placeholder={transition.notePlaceholder ?? "Details for the order history"}
+              required={transition.noteRequired}
               className={`${input} mt-1.5 w-full`}
             />
             <span className="mt-1 block text-xs text-black/45">Recorded in the order history. Not sent to the customer.</span>

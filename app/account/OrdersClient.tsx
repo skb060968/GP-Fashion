@@ -8,6 +8,7 @@ import { formatRupees } from "@/lib/money"
 import { paymentLabel, statusLabel, TRACKING_STEPS, trackingProgress } from "@/lib/orders/labels"
 import EmptyState from "@/components/EmptyState"
 import FadeIn from "@/components/FadeIn"
+import ReturnTimeline from "@/components/ReturnTimeline"
 
 type Order = {
   orderCode: string
@@ -15,6 +16,7 @@ type Order = {
   status: string
   paymentMethod: string
   createdAt: string
+  history: { status: string }[]
   items: { id: string; name: string; size: string; quantity: number; price: number; coverThumbnail: string; slug: string }[]
 }
 
@@ -66,7 +68,8 @@ export default function OrdersClient() {
   return (
     <ul className="space-y-6">
       {orders.map((o, i) => {
-        const progress = trackingProgress(o.status)
+        const historyStatuses = o.history.map((h) => h.status)
+        const progress = trackingProgress(o.status, historyStatuses)
         return (
           <li key={o.orderCode}>
             <FadeIn delay={i * 60}>
@@ -95,6 +98,7 @@ export default function OrdersClient() {
                         </li>
                       ))}
                     </ol>
+                    <ReturnTimeline status={o.status} history={historyStatuses} />
                   </div>
                 )}
 

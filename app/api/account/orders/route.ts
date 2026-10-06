@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
       status: true,
       paymentMethod: true,
       createdAt: true,
+      history: { select: { status: true }, orderBy: { changedAt: "asc" } },
       items: { select: { id: true, name: true, size: true, quantity: true, price: true, coverThumbnail: true, slug: true } },
     },
   })

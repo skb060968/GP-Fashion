@@ -1,6 +1,6 @@
 // lib/orders/transitions.ts
-// Which status changes an admin may make from a given status, and how each
-// should be presented. Shared by the API (validation) and the admin UI.
+// Legal admin transitions for the whole-order lifecycle. Every status must
+// appear in TRANSITIONS, making additions compile-time exhaustive.
 
 export const ORDER_STATUSES = [
   "UNDER_VERIFICATION",
@@ -9,6 +9,10 @@ export const ORDER_STATUSES = [
   "PROCESSING",
   "SHIPPED",
   "DELIVERED",
+  "RETURN_REQUESTED",
+  "RETURN_RECEIVED",
+  "EXCHANGE_DISPATCHED",
+  "EXCHANGE_COMPLETED",
   "CANCELLED",
   "REFUNDED",
 ] as const
@@ -23,36 +27,87 @@ export type Transition = {
   intent: "primary" | "secondary" | "danger"
   /** One line shown in the confirmation dialog. */
   description: string
+  /** Some decisions need a reason/reference in the permanent history. */
+  noteRequired?: boolean
+  notePlaceholder?: string
 }
 
-const T = (to: OrderStatusValue, label: string, intent: Transition["intent"], description: string): Transition => ({
-  to,
-  label,
-  intent,
-  description,
-})
+const T = (
+  to: OrderStatusValue,
+  label: string,
+  intent: Transition["intent"],
+  description: string,
+  options: Pick<Transition, "noteRequired" | "notePlaceholder"> = {}
+): Transition => ({ to, label, intent, description, ...options })
 
 export const TRANSITIONS: Record<OrderStatusValue, Transition[]> = {
   UNDER_VERIFICATION: [
-    T("VERIFIED", "Verify payment", "primary", "Confirms the UPI payment was received. The order moves to the atelier."),
-    T("REJECTED", "Reject payment", "danger", "No matching payment found. The customer is asked to get in touch."),
-    T("CANCELLED", "Cancel order", "danger", "Cancels the order before any payment is confirmed."),
+    T("VERIFIED", "Verify payment", "primary", "Confirms the UPI payment was received. The order moves to the atelier.", {
+      notePlaceholder: "e.g. UTR 4123…, matched in Paytm",
+    }),
+    T("REJECTED", "Reject payment", "danger", "No matching payment found. The customer is asked to get in touch.", {
+      notePlaceholder: "Why the payment could not be verified",
+    }),
+    T("CANCELLED", "Cancel order", "danger", "Cancels the order before any payment is confirmed.", {
+      notePlaceholder: "Reason for cancellation",
+    }),
   ],
   VERIFIED: [
     T("PROCESSING", "Start processing", "primary", "The pieces are being prepared."),
-    T("CANCELLED", "Cancel order", "danger", "Cancels a paid order. Follow up with a refund."),
+    T("CANCELLED", "Cancel order", "danger", "Cancels a paid order. Follow up with a refund.", {
+      notePlaceholder: "Reason for cancellation",
+    }),
   ],
   REJECTED: [
     T("UNDER_VERIFICATION", "Re-check payment", "secondary", "Moves the order back for another look, e.g. after the customer sends proof."),
-    T("CANCELLED", "Cancel order", "danger", "Closes the order."),
+    T("CANCELLED", "Cancel order", "danger", "Closes the order.", { notePlaceholder: "Reason for cancellation" }),
   ],
   PROCESSING: [
-    T("SHIPPED", "Mark shipped", "primary", "The order has been handed to the courier."),
-    T("CANCELLED", "Cancel order", "danger", "Cancels an order already in production. Follow up with a refund."),
+    T("SHIPPED", "Mark shipped", "primary", "The order has been handed to the courier.", {
+      notePlaceholder: "Courier and tracking number (recommended)",
+    }),
+    T("CANCELLED", "Cancel order", "danger", "Cancels an order already in production. Follow up with a refund.", {
+      notePlaceholder: "Reason for cancellation",
+    }),
   ],
-  SHIPPED: [T("DELIVERED", "Mark delivered", "primary", "The customer has received the order.")],
-  DELIVERED: [T("REFUNDED", "Mark refunded", "danger", "A return or dispute has been refunded.")],
-  CANCELLED: [T("REFUNDED", "Mark refunded", "secondary", "The customer's payment has been returned.")],
+  SHIPPED: [
+    T("DELIVERED", "Mark delivered", "primary", "The customer has received the order."),
+  ],
+  DELIVERED: [
+    T("RETURN_REQUESTED", "Open return", "secondary", "Records that the customer requested a return or exchange.", {
+      noteRequired: true,
+      notePlaceholder: "Return reason, pieces involved, and requested resolution",
+    }),
+  ],
+  RETURN_REQUESTED: [
+    T("RETURN_RECEIVED", "Mark return received", "primary", "The returned pieces have arrived and are ready for inspection and resolution.", {
+      notePlaceholder: "Condition received and inspection notes",
+    }),
+    T("DELIVERED", "Close return request", "secondary", "Closes a withdrawn or declined return and leaves the original order delivered.", {
+      noteRequired: true,
+      notePlaceholder: "Why the return was withdrawn or declined",
+    }),
+  ],
+  RETURN_RECEIVED: [
+    T("REFUNDED", "Mark refunded", "danger", "The returned order has been refunded.", {
+      noteRequired: true,
+      notePlaceholder: "Refund amount, reference, method, and date",
+    }),
+    T("EXCHANGE_DISPATCHED", "Dispatch replacement", "primary", "The replacement has been handed to the courier.", {
+      noteRequired: true,
+      notePlaceholder: "Replacement pieces, courier, and tracking number",
+    }),
+  ],
+  EXCHANGE_DISPATCHED: [
+    T("EXCHANGE_COMPLETED", "Complete exchange", "primary", "The replacement was delivered and the exchange is complete."),
+  ],
+  EXCHANGE_COMPLETED: [],
+  CANCELLED: [
+    T("REFUNDED", "Mark refunded", "secondary", "The customer's payment has been returned.", {
+      noteRequired: true,
+      notePlaceholder: "Refund amount, reference, method, and date",
+    }),
+  ],
   REFUNDED: [],
 }
 
@@ -60,11 +115,24 @@ export function allowedTransitions(from: string): Transition[] {
   return TRANSITIONS[from as OrderStatusValue] ?? []
 }
 
-export function canTransition(from: string, to: string): boolean {
-  return allowedTransitions(from).some((t) => t.to === to)
+export function transitionFor(from: string, to: string): Transition | undefined {
+  return allowedTransitions(from).find((t) => t.to === to)
 }
 
-/** Statuses that still need something from the admin. */
-export const OPEN_STATUSES: OrderStatusValue[] = ["UNDER_VERIFICATION", "VERIFIED", "PROCESSING", "SHIPPED"]
-/** Terminal statuses. */
-export const CLOSED_STATUSES: OrderStatusValue[] = ["DELIVERED", "REJECTED", "CANCELLED", "REFUNDED"]
+export function canTransition(from: string, to: string): boolean {
+  return Boolean(transitionFor(from, to))
+}
+
+/** Statuses with an expected next operational action. */
+export const ACTION_REQUIRED_STATUSES: OrderStatusValue[] = [
+  "UNDER_VERIFICATION",
+  "VERIFIED",
+  "PROCESSING",
+  "SHIPPED",
+  "RETURN_REQUESTED",
+  "RETURN_RECEIVED",
+  "EXCHANGE_DISPATCHED",
+]
+
+/** Statuses with no outgoing transition. */
+export const FINAL_STATUSES: OrderStatusValue[] = ["EXCHANGE_COMPLETED", "REFUNDED"]

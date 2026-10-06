@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   try {
     const order = await prisma.order.findUnique({
       where: { orderCode },
-      include: { address: true, items: true },
+      include: { address: true, items: true, history: { select: { status: true }, orderBy: { changedAt: "asc" } } },
     })
 
     // Same answer for "no such order" and "wrong phone" so codes can't be probed.
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       createdAt: order.createdAt,
       // Lets the client open the invoice for this order without signing in.
       accessToken: orderAccessToken(order.orderCode),
+      history: order.history,
       items: order.items.map((item) => ({
         id: item.id,
         name: item.name,

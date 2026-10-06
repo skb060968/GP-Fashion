@@ -1,7 +1,13 @@
 import { prisma } from "../prisma";
 import { OrderEmailData } from "../types/OrderEmailData";
 import { OrderStatus } from "@prisma/client";
-import { canTransition } from "../orders/transitions";
+import { transitionFor } from "../orders/transitions";
+
+export class MissingTransitionNoteError extends Error {
+  constructor(public from: string, public to: string) {
+    super(`A history note is required to move an order from ${from} to ${to}`);
+  }
+}
 
 export class InvalidTransitionError extends Error {
   constructor(public from: string, public to: string) {
@@ -19,13 +25,18 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
     const current = await tx.order.findUnique({ where: { orderCode }, select: { id: true, status: true } });
     if (!current) return null;
 
-    if (!canTransition(current.status, newStatus)) {
+    const transition = transitionFor(current.status, newStatus);
+    if (!transition) {
       throw new InvalidTransitionError(current.status, newStatus);
+    }
+    const cleanNote = note?.trim() || null;
+    if (transition.noteRequired && !cleanNote) {
+      throw new MissingTransitionNoteError(current.status, newStatus);
     }
 
     await tx.order.update({ where: { id: current.id }, data: { status: newStatus } });
     await tx.statusHistory.create({
-      data: { status: newStatus, orderId: current.id, note: note?.trim() || null },
+      data: { status: newStatus, orderId: current.id, note: cleanNote },
     });
 
     return tx.order.findUnique({

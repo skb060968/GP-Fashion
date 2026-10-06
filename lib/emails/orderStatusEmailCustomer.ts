@@ -44,6 +44,34 @@ function copyFor(order: OrderEmailData, site: string): Copy {
         body: `${name}, your order has been delivered. We hope you love wearing it. If anything is not as expected, reply to this email and we will put it right.`,
         cta: { text: "Visit the collection", href: site },
       }
+    case "RETURN_REQUESTED":
+      return {
+        subject: statusEmailSubject("RETURN_REQUESTED", code),
+        title: `Return opened`,
+        body: `${name}, we have recorded your return or exchange request for this order. Please follow the return instructions agreed with the studio. We will write again when the pieces reach us.`,
+        cta: { text: "Contact the studio", href: `${site}/contact` },
+      }
+    case "RETURN_RECEIVED":
+      return {
+        subject: statusEmailSubject("RETURN_RECEIVED", code),
+        title: `Return received`,
+        body: `${name}, your returned pieces have reached the studio. We are inspecting them and will confirm the agreed refund or replacement shortly.`,
+        cta: track,
+      }
+    case "EXCHANGE_DISPATCHED":
+      return {
+        subject: statusEmailSubject("EXCHANGE_DISPATCHED", code),
+        title: `Your replacement is on its way`,
+        body: `${name}, the replacement pieces for your exchange have left the studio and are on their way to you.`,
+        cta: track,
+      }
+    case "EXCHANGE_COMPLETED":
+      return {
+        subject: statusEmailSubject("EXCHANGE_COMPLETED", code),
+        title: `Exchange completed`,
+        body: `${name}, your replacement has been delivered and the exchange is now complete. We hope the new piece is just right.`,
+        cta: { text: "Visit the collection", href: site },
+      }
     case "REJECTED":
       return {
         subject: statusEmailSubject("REJECTED", code),
