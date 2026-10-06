@@ -105,6 +105,9 @@ video {
 
 .container-max {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  /* Let the content breathe on large monitors and TVs instead of staying
+     capped at 1280px with wide empty margins. */
+  @apply 2xl:max-w-[1600px] 2xl:px-12 3xl:max-w-[1800px] 3xl:px-16;
 }
 
 /* -----------------------------
@@ -303,7 +306,7 @@ img {
    Section divider (hairline)
 ----------------------------- */
 .section-divider {
-  @apply mx-auto h-px w-full max-w-7xl bg-black/10;
+  @apply mx-auto h-px w-full max-w-7xl bg-black/10 2xl:max-w-[1600px] 3xl:max-w-[1800px];
 }
 
 /* -----------------------------

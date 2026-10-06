@@ -1,4 +1,20 @@
 /** @type {import('tailwindcss').Config} */
+
+/**
+ * Fluid type scale.
+ *
+ * Each size is clamp(min, preferred, max) where:
+ *   - min      = the current fixed size (unchanged at/below 1280px)
+ *   - preferred = 0.5·V + (V/25.6)vw, which equals the current size at a
+ *                 viewport of 1280px and grows with the viewport beyond it
+ *   - max      = 1.5× the current size (reached around 2560px)
+ *
+ * Result: phones, tablets and laptops (≤1280px) render exactly as before,
+ * while large monitors and TVs scale every `text-*` class up proportionally.
+ * Line-heights match Tailwind's default ratios so unchanged sizes don't shift.
+ */
+const fluid = (min, pref, max, lineHeight) => [`clamp(${min}, ${pref}, ${max})`, { lineHeight }]
+
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -7,6 +23,23 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        // Very large monitors and TVs.
+        "3xl": "1920px",
+      },
+      fontSize: {
+        xs: fluid("0.75rem", "0.375rem + 0.469vw", "1.125rem", "1.333"),
+        sm: fluid("0.875rem", "0.4375rem + 0.547vw", "1.3125rem", "1.429"),
+        base: fluid("1rem", "0.5rem + 0.625vw", "1.5rem", "1.5"),
+        lg: fluid("1.125rem", "0.5625rem + 0.703vw", "1.6875rem", "1.556"),
+        xl: fluid("1.25rem", "0.625rem + 0.781vw", "1.875rem", "1.4"),
+        "2xl": fluid("1.5rem", "0.75rem + 0.938vw", "2.25rem", "1.333"),
+        "3xl": fluid("1.875rem", "0.9375rem + 1.172vw", "2.8125rem", "1.2"),
+        "4xl": fluid("2.25rem", "1.125rem + 1.406vw", "3.375rem", "1.111"),
+        "5xl": fluid("3rem", "1.5rem + 1.875vw", "4.5rem", "1"),
+        "6xl": fluid("3.75rem", "1.875rem + 2.344vw", "5.625rem", "1"),
+        "7xl": fluid("4.5rem", "2.25rem + 2.813vw", "6.75rem", "1"),
+      },
       colors: {
         "fashion-gold": "#a08339",
         "fashion-black": "#1a1a1a",
