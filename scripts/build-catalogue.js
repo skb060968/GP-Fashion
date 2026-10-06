@@ -78,9 +78,21 @@ function isFresh(src, out) {
 async function encode(src, out, size, quality) {
   if (isFresh(src, out)) return false
   fs.mkdirSync(path.dirname(out), { recursive: true })
-  await sharp(src)
-    .rotate() // honour EXIF orientation from phone cameras
-    .resize({ ...size, fit: "cover", position: sharp.strategy.attention, withoutEnlargement: true })
+
+  // Never upscale, but always keep the target aspect ratio: if the source is
+  // smaller than the target box, shrink the box to fit inside the source.
+  const img = sharp(src).rotate() // honour EXIF orientation from phone cameras
+  const m = await img.metadata()
+  const rotated = (m.orientation ?? 1) >= 5
+  const srcW = rotated ? m.height : m.width
+  const srcH = rotated ? m.width : m.height
+  const scale = Math.min(1, srcW / size.width, srcH / size.height)
+  const width = Math.round(size.width * scale)
+  const height = Math.round(size.height * scale)
+  if (scale < 1) console.log(`       ${path.relative(ROOT, src)} is ${srcW}x${srcH}; output ${width}x${height} (ideal ${size.width}x${size.height})`)
+
+  await img
+    .resize({ width, height, fit: "cover", position: sharp.strategy.attention })
     .webp({ quality, effort: 6 })
     .toFile(out)
   return true

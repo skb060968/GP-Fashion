@@ -58,7 +58,7 @@ export const products: Product[] = [
     "slug": "noir-bespoke-suit",
     "name": "Noir Bespoke Suit",
     "category": "menswear",
-    "classification": "cocktail-formalwear",
+    "classification": "outerwear",
     "collection": "deepawali-2026",
     "releaseDate": "2026-10-06",
     "description": "",
@@ -69,7 +69,7 @@ export const products: Product[] = [
       "L",
       "XL"
     ],
-    "bestseller": true,
+    "bestseller": false,
     "order": 10,
     "images": [
       "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
@@ -86,8 +86,8 @@ export const products: Product[] = [
     "slug": "diva-ball-gown",
     "name": "Diva Ball Gown",
     "category": "womenswear",
-    "classification": "cocktail-formalwear",
-    "collection": "deepawali-2026",
+    "classification": "ethnic-wear",
+    "collection": "winter-2026",
     "releaseDate": "2026-10-06",
     "description": "",
     "price": 1099000,

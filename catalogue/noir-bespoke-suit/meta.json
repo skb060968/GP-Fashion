@@ -1,11 +1,11 @@
 {
   "name": "Noir Bespoke Suit",
   "category": "menswear",
-  "classification": "cocktail-formalwear",
+  "classification": "outerwear",
   "collection": "deepawali-2026",
   "priceInr": 15990,
   "sizes": ["S", "M", "L", "XL"],
   "description": "",
-  "bestseller": true,
+  "bestseller": false,
   "order": 10
 }
