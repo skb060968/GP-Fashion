@@ -15,5 +15,5 @@ export function loginCodeEmail(code: string, minutes: number) {
       ),
     ],
   })
-  return { subject: `${code} is your Piyush Bholla sign-in code`, html }
+  return { subject: `Your Piyush Bholla sign-in code: ${code}`, html }
 }
