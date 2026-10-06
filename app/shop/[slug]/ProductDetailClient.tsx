@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Check, Minus, Plus } from "lucide-react"
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
 import { categoryMeta, getClassification, getCollection, type Product } from "@/lib/data/categories"
@@ -24,7 +24,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const router = useRouter()
   const { addToCart } = useCart()
 
-  const [active, setActive] = useState(product.coverImage)
+  const [index, setIndex] = useState(0)
   const [size, setSize] = useState<string | null>(product.sizes.length === 1 ? product.sizes[0] : null)
   const [qty, setQty] = useState(1)
   const [sizeError, setSizeError] = useState(false)
@@ -42,6 +42,24 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
   // Gallery: cover first, then the rest in order, de-duplicated.
   const gallery = Array.from(new Set([product.coverImage, ...product.images]))
+  const active = gallery[index] ?? gallery[0]
+  const hasMany = gallery.length > 1
+  const step = (delta: number) => setIndex((i) => (i + delta + gallery.length) % gallery.length)
+
+  // Swipe on touch devices.
+  const touchStartX = useRef<number | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1)
+  }
+
+  const onGalleryKey = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") { e.preventDefault(); step(1) }
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1) }
+  }
 
   const add = (thenGo?: "bag") => {
     if (!size) {
@@ -94,12 +112,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 {gallery.length > 1 && (
                   <ul className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible" aria-label="Product images">
                     {gallery.map((src, i) => {
-                      const isActive = src === active
+                      const isActive = i === index
                       return (
                         <li key={src} className="shrink-0">
                           <button
                             type="button"
-                            onClick={() => setActive(src)}
+                            onClick={() => setIndex(i)}
                             aria-pressed={isActive}
                             aria-label={`View image ${i + 1}`}
                             className={`relative aspect-[3/4] w-16 overflow-hidden bg-stone-100 transition-opacity sm:w-full ${isActive ? "ring-1 ring-black" : "opacity-70 hover:opacity-100"}`}
@@ -111,11 +129,20 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     })}
                   </ul>
                 )}
-                <div className="relative order-1 aspect-[3/4] overflow-hidden bg-stone-100 sm:order-2">
+                <div
+                  className="group relative order-1 aspect-[3/4] overflow-hidden bg-stone-100 focus-visible:ring-black sm:order-2"
+                  role={hasMany ? "region" : undefined}
+                  aria-roledescription={hasMany ? "carousel" : undefined}
+                  aria-label={hasMany ? `${product.name} images` : undefined}
+                  tabIndex={hasMany ? 0 : undefined}
+                  onKeyDown={hasMany ? onGalleryKey : undefined}
+                  onTouchStart={hasMany ? onTouchStart : undefined}
+                  onTouchEnd={hasMany ? onTouchEnd : undefined}
+                >
                   <Image
                     key={active}
                     src={active}
-                    alt={product.name}
+                    alt={hasMany ? `${product.name}, image ${index + 1} of ${gallery.length}` : product.name}
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 55vw"
@@ -123,6 +150,33 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     className="object-cover"
                   />
                   <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />
+
+                  {hasMany && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => step(-1)}
+                        aria-label="Previous image"
+                        className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"
+                      >
+                        <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => step(1)}
+                        aria-label="Next image"
+                        className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"
+                      >
+                        <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                      </button>
+                      <span
+                        aria-live="polite"
+                        className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 font-jost text-[11px] font-medium tabular-nums text-white"
+                      >
+                        {index + 1} / {gallery.length}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </FadeIn>
