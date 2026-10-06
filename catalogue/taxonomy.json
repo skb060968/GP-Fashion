@@ -1,0 +1,8 @@
+{
+  "classifications": [
+    { "slug": "ethnic-wear", "title": "Ethnic Wear" },
+    { "slug": "leisurewear", "title": "Leisurewear" },
+    { "slug": "cocktail-formalwear", "title": "Cocktail & Formalwear" },
+    { "slug": "outerwear", "title": "Outerwear" }
+  ]
+}

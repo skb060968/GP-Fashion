@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, Check, Minus, Plus } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
-import { categoryOf, categoryMeta, type Product } from "@/lib/data/categories"
+import { categoryMeta, getClassification, getCollection, type Product } from "@/lib/data/categories"
 import WishlistButton from "@/components/WishlistButton"
 import FadeIn from "@/components/FadeIn"
 
@@ -30,8 +30,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [sizeError, setSizeError] = useState(false)
   const [added, setAdded] = useState(false)
 
-  const category = categoryOf(product.slug)
-  const crumb = category ? { href: `/${category}`, label: categoryMeta[category].title } : { href: "/shop", label: "All pieces" }
+  const category = product.category
+  const classification = getClassification(product.classification)
+  const collection = product.collection ? getCollection(product.collection) : undefined
+  // Breadcrumb: Home / Menswear / Cocktail & Formalwear / Product
+  const crumbs = [
+    { href: `/${category}`, label: categoryMeta[category].title },
+    ...(classification ? [{ href: `/${category}/${classification.slug}`, label: classification.title }] : []),
+  ]
+  const crumb = crumbs[crumbs.length - 1]
 
   // Gallery: cover first, then the rest in order, de-duplicated.
   const gallery = Array.from(new Set([product.coverImage, ...product.images]))
@@ -68,8 +75,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           <nav aria-label="Breadcrumb" className="mb-6 font-jost text-xs uppercase tracking-[0.15em] text-black/50 lg:mb-10">
             <ol className="flex flex-wrap items-center gap-2">
               <li><Link href="/" className="hover:text-black">Home</Link></li>
-              <li aria-hidden>/</li>
-              <li><Link href={crumb.href} className="hover:text-black">{crumb.label}</Link></li>
+              {crumbs.map((c) => (
+                <li key={c.href} className="contents">
+                  <span aria-hidden>/</span>
+                  <Link href={c.href} className="hover:text-black">{c.label}</Link>
+                </li>
+              ))}
               <li aria-hidden>/</li>
               <li className="text-black" aria-current="page">{product.name}</li>
             </ol>
@@ -119,14 +130,25 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             {/* Details */}
             <FadeIn delay={100} className="lg:col-span-5">
               <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
-                {category && (
-                  <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">{categoryMeta[category].title}</p>
-                )}
+                <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
+                  {categoryMeta[category].title}
+                  {classification && <> · {classification.title}</>}
+                </p>
                 <h1 className="mt-2 font-cinzel text-2xl font-bold uppercase tracking-[0.15em] sm:text-3xl">{product.name}</h1>
                 <p className="mt-3 font-jost text-xl tabular-nums">{formatRupees(product.price)}</p>
                 <p className="mt-1 font-jost text-xs text-black/50">Inclusive of all taxes. Complimentary shipping.</p>
 
                 {product.description && <p className="mt-6 font-jost text-base leading-relaxed text-black/75">{product.description}</p>}
+
+                {collection && (
+                  <p className="mt-4 font-jost text-sm text-black/60">
+                    From the{" "}
+                    <Link href={`/collections/${collection.slug}`} className="underline underline-offset-4 hover:text-black">
+                      {collection.name}
+                    </Link>{" "}
+                    collection.
+                  </p>
+                )}
 
                 {/* Size */}
                 <div id="size-picker" className="mt-8">

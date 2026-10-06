@@ -3,7 +3,7 @@
  * Used by property tests to verify uniqueness and completeness.
  */
 
-import { getAllProducts } from "@/lib/data/categories";
+import { CATEGORY_SLUGS, categoryMeta, getAllProducts, getCategoryViews, getCollections } from "@/lib/data/categories";
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in";
 const BRAND = "Piyush Bholla";
@@ -34,11 +34,23 @@ export function getAllPageMetadata(): PageMetadata[] {
     page("/", `${BRAND} | Contemporary Designer Label`, "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship."),
     page("/menswear", `Menswear | ${BRAND}`, "Refined tailoring that balances tradition with contemporary style.", `${SITE_URL}/images/home/menswear.webp`),
     page("/womenswear", `Womenswear | ${BRAND}`, "Timeless silhouettes reimagined with a contemporary sensibility.", `${SITE_URL}/images/home/womenswear.webp`),
+    page("/collections", `Collections | ${BRAND}`, "Every release from PIYUSH BHOLLA LABEL, newest first."),
     page("/shop", `All Pieces | ${BRAND}`, "Search every piece from Piyush Bholla by name, size and price."),
     page("/services", `Services | ${BRAND}`, "Ready-to-wear, made to measure, bespoke commissions, alterations and private appointments in Delhi."),
     page("/contact", `Contact | ${BRAND}`, "Contact the studio about orders, sizing, fittings, bespoke commissions and collaborations."),
     page("/track-order", `Track Order | ${BRAND}`, "Check the status of your order with your order number and mobile number."),
   ];
+
+  for (const c of CATEGORY_SLUGS) {
+    const meta = categoryMeta[c];
+    for (const v of getCategoryViews(c)) {
+      pages.push(page(`/${c}/${v.slug}`, `${v.title} · ${meta.title} | ${BRAND}`, `${v.title} for ${meta.title.toLowerCase()} by ${BRAND}.`, `${SITE_URL}${meta.image}`));
+    }
+  }
+
+  for (const c of getCollections()) {
+    pages.push(page(`/collections/${c.slug}`, `${c.name} | ${BRAND}`, c.description || `The ${c.name} collection by ${BRAND}.`, `${SITE_URL}${c.coverImage}`));
+  }
 
   for (const p of getAllProducts()) {
     const description = p.description || `${p.name} by ${BRAND}. ₹${(p.price / 100).toLocaleString("en-IN")}.`;

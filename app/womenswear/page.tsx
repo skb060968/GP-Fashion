@@ -1,12 +1,7 @@
-import type { Metadata } from "next"
-import CategoryListing from "@/components/CategoryListing"
+import CategoryPage, { categoryViewMetadata } from "@/components/CategoryPage"
 
-export const metadata: Metadata = {
-  title: "Womenswear | Piyush Bholla",
-  description:
-    "Timeless silhouettes reimagined with a contemporary sensibility. Explore the womenswear collection.",
-}
+export const metadata = categoryViewMetadata("womenswear")
 
 export default function WomenswearPage() {
-  return <CategoryListing category="womenswear" />
+  return <CategoryPage category="womenswear" />
 }

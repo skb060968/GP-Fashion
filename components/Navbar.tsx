@@ -4,19 +4,42 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Menu, X, Heart, ShoppingBag, User, Search } from "lucide-react"
+import { Menu, X, Heart, ShoppingBag, User, Search, ChevronDown } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useUser } from "@/context/UserContext"
 import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
+import { categoryMeta, getCategoryViews, getCollections, CATEGORY_SLUGS } from "@/lib/data/categories"
 
-const menuLinks = [
-  { label: "Menswear", href: "/#menswear" },
-  { label: "Womenswear", href: "/#womenswear" },
+type MenuLeaf = { label: string; href: string }
+type MenuItem = MenuLeaf | { label: string; children: MenuLeaf[] }
+
+// Menswear / Womenswear expand to "All", New Arrivals, the classifications
+// that currently have pieces, and Bestsellers. Collections expands to "All"
+// plus each release. Everything comes from the generated catalogue data.
+const menuItems: MenuItem[] = [
+  ...CATEGORY_SLUGS.map((category) => ({
+    label: categoryMeta[category].title,
+    children: [
+      { label: `All ${categoryMeta[category].title}`, href: `/${category}` },
+      ...getCategoryViews(category).map((v) => ({ label: v.title, href: `/${category}/${v.slug}` })),
+    ],
+  })),
+  {
+    label: "Collections",
+    children: [
+      { label: "All Collections", href: "/collections" },
+      ...getCollections().map((c) => ({ label: c.name, href: `/collections/${c.slug}` })),
+    ],
+  },
   { label: "About Us", href: "/#about-us" },
   { label: "Services", href: "/services" },
   { label: "Contact", href: "/contact" },
   { label: "Track Order", href: "/track-order" },
 ]
+
+const MENU_ITEM_CLASS =
+  "font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:text-base sm:tracking-[0.18em] lg:text-lg 2xl:text-xl"
+const MENU_PAD = "px-4 py-3 sm:px-6 lg:px-8 lg:py-4"
 
 const iconLinks = [
   { label: "Search", href: "/shop?focus=1", Icon: Search },
@@ -31,6 +54,8 @@ const ICON_CLASS = "h-7 w-7 sm:h-9 sm:w-9 lg:h-11 lg:w-11 2xl:h-16 2xl:w-16"
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  // Which accordion group (Menswear / Womenswear / Collections) is expanded.
+  const [openGroup, setOpenGroup] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
@@ -130,6 +155,11 @@ export default function Navbar() {
 
   const navHidden = hidden && !menuOpen
 
+  // Collapse any open group when the menu closes so it reopens tidy.
+  useEffect(() => {
+    if (!menuOpen) setOpenGroup(null)
+  }, [menuOpen])
+
   // Close on outside click / Escape
   useEffect(() => {
     if (!menuOpen) return
@@ -205,25 +235,67 @@ export default function Navbar() {
           {/* Dropdown */}
           <div
             id="primary-menu"
-            role="menu"
-            className={`absolute left-3 top-full w-44 origin-top-left border border-t-0 border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-60 sm:py-3 lg:left-10 lg:w-72 lg:py-4 2xl:left-14 ${
+            className={`absolute left-3 top-full max-h-[calc(100vh-var(--nav-h))] w-52 origin-top-left overflow-y-auto border border-t-0 border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-3 lg:left-10 lg:w-80 lg:py-4 2xl:left-14 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
             }`}
           >
-            {menuLinks.map((link) => (
-              <AnchorLink
-                key={link.label}
-                href={link.href}
-                role="menuitem"
-                tabIndex={menuOpen ? 0 : -1}
-                onClick={() => setMenuOpen(false)}
-                className="block px-4 py-3 font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:px-6 sm:text-base sm:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-lg 2xl:text-xl"
-              >
-                {link.label}
-              </AnchorLink>
-            ))}
+            {menuItems.map((item) => {
+              if (!("children" in item)) {
+                return (
+                  <AnchorLink
+                    key={item.label}
+                    href={item.href}
+                    tabIndex={menuOpen ? 0 : -1}
+                    onClick={() => setMenuOpen(false)}
+                    className={`block ${MENU_PAD} ${MENU_ITEM_CLASS}`}
+                  >
+                    {item.label}
+                  </AnchorLink>
+                )
+              }
+
+              const expanded = openGroup === item.label
+              const panelId = `menu-group-${item.label.toLowerCase().replace(/\s+/g, "-")}`
+              return (
+                <div key={item.label}>
+                  <button
+                    type="button"
+                    aria-expanded={expanded}
+                    aria-controls={panelId}
+                    tabIndex={menuOpen ? 0 : -1}
+                    onClick={() => setOpenGroup(expanded ? null : item.label)}
+                    className={`flex w-full items-center justify-between gap-3 text-left ${MENU_PAD} ${MENU_ITEM_CLASS} ${expanded ? "text-black" : ""}`}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      className={`h-4 w-4 shrink-0 transition-transform duration-200 lg:h-5 lg:w-5 ${expanded ? "rotate-180" : ""}`}
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </button>
+                  <ul
+                    id={panelId}
+                    hidden={!expanded}
+                    className="border-y border-black/5 bg-black/[0.025] py-1"
+                  >
+                    {item.children.map((child) => (
+                      <li key={child.href}>
+                        <Link
+                          href={child.href}
+                          tabIndex={menuOpen && expanded ? 0 : -1}
+                          onClick={() => setMenuOpen(false)}
+                          className="block py-2.5 pl-8 pr-4 font-jost text-xs font-medium uppercase tracking-[0.15em] text-black/70 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:pl-10 sm:text-sm lg:pl-12 lg:text-base"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
           </div>
         </div>
 

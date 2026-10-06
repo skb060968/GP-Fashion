@@ -5,8 +5,9 @@ export const footer = {
   quickLinksHeading: "Quick Links",
   // Mirrors the navbar menu. Extend as revamped pages come online.
   quickLinks: [
-    { label: "Menswear", href: "/#menswear" },
-    { label: "Womenswear", href: "/#womenswear" },
+    { label: "Menswear", href: "/menswear" },
+    { label: "Womenswear", href: "/womenswear" },
+    { label: "Collections", href: "/collections" },
     { label: "About Us", href: "/#about-us" },
     { label: "Contact", href: "/contact" },
     { label: "Track Order", href: "/track-order" },
