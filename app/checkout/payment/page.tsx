@@ -148,7 +148,9 @@ export default function PaymentPage() {
       }
       clearCart()
       localStorage.removeItem(ADDRESS_STORAGE_KEY)
-      router.push(`/checkout/success?orderId=${data.orderId}`)
+      // The access token lets the confirmation page (and its invoice link)
+      // read the order back for a guest who isn't signed in.
+      router.push(`/checkout/success?orderId=${data.orderId}&t=${data.accessToken}`)
       // keep `placing` true until navigation completes
     } catch {
       setOrderError("We couldn't place your order. Please check your connection and try again.")

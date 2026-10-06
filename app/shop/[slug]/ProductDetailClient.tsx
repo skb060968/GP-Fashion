@@ -10,7 +10,9 @@ import { useCart } from "@/context/CartContext"
 import { categoryMeta, getClassification, getCollection, type Product } from "@/lib/data/categories"
 import WishlistButton from "@/components/WishlistButton"
 import SizeGuide from "@/components/SizeGuide"
+import WhatsAppIcon from "@/components/WhatsAppIcon"
 import FadeIn from "@/components/FadeIn"
+import { whatsappHref } from "@/lib/whatsapp"
 
 const MAX_QTY = 10
 
@@ -276,8 +278,21 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
                 <p className="mt-6 font-jost text-sm text-black/60">
                   Questions about fit or customisation?{" "}
+                  <a
+                    href={whatsappHref(`Hello, I have a question about the ${product.name}.`)}
+                    onClick={(e) => {
+                      // Include the page URL so the studio knows exactly which piece.
+                      e.currentTarget.href = whatsappHref(`Hello, I have a question about the ${product.name} (${window.location.href}).`)
+                    }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-black"
+                  >
+                    <WhatsAppIcon className="h-3.5 w-3.5" /> Chat on WhatsApp
+                  </a>{" "}
+                  or{" "}
                   <Link href={`/contact?design=${product.slug}`} className="underline underline-offset-4 hover:text-black">
-                    Get in touch
+                    write to us
                   </Link>
                   .
                 </p>

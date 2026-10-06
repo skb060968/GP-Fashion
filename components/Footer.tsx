@@ -95,9 +95,18 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-14 border-t border-black/10 pt-6 text-center font-jost text-xs tracking-wide text-black/50 sm:text-sm">
-          © {year} Piyush Bholla. All rights reserved.
+        {/* Policies + copyright */}
+        <div className="mt-14 flex flex-col items-center gap-4 border-t border-black/10 pt-6 font-jost text-xs tracking-wide text-black/50 sm:flex-row sm:justify-between sm:text-sm">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {footer.policyLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="transition-colors hover:text-black">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p>© {year} Piyush Bholla. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -34,7 +34,9 @@ type Order = {
 }
 
 function SuccessContent() {
-  const orderId = useSearchParams().get("orderId")
+  const sp = useSearchParams()
+  const orderId = sp.get("orderId")
+  const token = sp.get("t")
   const { user } = useUser()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,12 +57,14 @@ function SuccessContent() {
     } catch {
       /* fall through to fetch */
     }
-    fetch(`/api/orders/${orderId}`)
+    fetch(`/api/orders/${orderId}${token ? `?t=${token}` : ""}`, { credentials: "same-origin" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setOrder(data))
       .catch(() => setOrder(null))
       .finally(() => setLoading(false))
-  }, [orderId])
+  }, [orderId, token])
+
+  const invoiceHref = (code: string) => `/api/invoice/${code}.pdf${token ? `?t=${token}` : ""}`
 
   return (
     <div className="bg-white text-black">
@@ -180,7 +184,7 @@ function SuccessContent() {
               </FadeIn>
 
               <FadeIn delay={200} className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <a href={`/api/invoice/${order.orderCode}.pdf`} download className="btn-outline-dark w-full sm:w-auto">
+                <a href={invoiceHref(order.orderCode)} download className="btn-outline-dark w-full sm:w-auto">
                   Download invoice
                 </a>
                 <Link href={user ? "/account" : "/track-order"} className="btn-outline-dark w-full sm:w-auto">

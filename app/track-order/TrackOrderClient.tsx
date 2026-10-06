@@ -22,6 +22,8 @@ interface OrderData {
   status: string
   amount: number
   createdAt: string
+  /** Proves this lookup matched the phone number; unlocks the invoice. */
+  accessToken: string
   items: OrderItem[]
 }
 
@@ -44,10 +46,11 @@ export default function TrackOrderClient() {
         body: JSON.stringify({ orderCode: orderCode.trim(), phone: phone.trim() }),
       })
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
         setError(
-          res.status === 403
-            ? "That phone number doesn't match this order."
-            : "We couldn't find an order with that number."
+          res.status === 429
+            ? "Too many attempts. Please wait a few minutes and try again."
+            : data?.error || "We couldn't find an order with those details."
         )
         return
       }
@@ -208,10 +211,10 @@ export default function TrackOrderClient() {
                 </div>
 
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <Link href={`/invoice/${order.orderCode}`} className="btn-outline-dark w-full sm:w-auto">
+                  <Link href={`/invoice/${order.orderCode}?t=${order.accessToken}`} className="btn-outline-dark w-full sm:w-auto">
                     View invoice
                   </Link>
-                  <a href={`/api/invoice/${order.orderCode}.pdf`} download className="btn-solid-dark w-full sm:w-auto">
+                  <a href={`/api/invoice/${order.orderCode}.pdf?t=${order.accessToken}`} download className="btn-solid-dark w-full sm:w-auto">
                     Download PDF
                   </a>
                 </div>

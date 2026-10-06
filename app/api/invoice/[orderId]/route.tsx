@@ -1,18 +1,17 @@
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { prisma } from "@/lib/prisma"
 import InvoiceDocument from "@/lib/pdf/InvoiceDocument"
+import { canReadOrder } from "@/lib/security/orderAccess"
 
 export const runtime = "nodejs"
 
 /**
- * GET /api/invoice/<orderCode>
- * Streams the order's invoice as a PDF download.
+ * GET /api/invoice/<orderCode>.pdf?t=<access token>
+ * Streams the order's invoice as a PDF download. Same access rules as
+ * /api/orders/<orderCode>: token, signed-in owner, or admin.
  */
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ orderId: string }> }
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ orderId: string }> }) {
   try {
     const { orderId } = await context.params
     // Strip an optional ".pdf" suffix so /api/invoice/26040.pdf also works.
@@ -23,7 +22,7 @@ export async function GET(
       include: { address: true, items: true },
     })
 
-    if (!order) {
+    if (!order || !(await canReadOrder(req, order.orderCode, { userId: order.userId, email: order.address?.email ?? null }))) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 

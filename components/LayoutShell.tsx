@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import SplashScreen from "@/components/SplashScreen"
+import WhatsAppButton from "@/components/WhatsAppButton"
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -20,6 +21,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       {!isAdmin && <Navbar />}
       <main className={`flex-grow ${offset}`}>{children}</main>
       {!isAdmin && <Footer />}
+      {!isAdmin && <WhatsAppButton />}
     </>
   )
 }

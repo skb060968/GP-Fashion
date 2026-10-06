@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
+import { useParams, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Download, Printer } from "lucide-react"
@@ -32,18 +32,29 @@ type Order = {
 }
 
 export default function InvoicePage() {
+  return (
+    <Suspense fallback={null}>
+      <InvoiceContent />
+    </Suspense>
+  )
+}
+
+function InvoiceContent() {
   const { orderId } = useParams<{ orderId: string }>()
+  // Access token from track-order; signed-in owners and admins don't need one.
+  const token = useSearchParams().get("t")
+  const query = token ? `?t=${token}` : ""
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const { contact } = content
 
   useEffect(() => {
-    fetch(`/api/orders/${orderId}`)
+    fetch(`/api/orders/${orderId}${query}`, { credentials: "same-origin" })
       .then((r) => (r.ok ? r.json() : null))
       .then(setOrder)
       .catch(() => setOrder(null))
       .finally(() => setLoading(false))
-  }, [orderId])
+  }, [orderId, query])
 
   // Document title becomes the default PDF filename when printing.
   useEffect(() => {
@@ -64,11 +75,14 @@ export default function InvoicePage() {
   if (!order) {
     return (
       <div className="mx-auto max-w-md px-4 py-32 text-center">
-        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em]">Invoice not found</h1>
-        <p className="mt-4 font-jost text-black/65">We couldn&apos;t find an order with that number.</p>
-        <Link href="/track-order" className="btn-outline-dark mt-8">
-          Track an order
-        </Link>
+        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em]">Invoice not available</h1>
+        <p className="mt-4 font-jost text-black/65">
+          We couldn&apos;t find that order, or you need to verify it first. Track the order with your mobile number, or sign in to the account that placed it.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link href="/track-order" className="btn-outline-dark">Track an order</Link>
+          <Link href={`/login?next=/invoice/${orderId}`} className="btn-solid-dark">Sign in</Link>
+        </div>
       </div>
     )
   }
@@ -92,7 +106,7 @@ export default function InvoicePage() {
                 <Printer className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
                 Print
               </button>
-              <a href={`/api/invoice/${order.orderCode}.pdf`} download className="btn-solid-dark">
+              <a href={`/api/invoice/${order.orderCode}.pdf${query}`} download className="btn-solid-dark">
                 <Download className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
                 Download PDF
               </a>

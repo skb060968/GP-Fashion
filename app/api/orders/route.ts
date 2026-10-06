@@ -5,6 +5,7 @@ import { sendOrderPlacedEmails } from "@/lib/emails/sendOrderPlaced";
 import { createOrderSchema, formatZodErrors } from "@/lib/validation/schemas";
 import { getUserFromRequest } from "@/lib/security/userSession";
 import { createRateLimiter } from "@/lib/security/rateLimiter";
+import { orderAccessToken } from "@/lib/security/orderAccess";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
@@ -136,8 +137,10 @@ export async function POST(req: Request) {
 
     // ✅ Return immediately to frontend. The full order is included so the
     //    confirmation page can render without fetching it again.
+    //    `accessToken` lets the confirmation page and its invoice link read the
+    //    order back without a sign-in (see lib/security/orderAccess.ts).
     const response = NextResponse.json(
-      { success: true, orderId: order.orderCode, order },
+      { success: true, orderId: order.orderCode, accessToken: orderAccessToken(order.orderCode), order },
       { status: 201 }
     );
 

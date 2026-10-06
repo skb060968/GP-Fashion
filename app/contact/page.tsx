@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
-import { Mail, Phone, MapPin, Clock, type LucideIcon } from "lucide-react"
+import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import type { ComponentType, SVGProps } from "react"
 import { content } from "@/lib/data"
 import FadeIn from "@/components/FadeIn"
+import WhatsAppIcon from "@/components/WhatsAppIcon"
+import { whatsappHref } from "@/lib/whatsapp"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
@@ -56,6 +59,7 @@ export default function ContactPage() {
               <div className="space-y-6">
                 <Info icon={Mail} label="Email" value={contact.email} href={`mailto:${contact.email}`} />
                 <Info icon={Phone} label="Phone" value={contact.phone} href={`tel:${contact.phone}`} />
+                <Info icon={WhatsAppIcon} label="WhatsApp" value="Chat with the studio" href={whatsappHref("Hello, I have a question about PIYUSH BHOLLA LABEL.")} external />
                 <Info icon={MapPin} label="Location" value={contact.location} />
                 <Info icon={Clock} label="Availability" value={contact.availability} />
               </div>
@@ -138,11 +142,13 @@ function Info({
   label,
   value,
   href,
+  external,
 }: {
-  icon: LucideIcon
+  icon: ComponentType<SVGProps<SVGSVGElement> & { strokeWidth?: number }>
   label: string
   value: string
   href?: string
+  external?: boolean
 }) {
   return (
     <div className="flex items-start gap-4">
@@ -152,7 +158,11 @@ function Info({
       <div className="font-jost">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">{label}</p>
         {href ? (
-          <a href={href} className="mt-1 block text-black transition-colors hover:text-black/60">
+          <a
+            href={href}
+            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            className="mt-1 block text-black transition-colors hover:text-black/60"
+          >
             {value}
           </a>
         ) : (

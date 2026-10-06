@@ -12,6 +12,9 @@ export const STATIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitema
   { path: "/services", changeFrequency: "monthly", priority: 0.6 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
   { path: "/track-order", changeFrequency: "monthly", priority: 0.4 },
+  { path: "/policies/shipping-returns", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/policies/terms", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/policies/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -13,6 +13,8 @@ export const contact = {
   instagram: "https://www.instagram.com/piyushbholla.label",
   email: "piyushbholla@gmail.com",
   phone: "+91 9821818352",
+  // Digits only, with country code; used for wa.me links.
+  whatsapp: "919821818352",
   location: "New Delhi, India",
 
   availability:

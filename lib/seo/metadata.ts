@@ -4,6 +4,7 @@
  */
 
 import { CATEGORY_SLUGS, categoryMeta, getAllProducts, getCategoryViews, getCollections } from "@/lib/data/categories";
+import { policies } from "@/lib/data/policies";
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in";
 const BRAND = "Piyush Bholla";
@@ -39,6 +40,7 @@ export function getAllPageMetadata(): PageMetadata[] {
     page("/services", `Services | ${BRAND}`, "Ready-to-wear, made to measure, bespoke commissions, alterations and private appointments in Delhi."),
     page("/contact", `Contact | ${BRAND}`, "Contact the studio about orders, sizing, fittings, bespoke commissions and collaborations."),
     page("/track-order", `Track Order | ${BRAND}`, "Check the status of your order with your order number and mobile number."),
+    ...policies.map((p) => page(`/policies/${p.slug}`, `${p.title} | ${BRAND}`, p.description)),
   ];
 
   for (const c of CATEGORY_SLUGS) {

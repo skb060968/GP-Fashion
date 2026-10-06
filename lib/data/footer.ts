@@ -14,6 +14,13 @@ export const footer = {
     { label: "My Account", href: "/account" },
   ],
 
+  // Shown in the bottom bar next to the copyright. Slugs match lib/data/policies.ts
+  policyLinks: [
+    { label: "Shipping & Returns", href: "/policies/shipping-returns" },
+    { label: "Terms", href: "/policies/terms" },
+    { label: "Privacy", href: "/policies/privacy" },
+  ],
+
   servicesHeading: "Services",
   // Anchors match the slugs in lib/data/services.ts
   servicesList: [
