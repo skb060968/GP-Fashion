@@ -9,6 +9,7 @@ import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
 import { categoryMeta, getClassification, getCollection, type Product } from "@/lib/data/categories"
 import WishlistButton from "@/components/WishlistButton"
+import SizeGuide from "@/components/SizeGuide"
 import FadeIn from "@/components/FadeIn"
 
 const MAX_QTY = 10
@@ -206,9 +207,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
                 {/* Size */}
                 <div id="size-picker" className="mt-8">
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline justify-between gap-4">
                     <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Size</span>
-                    {sizeError && <span role="alert" className="font-jost text-xs text-red-600">Please choose a size</span>}
+                    {sizeError ? (
+                      <span role="alert" className="font-jost text-xs text-red-600">Please choose a size</span>
+                    ) : (
+                      <SizeGuide category={category} availableSizes={product.sizes} />
+                    )}
                   </div>
                   <div role="radiogroup" aria-label="Size" className="mt-3 flex flex-wrap gap-2">
                     {product.sizes.map((s) => {
