@@ -1,20 +1,23 @@
-export const servicesPage = {
-  heroTitle: "Services Offered",
-  heroDescription:
-    "Comprehensive fashion design and styling services covering the full creative journey.",
+// lib/data/servicesPage.ts
+// Page-level copy for /services.
 
-  processHeading: "Our Process",
+export const servicesPage = {
+  heroTitle: "Services",
+  heroDescription:
+    "Beyond the pieces in the shop. Fittings, commissions, aftercare and appointments, from a label that would rather make fewer things well.",
+
+  processHeading: "How a Commission Works",
   processDescription:
-    "A structured journey from consultation to delivery, ensuring every detail is perfected.",
+    "Whether it is a single adjustment or a garment designed from nothing, every made-to-measure and bespoke order follows the same five steps.",
 
   processSteps: [
     "Consultation",
-    "Concept",
-    "Curation",
-    "Styling",
+    "Design",
+    "Fabric",
+    "Fittings",
     "Delivery",
   ],
 
-  ctaText: "Ready to elevate your style or brand?",
-  ctaButton: "Book a Consultation",
+  ctaText: "Tell us what you have in mind and we will reply within two working days.",
+  ctaButton: "Start a Conversation",
 }

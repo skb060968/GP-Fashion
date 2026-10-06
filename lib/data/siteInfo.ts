@@ -1,6 +1,6 @@
 export const siteInfo = {
-  siteName: "GP Fashion",
-  tagline: "Indian Fashion Stylist & Creative Director",
-  description: "Celebrating the timeless elegance of Indian fashion with contemporary flair",
-  copyright: "2025 GP Fashion. All rights reserved."
+  siteName: "Piyush Bholla",
+  tagline: "Contemporary Designer Label",
+  description: "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
+  copyright: `${new Date().getFullYear()} Piyush Bholla Label. All rights reserved.`,
 };

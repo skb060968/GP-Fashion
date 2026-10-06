@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import {
-  Sparkles,
-  Scissors,
+  Shirt,
   Ruler,
-  Users,
-  Briefcase,
-  Leaf,
+  PenTool,
+  Scissors,
+  CalendarDays,
+  Handshake,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react"
 import { content } from "@/lib/data"
@@ -14,26 +15,28 @@ import FadeIn from "@/components/FadeIn"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
+const DESCRIPTION =
+  "Ready-to-wear, made to measure, bespoke commissions, alterations and private appointments at the PIYUSH BHOLLA LABEL studio in Delhi."
+
 export const metadata: Metadata = {
   title: "Services | Piyush Bholla",
-  description:
-    "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
+  description: DESCRIPTION,
   openGraph: {
     title: "Services | Piyush Bholla",
-    description:
-      "Explore our design services — from creative and technical design to production, styling, and brand consulting.",
+    description: DESCRIPTION,
     url: `${SITE_URL}/services`,
     images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
   },
 }
 
+// Keyed by slug from lib/data/services.ts
 const iconMap: Record<string, LucideIcon> = {
-  "Creative Design": Sparkles,
-  "Technical Design": Ruler,
-  "Production & Sourcing": Scissors,
-  "Styling & Personal Services": Users,
-  "Consulting & Brand Development": Briefcase,
-  "Specialized Services": Leaf,
+  "ready-to-wear": Shirt,
+  "made-to-measure": Ruler,
+  bespoke: PenTool,
+  "alterations-aftercare": Scissors,
+  appointments: CalendarDays,
+  collaborations: Handshake,
 }
 
 export default function ServicesPage() {
@@ -56,7 +59,7 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
             {services.map((service, index) => {
-              const Icon = iconMap[service.title] || Sparkles
+              const Icon = iconMap[service.slug] || Sparkles
               return (
                 <FadeIn key={service.slug} delay={(index % 2) * 100} className="h-full">
                   <article

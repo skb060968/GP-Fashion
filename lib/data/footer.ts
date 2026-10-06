@@ -13,31 +13,14 @@ export const footer = {
     { label: "My Account", href: "/account" },
   ],
 
-  servicesHeading: "Services Offered",
+  servicesHeading: "Services",
+  // Anchors match the slugs in lib/data/services.ts
   servicesList: [
-    {
-      label: "Creative Design",
-      href: "/services#creative-design",
-    },
-    {
-      label: "Technical Design",
-      href: "/services#technical-design",
-    },
-    {
-      label: "Production & Sourcing",
-      href: "/services#production-sourcing",
-    },
-    {
-      label: "Styling & Personal Services",
-      href: "/services#styling-personal-services",
-    },
-    {
-      label: "Consulting & Brand Development",
-      href: "/services#consulting-brand-development",
-    },
-    {
-      label: "Specialized Services",
-      href: "/services#specialized-services",
-    },
+    { label: "Ready-to-Wear", href: "/services#ready-to-wear" },
+    { label: "Made to Measure", href: "/services#made-to-measure" },
+    { label: "Bespoke Commissions", href: "/services#bespoke" },
+    { label: "Alterations & Aftercare", href: "/services#alterations-aftercare" },
+    { label: "Private Appointments", href: "/services#appointments" },
+    { label: "Collaborations & Stockists", href: "/services#collaborations" },
   ],
 }

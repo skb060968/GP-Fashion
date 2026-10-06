@@ -1,18 +1,12 @@
 // lib/data/categories.ts
-// Standby category listings derived from the legacy collections/dresses data.
-// To be replaced with real product data once the catalogue is restructured.
+// Category metadata and lookups over the generated catalogue (lib/data/shop.ts).
 
-import { collections } from "./collections"
-import { dresses } from "./shop"
+import { products, type Product, type ProductCategory } from "./shop"
 
-export type Product = (typeof dresses)[number]
+export type { Product }
+export type CategorySlug = ProductCategory
 
-export type CategorySlug = "menswear" | "womenswear"
-
-export const categoryMeta: Record<
-  CategorySlug,
-  { title: string; description: string; image: string }
-> = {
+export const categoryMeta: Record<CategorySlug, { title: string; description: string; image: string }> = {
   menswear: {
     title: "Menswear",
     description:
@@ -27,18 +21,22 @@ export const categoryMeta: Record<
   },
 }
 
-function slugsFor(category: CategorySlug): string[] {
-  const picked = collections.filter((c) => {
-    const cat = "category" in c ? c.category : undefined
-    return category === "menswear" ? cat === "menswear" : cat === undefined
-  })
-  // Preserve collection order, de-duplicate.
-  return Array.from(new Set(picked.flatMap((c) => c.dresses)))
+const bySlug = new Map(products.map((p) => [p.slug, p]))
+
+export function getProduct(slug: string): Product | undefined {
+  return bySlug.get(slug)
 }
 
+export function categoryOf(slug: string): CategorySlug | null {
+  return bySlug.get(slug)?.category ?? null
+}
+
+/** Products in one category, in catalogue order (meta.json "order", then name). */
 export function getCategoryProducts(category: CategorySlug): Product[] {
-  const order = slugsFor(category)
-  return order
-    .map((slug) => dresses.find((d) => d.slug === slug))
-    .filter((d): d is Product => Boolean(d))
+  return products.filter((p) => p.category === category)
+}
+
+/** Every product on the storefront. */
+export function getAllProducts(): Product[] {
+  return products
 }

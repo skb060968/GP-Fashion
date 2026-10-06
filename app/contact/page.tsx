@@ -5,14 +5,15 @@ import FadeIn from "@/components/FadeIn"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
+const DESCRIPTION =
+  "Contact the PIYUSH BHOLLA LABEL studio in Delhi about orders, sizing, fittings, bespoke commissions and collaborations."
+
 export const metadata: Metadata = {
   title: "Contact | Piyush Bholla",
-  description:
-    "Get in touch with Piyush Bholla for custom designs, collaborations, or inquiries.",
+  description: DESCRIPTION,
   openGraph: {
     title: "Contact | Piyush Bholla",
-    description:
-      "Get in touch with Piyush Bholla for custom designs, collaborations, or inquiries.",
+    description: DESCRIPTION,
     url: `${SITE_URL}/contact`,
     images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
   },

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Menu, X, Heart, ShoppingBag, User } from "lucide-react"
+import { Menu, X, Heart, ShoppingBag, User, Search } from "lucide-react"
 import { useCart } from "@/context/CartContext"
 import { useUser } from "@/context/UserContext"
 import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
@@ -19,6 +19,7 @@ const menuLinks = [
 ]
 
 const iconLinks = [
+  { label: "Search", href: "/shop?focus=1", Icon: Search },
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
   { label: "Bag", href: "/bag", Icon: ShoppingBag },
   { label: "Account", href: "/account", Icon: User },

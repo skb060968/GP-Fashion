@@ -1,74 +1,78 @@
+// lib/data/services.ts
+// What PIYUSH BHOLLA LABEL offers, for customers and for partners.
+// Slugs double as anchor ids on /services and are linked from the footer.
+
 export const services = [
   {
-    title: "Creative Design",
-    slug: "creative-design",
+    title: "Ready-to-Wear",
+    slug: "ready-to-wear",
     description:
-      "Transforming ideas into captivating visuals, blending artistry with fashion storytelling.",
+      "Seasonal menswear and womenswear, designed in Delhi and made in limited runs. Every piece in the shop is finished, sized and ready to ship.",
     features: [
-      "Concept development & mood boards",
-      "Sketching and digital illustration",
-      "Trend forecasting & inspiration research",
-      "Fabric and color story creation",
+      "Limited-run menswear and womenswear collections",
+      "Standard sizing with detailed measurements on each piece",
+      "Secure UPI payment with order tracking",
+      "Delivery across India; international on request",
     ],
   },
   {
-    title: "Technical Design",
-    slug: "technical-design",
+    title: "Made to Measure",
+    slug: "made-to-measure",
     description:
-      "Precision-driven expertise ensuring every garment is production-ready.",
+      "Any piece from the current collection, cut to your measurements. The design stays the same; the fit becomes yours.",
     features: [
-      "Pattern making & grading",
-      "Technical flats & CAD drawings",
-      "Measurement specs & fit analysis",
-      "Garment construction detailing",
+      "Measurements taken at the studio or guided online",
+      "Length, sleeve and proportion adjustments",
+      "A single fitting before final finishing",
+      "Lead time shared at the time of order",
     ],
   },
   {
-    title: "Production & Sourcing",
-    slug: "production-sourcing",
+    title: "Bespoke Commissions",
+    slug: "bespoke",
     description:
-      "Streamlined sourcing and production solutions with quality control.",
+      "One-off garments designed with you from the first sketch. For weddings, ceremonies, performances and occasions that call for something that does not yet exist.",
     features: [
-      "Vendor identification & management",
-      "Material sourcing & sampling",
-      "Production scheduling & oversight",
-      "Quality assurance & compliance",
+      "Consultation, concept and sketches",
+      "Fabric and embellishment sourcing",
+      "Toile and fittings through to the finished garment",
+      "Full looks for couples, families and wedding parties",
     ],
   },
   {
-    title: "Styling & Personal Services",
-    slug: "styling-personal-services",
+    title: "Alterations & Aftercare",
+    slug: "alterations-aftercare",
     description:
-      "Personalized styling experiences that celebrate individuality.",
+      "Clothes should last. We adjust, repair and refresh PIYUSH BHOLLA pieces so they keep their shape and keep being worn.",
     features: [
-      "Wardrobe consultation",
-      "Event styling & look curation",
-      "Personal shopping assistance",
-      "Seasonal outfit planning",
+      "Fit adjustments on purchased pieces",
+      "Repairs to seams, closures and embroidery",
+      "Fabric-specific care guidance",
+      "Pressing and preparation before an occasion",
     ],
   },
   {
-    title: "Consulting & Brand Development",
-    slug: "consulting-brand-development",
+    title: "Private Appointments",
+    slug: "appointments",
     description:
-      "Strategic guidance to shape and elevate fashion brands.",
+      "Time with the designer, by prior booking. See the collection in person, try pieces, and plan a wardrobe or a single look around the way you live.",
     features: [
-      "Brand identity creation",
-      "Market positioning strategies",
-      "Collection planning & merchandising",
-      "Marketing & campaign consultation",
+      "One-to-one appointments at the Delhi studio",
+      "Video consultations for clients outside Delhi",
+      "Wardrobe planning across seasons and occasions",
+      "Gifting guidance and sizing help",
     ],
   },
   {
-    title: "Specialized Services",
-    slug: "specialized-services",
+    title: "Collaborations & Stockists",
+    slug: "collaborations",
     description:
-      "Unique offerings including sustainability and artisan collaborations.",
+      "For stylists, photographers, performers, press and retailers who want to work with the label.",
     features: [
-      "Sustainable fashion consulting",
-      "Custom embroidery & embellishment",
-      "Artisan collaborations",
-      "Capsule collections",
+      "Editorial, campaign and stage pulls",
+      "Celebrity and talent dressing",
+      "Wholesale and consignment for multi-brand stores",
+      "Press, imagery and interview requests",
     ],
   },
 ]

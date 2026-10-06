@@ -6,13 +6,13 @@ import AboutUs from "@/components/AboutUs"
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 export const metadata: Metadata = {
-  title: "GP Fashion | Premium Designer Wear",
+  title: "Piyush Bholla | Contemporary Designer Label",
   description:
-    "Discover premium designer wear crafted with intention, texture, and timeless silhouettes.",
+    "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
   openGraph: {
-    title: "GP Fashion | Premium Designer Wear",
+    title: "Piyush Bholla | Contemporary Designer Label",
     description:
-      "Discover premium designer wear crafted with intention, texture, and timeless silhouettes.",
+      "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
     url: SITE_URL,
     images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
   },

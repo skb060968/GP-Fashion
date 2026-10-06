@@ -1,76 +1,65 @@
+// lib/data/faq.ts
+// Questions shown on /contact. Keep answers factual; they describe how the store actually works.
+
 export const faq = [
-    {
-    question: "What styling services do you offer?",
+  {
+    question: "How do I pay?",
     answer:
-      "I offer a complete range of styling services including personal styling, bridal styling, celebrity styling, editorial shoots, fashion campaigns, and wardrobe curation for special occasions."
+      "Orders are paid by UPI. At checkout you scan the QR code or pay to our UPI ID, then enter the transaction reference. We confirm the payment and email you once the order is verified. Card and net-banking payments are coming soon.",
   },
   {
-    question: "Do you offer bridal and wedding styling?",
+    question: "How long does delivery take?",
     answer:
-      "Absolutely. Bridal styling includes outfit selection, jewelry coordination, draping, fittings, and overall look planning for pre-wedding, wedding, and post-wedding events."
+      "Ready-to-wear pieces are dispatched within 3 to 5 working days of payment verification and usually arrive within a week across India. Made-to-measure and bespoke orders have their own lead time, which we share before you confirm.",
   },
   {
-    question: "Can you style for destination weddings or events?",
+    question: "Do you ship outside India?",
     answer:
-      "Yes. I take up destination weddings and outstation projects. Travel and logistics are discussed and finalized prior to confirmation."
+      "Yes, on request. Write to us with your address and the pieces you are interested in, and we will quote shipping and duties before you order.",
   },
   {
-    question: "How does the personal styling process work?",
+    question: "Which size should I choose?",
     answer:
-      "We begin with a consultation to understand your preferences, lifestyle, and goals. Based on this, I curate looks, source outfits, and provide complete styling guidance."
-  },
-  
-  {
-    question: "Do you help with wardrobe editing and closet organization?",
-    answer:
-      "Yes. Wardrobe editing and closet curation help you maximize existing pieces while identifying gaps for future purchases."
+      "Each product page lists the sizes available. If you are between sizes or unsure, send us your measurements through the contact form and we will recommend one. Most pieces can also be made to measure.",
   },
   {
-    question: "Can you style for photoshoots and brand campaigns?",
+    question: "Can a piece be made to my measurements?",
     answer:
-      "I work extensively on editorial shoots, fashion campaigns, lookbooks, and digital content for brands, designers, and creatives."
+      "Yes. Any piece in the current collection can be cut to your measurements for a small additional charge. Measurements can be taken at the studio or guided over a video call.",
   },
   {
-    question: "Do you collaborate with designers and photographers?",
+    question: "Do you take bespoke commissions?",
     answer:
-      "Yes. I regularly collaborate with designers, photographers, makeup artists, and production teams to create cohesive visual stories."
+      "We do. Bespoke garments start with a consultation, move through sketches, fabric selection and fittings, and end with a finished piece made only for you. Allow 6 to 10 weeks for most commissions, longer for heavily embroidered work.",
   },
   {
-    question: "Is virtual styling available?",
+    question: "Can I track my order?",
     answer:
-      "Yes. Virtual styling services are available for clients who prefer online consultations, mood boards, and digital look planning."
+      "Yes. Use the Track Order page with your order number and the email used at checkout. Signed-in customers can also see every order under My Account.",
   },
   {
-    question: "How far in advance should I book your services?",
+    question: "What is your return and exchange policy?",
     answer:
-      "For bridal and large projects, I recommend booking at least 2–3 months in advance. For personal styling and shoots, 2–3 weeks is usually sufficient."
+      "Unworn ready-to-wear pieces with tags intact can be exchanged for another size or piece within 7 days of delivery. Made-to-measure and bespoke garments are not returnable, but we will adjust the fit if something is not right.",
   },
   {
-    question: "Do you work internationally?",
+    question: "How should I care for my garment?",
     answer:
-      "Yes. I am available for international projects, subject to availability and travel arrangements."
+      "Care instructions are stitched into each piece. As a rule, embroidered and silk garments should be dry cleaned, stored flat or on padded hangers, and kept away from direct sunlight.",
   },
   {
-    question: "What are your pricing and packages?",
+    question: "Can I visit the studio?",
     answer:
-      "Pricing varies based on the scope, duration, and type of service. Customized packages are created after an initial consultation."
+      "Studio visits in Delhi are by appointment. Book through the contact form or by phone, and we will set aside time to show you the collection and take measurements if needed.",
   },
   {
-    question: "Can you style for red carpet or public appearances?",
+    question: "Do you work with stylists, photographers and stores?",
     answer:
-      "Yes. I specialize in styling for red carpet events, award shows, public appearances, and media engagements."
+      "Yes. We lend pieces for editorial and campaign shoots, dress talent for events, and supply select multi-brand stores. Write to us with the project details and dates.",
   },
   {
-    question: "Do you provide makeup and hair services as well?",
+    question: "I have placed an order and need to change it. What do I do?",
     answer:
-      "While I focus on styling, I collaborate with trusted makeup artists and hairstylists to offer complete looks when required."
+      "Reply to your order confirmation email or call us as soon as possible, quoting the order number. Changes to size or address are easy before dispatch; after dispatch we will help you arrange an exchange.",
   },
-  {
-    question: "How do I get started?",
-    answer:
-      "You can reach out via the contact form or email to schedule a consultation. From there, we discuss your requirements and next steps."
-  }
-  
-];
-
-
+]

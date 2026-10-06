@@ -2,48 +2,25 @@
 // SINGLE SOURCE OF TRUTH — CONTACT PAGE CONTENT
 
 export const contact = {
-  heading: "Let’s Work Together",
+  heading: "Contact",
   description:
-    "Have a project in mind or need expert fashion styling guidance? Reach out and let’s create something exceptional together.",
+    "Questions about a piece, an order, a fitting or a collaboration. Write to us and a person at the studio will reply.",
 
-  subHeading: "Get in Touch",
+  subHeading: "The Studio",
   subDescription:
-    "Whether you’re a brand, designer, photographer, or individual client, I’m open to collaborations, consultations, and creative partnerships.",
+    "PIYUSH BHOLLA LABEL is based in Delhi. We work with customers across India and abroad, and visits to the studio are by appointment.",
 
   instagram: "https://www.instagram.com/piyushbholla.label",
   email: "piyushbholla@gmail.com",
   phone: "+91 9821818352",
-  location: "Delhi, India",
+  location: "New Delhi, India",
 
   availability:
-    "Available for freelance projects, brand collaborations, and styling consultations worldwide.",
+    "Monday to Saturday, 11 am to 7 pm IST. We reply to messages within two working days.",
 
-  formHeading: "Send a Message",
+  formHeading: "Write to Us",
 
   // 🔐 Web3Forms Access Key
   // Safe to keep here (not secret, but centralized)
   web3formKey: "3ff1a5f0-5f4c-42d3-967d-413a0f8adc75",
 }
-
-export const faq = [
-  {
-    question: "What services do you offer?",
-    answer:
-      "I offer fashion styling, creative direction, brand consulting, editorial styling, and personal styling services.",
-  },
-  {
-    question: "Do you work with international clients?",
-    answer:
-      "Yes, I collaborate with clients globally and am available for international projects and remote consultations.",
-  },
-  {
-    question: "How far in advance should I book?",
-    answer:
-      "For major projects, booking at least 2–4 weeks in advance is recommended. Availability may vary.",
-  },
-  {
-    question: "Do you offer custom packages?",
-    answer:
-      "Absolutely. Every project is unique, and I tailor services to match your specific needs and vision.",
-  },
-]
