@@ -93,9 +93,14 @@ export function getCollectionProducts(slug: string): Product[] {
 export type CategoryView = { slug: string; title: string; kind: "new-arrivals" | "classification" | "bestsellers" }
 
 export function getCategoryViews(category: CategorySlug): CategoryView[] {
-  return [
+  const views: CategoryView[] = [
     { slug: "new-arrivals", title: "New Arrivals", kind: "new-arrivals" },
     ...getClassifications(category).map((c) => ({ slug: c.slug, title: c.title, kind: "classification" as const })),
-    { slug: "bestsellers", title: "Bestsellers", kind: "bestsellers" },
   ]
+
+  if (getCategoryProducts(category).some((product) => product.bestseller)) {
+    views.push({ slug: "bestsellers", title: "Bestsellers", kind: "bestsellers" })
+  }
+
+  return views
 }

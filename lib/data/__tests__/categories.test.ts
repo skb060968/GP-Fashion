@@ -63,11 +63,19 @@ describe("classifications and views", () => {
       expect(covered).toBe(getCategoryProducts(c).length);
     });
 
-    it(`${c}: views start with New Arrivals and end with Bestsellers`, () => {
+    it(`${c}: views contain New Arrivals, populated classifications, and Bestsellers only when flagged`, () => {
       const views = getCategoryViews(c);
+      const categoryProducts = getCategoryProducts(c);
+      const expectedClassifications = getClassifications(c).map((x) => x.slug);
+      const classificationViews = views.filter((view) => view.kind === "classification");
+      const hasFlaggedBestseller = categoryProducts.some((product) => product.bestseller);
+
       expect(views[0]).toMatchObject({ slug: "new-arrivals", kind: "new-arrivals" });
-      expect(views[views.length - 1]).toMatchObject({ slug: "bestsellers", kind: "bestsellers" });
-      expect(views.slice(1, -1).map((v) => v.slug)).toEqual(getClassifications(c).map((x) => x.slug));
+      expect(classificationViews.map((view) => view.slug)).toEqual(expectedClassifications);
+      expect(views.some((view) => view.slug === "bestsellers")).toBe(hasFlaggedBestseller);
+      if (hasFlaggedBestseller) {
+        expect(views[views.length - 1]).toMatchObject({ slug: "bestsellers", kind: "bestsellers" });
+      }
     });
   }
 });

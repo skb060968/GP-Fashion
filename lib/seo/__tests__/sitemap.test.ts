@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import sitemap, { STATIC_PATHS, categoryViewPaths } from "@/app/sitemap";
-import { getAllProducts, getCollections } from "@/lib/data/categories";
+import { CATEGORY_SLUGS, getAllProducts, getCategoryProducts, getCollections } from "@/lib/data/categories";
 
 const BASE_URL = process.env.SITE_URL || "https://gpfashion.in";
 
@@ -13,11 +13,12 @@ describe("Sitemap completeness", () => {
     for (const p of STATIC_PATHS) expect(urls).toContain(`${BASE_URL}${p.path}`);
   });
 
-  it("contains every category view (new arrivals, classifications, bestsellers)", () => {
+  it("contains every available category view and omits empty Bestsellers views", () => {
     for (const p of categoryViewPaths()) expect(urls).toContain(`${BASE_URL}${p}`);
-    for (const c of ["menswear", "womenswear"]) {
+    for (const c of CATEGORY_SLUGS) {
       expect(urls).toContain(`${BASE_URL}/${c}/new-arrivals`);
-      expect(urls).toContain(`${BASE_URL}/${c}/bestsellers`);
+      const hasFlaggedBestseller = getCategoryProducts(c).some((product) => product.bestseller);
+      expect(urls.includes(`${BASE_URL}/${c}/bestsellers`)).toBe(hasFlaggedBestseller);
     }
   });
 
