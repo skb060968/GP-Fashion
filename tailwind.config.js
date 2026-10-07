@@ -33,7 +33,8 @@ module.exports = {
         "brand-gold": "#D4AF37",
       },
       fontFamily: {
-        serif: ["Playfair Display", "serif"],
+        sans: ["var(--font-jost)", "sans-serif"],
+        serif: ["var(--font-cinzel)", "serif"],
         cinzel: ["var(--font-cinzel)", "serif"],
         jost: ["var(--font-jost)", "sans-serif"],
       },
