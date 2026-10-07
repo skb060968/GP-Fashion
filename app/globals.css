@@ -2,53 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Jost Static";
-  src: url("../lib/pdf/fonts/Jost-Regular.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Jost Static";
-  src: url("../lib/pdf/fonts/Jost-SemiBold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Cinzel Static";
-  src: url("../lib/pdf/fonts/Cinzel-Bold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-}
-
 html {
-  font-size: 16px;
   scroll-behavior: smooth;
-}
-
-@media (min-width: 1536px) {
-  html {
-    font-size: 20px;
-  }
-}
-
-@media (min-width: 2560px) {
-  html {
-    font-size: 24px;
-  }
-}
-
-@supports (font-size: clamp(16px, 2vw, 24px)) {
-  @media (min-width: 1280px) {
-    html {
-      font-size: clamp(16px, calc(8px + 0.625vw), 24px);
-    }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -58,7 +13,7 @@ html {
 }
 
 body {
-  font-family: "Jost Static", sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: white;
   color: #111827;
   -webkit-tap-highlight-color: transparent;
@@ -67,45 +22,20 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Cinzel Static", serif;
   letter-spacing: -0.02em;
 }
 
-.font-jost,
-.font-sans {
-  font-family: "Jost Static", sans-serif;
-}
-
-.font-cinzel,
-.font-serif {
-  font-family: "Cinzel Static", serif;
-}
-
-@supports (font-variation-settings: normal) {
-  body,
-  .font-jost,
-  .font-sans {
-    font-family: var(--font-jost), "Jost Static", sans-serif;
-  }
-
-  h1, h2, h3, h4, h5, h6,
-  .font-cinzel,
-  .font-serif {
-    font-family: var(--font-cinzel), "Cinzel Static", serif;
-  }
-}
-
 :root {
-  --nav-h: 112px;
+  --nav-h: 7rem;
 }
 @media (min-width: 640px) {
-  :root { --nav-h: 160px; }
+  :root { --nav-h: 10rem; }
 }
 @media (min-width: 1024px) {
-  :root { --nav-h: 192px; }
+  :root { --nav-h: 12rem; }
 }
 @media (min-width: 1536px) {
-  :root { --nav-h: 256px; }
+  :root { --nav-h: 16rem; }
 }
 
 [id] {
@@ -148,8 +78,6 @@ video {
 
 .container-max {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-
-  @apply 2xl:max-w-[1600px] 2xl:px-12 3xl:max-w-[1800px] 3xl:px-16;
 }
 
 .btn-primary {
@@ -316,7 +244,7 @@ img {
 }
 
 .section-divider {
-  @apply mx-auto h-px w-full max-w-7xl bg-black/10 2xl:max-w-[1600px] 3xl:max-w-[1800px];
+  @apply mx-auto h-px w-full max-w-7xl bg-black/10;
 }
 
 .card-elevated {
