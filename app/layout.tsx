@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${cinzel.variable} ${jost.variable}`}>
-      <body className={`${jost.className} flex min-h-screen flex-col`}>
+      <body className="flex min-h-screen flex-col">
         <UserProvider>
           <CartProvider>
             <WishlistProvider>
