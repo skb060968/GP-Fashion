@@ -32,10 +32,10 @@ h1, h2, h3, h4, h5, h6 {
   :root { --nav-h: 10rem; }
 }
 @media (min-width: 1024px) {
-  :root { --nav-h: 12rem; }
+  :root { --nav-h: 11rem; }
 }
 @media (min-width: 1536px) {
-  :root { --nav-h: 16rem; }
+  :root { --nav-h: 14rem; }
 }
 
 [id] {
