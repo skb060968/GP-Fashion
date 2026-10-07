@@ -41,7 +41,7 @@ export default function CategoryShowcase({
         <FadeIn className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <h2
             id={`${id}-heading`}
-            className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-6xl 2xl:text-7xl"
+            className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-5xl 2xl:text-6xl"
           >
             {title}
           </h2>

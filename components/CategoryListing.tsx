@@ -53,7 +53,7 @@ export default function CategoryListing({
                 {eyebrow.label}
               </Link>
             )}
-            <h1 className={`font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-6xl ${eyebrow ? "mt-3" : ""}`}>
+            <h1 className={`font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-5xl ${eyebrow ? "mt-3" : ""}`}>
               {title}
             </h1>
             <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />

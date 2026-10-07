@@ -286,7 +286,7 @@ export default function Navbar() {
             className="h-12 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
           />
 
-          <span className="mt-1 text-center font-cinzel text-base font-bold uppercase leading-tight tracking-[0.04em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-4xl 2xl:text-5xl">
+          <span className="mt-1 text-center font-cinzel text-base font-bold uppercase leading-tight tracking-[0.04em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-3xl 2xl:text-4xl">
             Piyush
             <br className="sm:hidden" />
             <span className="hidden sm:inline">&nbsp;</span>

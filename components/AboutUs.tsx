@@ -21,7 +21,7 @@ export default function AboutUs() {
         <FadeIn className="text-center">
           <h2
             id="about-us-heading"
-            className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-6xl 2xl:text-7xl"
+            className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-5xl 2xl:text-6xl"
           >
             {heading}
           </h2>
@@ -57,7 +57,7 @@ export default function AboutUs() {
               <p className="font-jost text-xs font-semibold uppercase tracking-[0.3em] text-black/50">
                 {founder.role}
               </p>
-              <h3 className="mt-3 font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-4xl lg:tracking-[0.25em]">
+              <h3 className="mt-3 font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-3xl lg:tracking-[0.25em]">
                 {founder.name}
               </h3>
               <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30 lg:mx-0" />
@@ -72,7 +72,7 @@ export default function AboutUs() {
 
         <div className="mt-20 border-t border-black/10 pt-16 sm:mt-24 lg:mt-32 lg:pt-20">
           <FadeIn className="text-center">
-            <h3 className="font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-4xl lg:tracking-[0.25em]">
+            <h3 className="font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-3xl lg:tracking-[0.25em]">
               {valuesHeading}
             </h3>
             <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />

@@ -75,7 +75,7 @@ export default function SplashScreen() {
         priority
         className="animate-splash-pulse h-28 w-auto sm:h-36 lg:h-44"
       />
-      <span className="mt-5 font-cinzel text-base font-bold uppercase tracking-[0.04em] text-black sm:text-xl lg:text-2xl">
+      <span className="mt-5 font-cinzel text-base font-bold uppercase tracking-[0.04em] text-black sm:text-xl lg:text-xl">
         Piyush Bholla
       </span>
     </div>
