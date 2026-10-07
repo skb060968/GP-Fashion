@@ -16,10 +16,7 @@ type MenuItem = MenuLeaf | { label: string; children: MenuLeaf[] }
 const menuItems: MenuItem[] = [
   ...CATEGORY_SLUGS.map((category) => ({
     label: categoryMeta[category].title,
-    children: [
-      { label: `All ${categoryMeta[category].title}`, href: `/${category}` },
-      ...getCategoryViews(category).map((v) => ({ label: v.title, href: `/${category}/${v.slug}` })),
-    ],
+    children: getCategoryViews(category).map((v) => ({ label: v.title, href: `/${category}/${v.slug}` })),
   })),
   {
     label: "Collections",
@@ -36,7 +33,7 @@ const menuItems: MenuItem[] = [
 
 const MENU_ITEM_CLASS =
   "font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:text-base sm:tracking-[0.18em] lg:text-lg 2xl:text-xl"
-const MENU_PAD = "px-4 py-3 sm:px-6 lg:px-8 lg:py-4"
+const MENU_PAD = "px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3"
 
 const iconLinks = [
   { label: "Search", href: "/shop?focus=1", Icon: Search },
@@ -211,7 +208,7 @@ export default function Navbar() {
 
           <div
             id="primary-menu"
-            className={`absolute left-3 top-full max-h-[calc(100vh-var(--nav-h))] w-52 origin-top-left overflow-y-auto border border-t-0 border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-3 lg:left-10 lg:w-80 lg:py-4 2xl:left-14 ${
+            className={`absolute left-3 top-full w-52 origin-top-left border border-t-0 border-black/10 bg-white py-1 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-2 lg:left-10 lg:w-80 2xl:left-14 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -262,7 +259,7 @@ export default function Navbar() {
                           href={child.href}
                           tabIndex={menuOpen && expanded ? 0 : -1}
                           onClick={() => setMenuOpen(false)}
-                          className="block py-2.5 pl-8 pr-4 font-jost text-xs font-medium uppercase tracking-[0.15em] text-black/70 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:pl-10 sm:text-sm lg:pl-12 lg:text-base"
+                          className="block py-2 pl-8 pr-4 font-jost text-xs font-medium uppercase tracking-[0.15em] text-black/70 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:py-2.5 sm:pl-10 sm:text-sm lg:pl-12 lg:text-base"
                         >
                           {child.label}
                         </Link>
