@@ -21,7 +21,7 @@ export default function AboutUs() {
         <FadeIn className="text-center">
           <h2
             id="about-us-heading"
-            className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em] 2xl:text-7xl"
+            className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-6xl 2xl:text-7xl"
           >
             {heading}
           </h2>

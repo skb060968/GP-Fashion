@@ -28,7 +28,7 @@ export default function Footer() {
                 height={320}
                 className="h-16 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20"
               />
-              <span className="mt-2 whitespace-nowrap font-cinzel text-lg font-bold uppercase tracking-[0.25em] sm:text-xl">
+              <span className="mt-2 whitespace-nowrap font-cinzel text-lg font-bold uppercase tracking-[0.04em] sm:text-xl">
                 Piyush Bholla
               </span>
             </Link>

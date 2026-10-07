@@ -55,7 +55,7 @@ function LoginForm() {
     <form onSubmit={handleLogin} noValidate className="card-elevated w-full max-w-sm bg-white p-8">
       <div className="flex flex-col items-center text-center">
         <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} priority className="h-12 w-auto" />
-        <span className="mt-2 font-cinzel text-sm font-bold uppercase tracking-[0.25em]">Piyush Bholla</span>
+        <span className="mt-2 font-cinzel text-sm font-bold uppercase tracking-[0.04em]">Piyush Bholla</span>
         <span className="mt-1 font-jost text-[11px] uppercase tracking-[0.2em] text-black/50">Admin</span>
       </div>
 

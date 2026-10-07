@@ -54,7 +54,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     <Link href="/admin" className="flex items-center gap-3 focus-visible:ring-black">
       <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} className="h-8 w-auto" />
       <span className="leading-tight">
-        <span className="block font-cinzel text-xs font-bold uppercase tracking-[0.25em]">Piyush Bholla</span>
+        <span className="block font-cinzel text-xs font-bold uppercase tracking-[0.04em]">Piyush Bholla</span>
         <span className="block font-jost text-[11px] uppercase tracking-[0.2em] text-black/50">Admin</span>
       </span>
     </Link>
@@ -137,7 +137,7 @@ export function AdminPageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between lg:mb-8">
       <div>
-        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em] sm:text-2xl">{title}</h1>
+        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.04em] sm:text-2xl">{title}</h1>
         {description && <p className="mt-1 font-jost text-sm text-black/60">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

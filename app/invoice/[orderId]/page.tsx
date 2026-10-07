@@ -74,7 +74,7 @@ function InvoiceContent() {
   if (!order) {
     return (
       <div className="mx-auto max-w-md px-4 py-32 text-center">
-        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em]">Invoice not available</h1>
+        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.04em]">Invoice not available</h1>
         <p className="mt-4 font-jost text-black/65">
           We couldn&apos;t find that order, or you need to verify it first. Track the order with your mobile number, or sign in to the account that placed it.
         </p>
@@ -124,12 +124,12 @@ function InvoiceContent() {
                   priority
                   className="h-14 w-auto"
                 />
-                <span className="mt-2 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.25em]">
+                <span className="mt-2 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.04em]">
                   Piyush Bholla
                 </span>
               </div>
               <div className="font-jost sm:text-right">
-                <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.25em]">Invoice</h1>
+                <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em]">Invoice</h1>
                 <p className="mt-2 text-sm text-black/60">
                   No. <span className="font-semibold text-black">{order.orderCode}</span>
                 </p>

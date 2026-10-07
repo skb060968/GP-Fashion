@@ -16,7 +16,7 @@ export default function NotFound() {
           <FadeIn className="mx-auto flex max-w-md flex-col items-center text-center">
             <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} className="h-16 w-auto opacity-80" />
             <p className="mt-8 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">404</p>
-            <h1 className="mt-3 font-cinzel text-2xl font-bold uppercase tracking-[0.15em] sm:text-3xl">Page not found</h1>
+            <h1 className="mt-3 font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">Page not found</h1>
             <p className="mt-4 font-jost text-base leading-relaxed text-black/65 sm:text-lg">
               The page you are looking for has moved or never existed. The pieces, however, are all still here.
             </p>

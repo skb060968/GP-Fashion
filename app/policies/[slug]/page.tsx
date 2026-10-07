@@ -45,7 +45,7 @@ export default async function PolicyPage({ params }: Props) {
             <div className="space-y-10">
               {policy.sections.map((s) => (
                 <section key={s.heading}>
-                  <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">{s.heading}</h2>
+                  <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.04em] sm:text-lg">{s.heading}</h2>
                   <div className="mt-4 space-y-4 font-jost text-base leading-relaxed text-black/75">
                     {s.paragraphs.map((p) => (
                       <p key={p}>{p}</p>

@@ -10,7 +10,7 @@ interface PageHeadingProps {
 export default function PageHeading({ title, meta, as: Tag = "h1" }: PageHeadingProps) {
   return (
     <FadeIn className="mx-auto max-w-3xl text-center">
-      <Tag className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-5xl lg:tracking-[0.25em]">
+      <Tag className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-5xl">
         {title}
       </Tag>
       <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />

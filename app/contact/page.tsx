@@ -34,7 +34,7 @@ export default function ContactPage() {
         <div className="container-max">
 
           <FadeIn className="mx-auto max-w-3xl text-center">
-            <h1 className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em]">
+            <h1 className="font-cinzel text-3xl font-bold uppercase tracking-[0.04em] sm:text-4xl lg:text-6xl">
               {contact.heading}
             </h1>
             <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
@@ -47,7 +47,7 @@ export default function ContactPage() {
 
             <FadeIn className="space-y-10">
               <div>
-                <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.15em] sm:text-3xl">
+                <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">
                   {contact.subHeading}
                 </h2>
                 <p className="mt-4 font-jost text-base leading-relaxed text-black/75 sm:text-lg">
@@ -107,7 +107,7 @@ export default function ContactPage() {
 
         <div className="container-max section-padding">
           <FadeIn className="text-center">
-            <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-4xl lg:tracking-[0.25em]">
+            <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl lg:text-4xl">
               Frequently Asked Questions
             </h2>
             <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
