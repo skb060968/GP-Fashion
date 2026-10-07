@@ -13,8 +13,8 @@ module.exports = {
       },
       fontFamily: {
         serif: ["Playfair Display", "serif"],
-        cinzel: ["var(--font-jost)", "sans-serif"],
-        jost: ["var(--font-jost)", "sans-serif"],
+        cinzel: ["Cinzel Variable", "serif"],
+        jost: ["Jost Variable", "sans-serif"],
       },
     },
   },
