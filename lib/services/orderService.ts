@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { OrderStatus, PaymentMethod } from "@prisma/client";
 
-// Generate short order codes like 26001, 26002, etc.
 async function generateOrderCode(year: number) {
   const yearSuffix = year.toString().slice(-2);
 
@@ -11,7 +10,7 @@ async function generateOrderCode(year: number) {
   });
 
   const lastSeq = lastOrder
-    ? parseInt(lastOrder.orderCode.slice(2)) // after YY
+    ? parseInt(lastOrder.orderCode.slice(2))
     : 0;
 
   const nextSeq = (lastSeq + 1).toString().padStart(3, "0");
@@ -22,8 +21,8 @@ async function generateOrderCode(year: number) {
 export async function createOrder(data: {
   amount: number;
   discount?: number;
-  status: OrderStatus;          // ✅ required
-  paymentMethod: PaymentMethod; // ✅ required
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
 }) {
   const year = new Date().getFullYear();
   const orderCode = await generateOrderCode(year);

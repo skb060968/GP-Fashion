@@ -51,7 +51,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [...staticPages, ...viewPages, ...collectionPages, ...productPages];
 }
 
-/** /menswear/new-arrivals, /menswear/<classification>, /menswear/bestsellers, and the same for womenswear. */
 export function categoryViewPaths(): string[] {
   return CATEGORY_SLUGS.flatMap((c) => getCategoryViews(c).map((v) => `/${c}/${v.slug}`));
 }

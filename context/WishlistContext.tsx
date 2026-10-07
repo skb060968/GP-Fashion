@@ -8,12 +8,11 @@ export type WishlistItem = {
   slug: string
   name: string
   price: number
-  /** Small (300×400) preview, used when adding to the bag. */
+
   coverThumbnail: string
-  /** Full-size cover (1200×1600), used for the wishlist card. Older saved
-      items may lack it; fall back to coverThumbnail. */
+
   coverImage?: string
-  /** Available sizes, so the wishlist page can add straight to the bag. */
+
   sizes: string[]
 }
 
@@ -29,7 +28,6 @@ type WishlistContextType = {
 const STORAGE_KEY = "wishlist"
 const WishlistContext = createContext<WishlistContextType | null>(null)
 
-/** Union by slug; server order first, then local-only additions. */
 const mergeWishlists = (server: WishlistItem[], local: WishlistItem[]) => {
   const out = [...server]
   const seen = new Set(server.map((i) => i.slug))
@@ -47,7 +45,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) setWishlist(JSON.parse(stored))
     } catch {
-      /* ignore corrupt storage */
+
     }
     setLoaded(true)
   }, [])

@@ -3,17 +3,16 @@ import Link from "next/link"
 import FadeIn from "@/components/FadeIn"
 
 interface CategoryShowcaseProps {
-  /** Anchor id so the navbar menu can jump here (e.g. "menswear"). */
+
   id: string
   title: string
   description: string
-  /** Wide (16:9) editorial image. Shown uncropped on phones and tablets;
-      on large screens it fills the viewport width and crops gently top/bottom. */
+
   image: string
   imageAlt: string
   ctaLabel?: string
   ctaHref?: string
-  /** Load eagerly for sections near the top of the page. */
+
   priority?: boolean
 }
 
@@ -33,12 +32,11 @@ export default function CategoryShowcase({
       aria-labelledby={`${id}-heading`}
       className="bg-white text-black"
     >
-      {/* Hairline separating this section from the one above */}
+
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="section-divider" />
       </div>
 
-      {/* Header */}
       <div className="container-max pt-20 sm:pt-24 lg:pt-32">
         <FadeIn className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <h2
@@ -54,7 +52,6 @@ export default function CategoryShowcase({
         </FadeIn>
       </div>
 
-      {/* Full-bleed image */}
       <FadeIn delay={120} className="mt-10 sm:mt-12 lg:mt-16">
         <div className="relative aspect-video w-full overflow-hidden bg-stone-100 lg:aspect-auto lg:h-[85vh]">
           <Image
@@ -69,7 +66,6 @@ export default function CategoryShowcase({
         </div>
       </FadeIn>
 
-      {/* Call to action, closing the section */}
       <FadeIn className="flex justify-center px-4 py-14 sm:py-16 lg:py-20">
         <Link href={ctaHref} className="btn-outline-dark">
           {ctaLabel}

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fc from "fast-check";
 
-// Mock prisma before importing the service
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     coupon: {
@@ -24,11 +23,8 @@ const mockedPrisma = prisma as unknown as {
   };
 };
 
-// --- Generators ---
-
 const discountTypeArb = fc.constantFrom("PERCENTAGE" as const, "FIXED" as const);
 
-/** Generate a coupon record with random field combinations */
 const couponRecordArb = fc.record({
   id: fc.string({ minLength: 1, maxLength: 10 }),
   code: fc.string({ minLength: 1, maxLength: 20 }),
@@ -50,9 +46,6 @@ const couponRecordArb = fc.record({
 
 const orderSubtotalArb = fc.integer({ min: 1, max: 10000000 });
 
-// --- Helpers ---
-
-/** Determine expected validation result for a coupon + subtotal */
 function expectedResult(
   coupon: {
     isActive: boolean;
@@ -75,23 +68,11 @@ function expectedResult(
   return { valid: true };
 }
 
-// --- Property Tests ---
-
-// Feature: website-improvements, Property 9: Coupon validation correctly evaluates all conditions
 describe("Property 9: Coupon validation correctly evaluates all conditions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  /**
-   * **Validates: Requirements 4.3, 4.5**
-   *
-   * For any coupon record and order subtotal, validateCoupon should return
-   * { valid: true } if and only if the code exists, isActive is true,
-   * expiresAt is in the future (or null), currentUses < maxUses (or maxUses is null),
-   * and orderSubtotal >= minOrderAmount (or minOrderAmount is null).
-   * When invalid, the error field should identify the specific failing condition.
-   */
   it("returns the correct validation result based on coupon conditions", async () => {
     await fc.assert(
       fc.asyncProperty(couponRecordArb, orderSubtotalArb, async (coupon, subtotal) => {
@@ -116,21 +97,13 @@ describe("Property 9: Coupon validation correctly evaluates all conditions", () 
   });
 });
 
-// Feature: website-improvements, Property 10: Coupon discount calculation round-trip
 describe("Property 10: Coupon discount calculation round-trip", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  /**
-   * **Validates: Requirements 4.6, 4.8**
-   *
-   * For any valid coupon and order subtotal, the discount amount should equal
-   * Math.round(subtotal * discountValue / 100) for percentage coupons,
-   * or discountValue for fixed coupons.
-   */
   it("discount equals the expected calculation for valid coupons", async () => {
-    // Generate coupons that are guaranteed to be valid
+
     const validCouponArb = fc.record({
       id: fc.string({ minLength: 1, maxLength: 10 }),
       code: fc.string({ minLength: 1, maxLength: 20 }),
@@ -161,7 +134,6 @@ describe("Property 10: Coupon discount calculation round-trip", () => {
         );
         expect(result.discountAmount).toBe(expectedDiscount);
 
-        // Verify the calculation formula directly
         if (coupon.discountType === "PERCENTAGE") {
           expect(result.discountAmount).toBe(
             Math.round((subtotal * coupon.discountValue) / 100)
@@ -175,18 +147,11 @@ describe("Property 10: Coupon discount calculation round-trip", () => {
   });
 });
 
-// Feature: website-improvements, Property 11: No coupon means no discount
 describe("Property 11: No coupon means no discount", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  /**
-   * **Validates: Requirements 4.7**
-   *
-   * When no coupon is found (prisma returns null), validateCoupon should
-   * return { valid: false, error: "NOT_FOUND" }.
-   */
   it("returns NOT_FOUND when coupon does not exist", async () => {
     await fc.assert(
       fc.asyncProperty(

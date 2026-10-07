@@ -1,5 +1,4 @@
-// lib/admin/orderQuery.ts
-// Turns admin list/export query params into a Prisma `where`, shared by both routes.
+
 
 import { OrderStatus, PaymentMethod, type Prisma } from "@prisma/client"
 
@@ -21,7 +20,6 @@ export function parseOrderFilters(searchParams: URLSearchParams): OrderListFilte
   const status = (Object.values(OrderStatus) as string[]).includes(statusRaw) ? (statusRaw as OrderStatus) : null
   const paymentMethod = (Object.values(PaymentMethod) as string[]).includes(payRaw) ? (payRaw as PaymentMethod) : null
 
-  // Dates arrive as yyyy-mm-dd in IST; cover the full local day.
   const from = /^\d{4}-\d{2}-\d{2}$/.test(fromRaw) ? new Date(`${fromRaw}T00:00:00+05:30`) : null
   const to = /^\d{4}-\d{2}-\d{2}$/.test(toRaw) ? new Date(`${toRaw}T23:59:59.999+05:30`) : null
 

@@ -1,5 +1,4 @@
-// components/StatusBadge.tsx
-// Order status pill. One source of truth for colours and wording.
+
 
 import { adminStatusLabel } from "@/lib/orders/labels"
 

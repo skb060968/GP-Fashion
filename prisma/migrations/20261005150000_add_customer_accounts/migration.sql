@@ -1,4 +1,4 @@
--- CreateTable
+
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -11,7 +11,6 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "UserSession" (
     "id" TEXT NOT NULL,
     "tokenHash" TEXT NOT NULL,
@@ -22,7 +21,6 @@ CREATE TABLE "UserSession" (
     CONSTRAINT "UserSession_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "LoginCode" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -35,7 +33,6 @@ CREATE TABLE "LoginCode" (
     CONSTRAINT "LoginCode_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "UserAddress" (
     "id" TEXT NOT NULL,
     "label" TEXT,
@@ -53,10 +50,8 @@ CREATE TABLE "UserAddress" (
     CONSTRAINT "UserAddress_pkey" PRIMARY KEY ("id")
 );
 
--- AlterTable
 ALTER TABLE "Order" ADD COLUMN     "userId" TEXT;
 
--- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "UserSession_tokenHash_key" ON "UserSession"("tokenHash");
 CREATE INDEX "UserSession_userId_idx" ON "UserSession"("userId");
@@ -64,7 +59,6 @@ CREATE INDEX "LoginCode_email_createdAt_idx" ON "LoginCode"("email", "createdAt"
 CREATE INDEX "UserAddress_userId_idx" ON "UserAddress"("userId");
 CREATE INDEX "Order_userId_idx" ON "Order"("userId");
 
--- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "UserSession" ADD CONSTRAINT "UserSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "UserAddress" ADD CONSTRAINT "UserAddress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

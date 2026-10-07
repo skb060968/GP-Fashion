@@ -6,7 +6,7 @@ export type User = { id: string; email: string; name: string | null; phone: stri
 
 type UserContextType = {
   user: User | null
-  /** False until the first /api/account/me check completes. */
+
   ready: boolean
   refresh: () => Promise<void>
   setUser: (u: User | null) => void

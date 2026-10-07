@@ -19,7 +19,6 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
 
-  // Already signed in? Skip the form.
   useEffect(() => {
     fetch("/api/admin/session")
       .then((r) => r.json())

@@ -3,10 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export const ADMIN_COOKIE = "admin_session";
 
-/** Sessions live this long from the most recent activity. */
-export const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
-/** Don't write to the DB on every request; renew when at least this much has elapsed. */
-const RENEW_AFTER_MS = 10 * 60 * 1000; // 10 minutes
+export const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
+
+const RENEW_AFTER_MS = 10 * 60 * 1000;
 
 export function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -19,7 +18,6 @@ export async function createSession(): Promise<{ token: string; hashedToken: str
 
   await prisma.adminSession.create({ data: { tokenHash: hashedToken, expiresAt } });
 
-  // Opportunistic cleanup of expired rows so the table doesn't grow forever.
   prisma.adminSession
     .deleteMany({ where: { expiresAt: { lt: new Date() } } })
     .catch(() => {});
@@ -27,10 +25,6 @@ export async function createSession(): Promise<{ token: string; hashedToken: str
   return { token, hashedToken, expiresAt };
 }
 
-/**
- * Validates a session token. Sliding expiry: a valid session that has been
- * active is extended to a full SESSION_DURATION_MS from now.
- */
 export async function validateSession(token: string): Promise<boolean> {
   if (!token || token.length !== 64) return false;
   const hashedToken = hashToken(token);
@@ -58,7 +52,6 @@ export async function deleteSession(hashedToken: string): Promise<void> {
   await prisma.adminSession.delete({ where: { tokenHash: hashedToken } }).catch(() => {});
 }
 
-/** Cookie attributes shared by login (set) and logout (clear). */
 export function sessionCookieOptions(expiresAt: Date) {
   return {
     httpOnly: true,

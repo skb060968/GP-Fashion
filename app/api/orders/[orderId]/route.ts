@@ -2,12 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { canReadOrder } from "@/lib/security/orderAccess";
 
-/**
- * GET /api/orders/<orderCode>?t=<access token>
- * Returns the order for its owner (token, signed-in customer, or admin).
- * Unknown codes and unauthorised requests both answer 404 so the endpoint
- * can't be used to probe which order numbers exist.
- */
 export async function GET(req: NextRequest, context: { params: Promise<{ orderId: string }> }) {
   try {
     const { orderId } = await context.params;

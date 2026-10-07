@@ -1,8 +1,8 @@
-// fashion/lib/types/OrderEmailData.ts
+
 export type OrderEmailData = {
-  orderCode: string;     // 👈 changed from id to orderCode
-  amount: number;        // final total after discount
-  discount?: number;     // discount applied
+  orderCode: string;
+  amount: number;
+  discount?: number;
   status: string;
   createdAt: Date;
   paymentMethod: string;

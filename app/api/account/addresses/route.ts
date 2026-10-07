@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ addresses })
 }
 
-/** POST /api/account/addresses — create; first address becomes default. */
 export async function POST(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })

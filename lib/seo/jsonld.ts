@@ -3,7 +3,7 @@ const SITE_URL = process.env.SITE_URL || "https://gpfashion.in";
 export interface ProductJsonLdInput {
   name: string;
   coverImage: string;
-  price: number; // in paise
+  price: number;
 }
 
 export function generateProductJsonLd(product: ProductJsonLdInput) {

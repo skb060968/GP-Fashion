@@ -12,8 +12,6 @@ import {
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
 import { ORDER_STATUSES } from "@/lib/orders/transitions";
 
-// --- Simple CSV parser for round-trip verification ---
-
 function parseCsv(csv: string): Record<string, string>[] {
   const lines = splitCsvLines(csv);
   if (lines.length === 0) return [];
@@ -40,7 +38,7 @@ function splitCsvLines(csv: string): string[] {
       if (current.length > 0) lines.push(current);
       current = "";
     } else if (ch === "\r" && !inQuotes) {
-      // skip
+
     } else {
       current += ch;
     }
@@ -71,8 +69,6 @@ function parseCsvRow(row: string): string[] {
   fields.push(current);
   return fields;
 }
-
-// --- Generators ---
 
 const noNewlines = (s: string) => s.replace(/[\n\r]/g, "");
 const nonEmptyStringArb = fc.string({ minLength: 1, maxLength: 20 }).map((s) => noNewlines(s) || "a");
@@ -113,8 +109,6 @@ const csvOrderArb: fc.Arbitrary<CsvOrder> = fc.record({
 
 const orderListArb = fc.array(csvOrderArb, { minLength: 1, maxLength: 10 });
 
-// --- Tests ---
-
 describe("CSV export", () => {
   it("round-trips every column through a CSV parser", () => {
     fc.assert(
@@ -154,7 +148,7 @@ describe("CSV export", () => {
   });
 
   it("writes dates in IST as yyyy-mm-dd HH:mm", () => {
-    // 2026-10-05T14:15:00Z is 19:45 IST
+
     expect(formatCsvDate(new Date("2026-10-05T14:15:00Z"))).toBe("2026-10-05 19:45");
   });
 

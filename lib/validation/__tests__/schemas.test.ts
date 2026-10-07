@@ -14,8 +14,6 @@ const ORDER_STATUS_VALUES = ORDER_STATUSES;
 const VALID_SIZES = ["S", "M", "L", "XL"] as const;
 const VALID_PAYMENT_METHODS = ["UPI_MANUAL", "COD", "RAZORPAY"] as const;
 
-// --- Generators ---
-
 const digitArb = fc.integer({ min: 0, max: 9 }).map(String);
 
 const validPhoneArb = fc
@@ -35,7 +33,7 @@ const nonEmptyStringArb = (minLen: number, maxLen: number) =>
 const validAddressArb = fc.record({
   fullName: nonEmptyStringArb(2, 100),
   phone: validPhoneArb,
-  // Email is required: order confirmations are sent to it.
+
   email: fc.constantFrom("test@example.com", "user@domain.co", "hello@shop.in"),
   addressLine1: nonEmptyStringArb(5, 200),
   addressLine2: fc.constantFrom("", "Apt 4B", "Floor 2"),
@@ -60,14 +58,10 @@ const validOrderPayloadArb = fc.record({
   paymentMethod: fc.constantFrom(...VALID_PAYMENT_METHODS),
 });
 
-// --- Property Tests ---
-
 describe("Validation Schemas - Property Tests", () => {
-  // Feature: website-improvements, Property 1: Order payload validation accepts valid and rejects invalid
+
   describe("Property 1: Order payload validation accepts valid and rejects invalid", () => {
-    /**
-     * Validates: Requirements 1.1, 1.2
-     */
+
     it("accepts any valid order payload", () => {
       fc.assert(
         fc.property(validOrderPayloadArb, (payload) => {
@@ -133,11 +127,8 @@ describe("Validation Schemas - Property Tests", () => {
     });
   });
 
-  // Feature: website-improvements, Property 2: Phone number validation matches Indian mobile pattern
   describe("Property 2: Phone number validation matches Indian mobile pattern", () => {
-    /**
-     * Validates: Requirements 1.3, 8.2
-     */
+
     const phoneRegex = /^[6-9]\d{9}$/;
 
     it("accepts valid 10-digit Indian mobile numbers starting with 6-9", () => {
@@ -153,22 +144,22 @@ describe("Validation Schemas - Property Tests", () => {
 
     it("rejects strings that don't match the Indian mobile pattern", () => {
       const invalidPhoneArb = fc.oneof(
-        // Too short (1-9 digits)
+
         fc
           .array(fc.integer({ min: 0, max: 9 }), { minLength: 1, maxLength: 9 })
           .map((d) => d.join("")),
-        // Too long (11-15 digits)
+
         fc
           .array(fc.integer({ min: 0, max: 9 }), { minLength: 11, maxLength: 15 })
           .map((d) => d.join("")),
-        // Starts with 0-5 (exactly 10 digits)
+
         fc
           .tuple(
             fc.constantFrom(0, 1, 2, 3, 4, 5),
             fc.array(fc.integer({ min: 0, max: 9 }), { minLength: 9, maxLength: 9 })
           )
           .map(([f, r]) => String(f) + r.join("")),
-        // Contains non-digit characters
+
         fc.string({ minLength: 1, maxLength: 15 }).filter((s) => /[^0-9]/.test(s))
       );
 
@@ -182,11 +173,8 @@ describe("Validation Schemas - Property Tests", () => {
     });
   });
 
-  // Feature: website-improvements, Property 3: Pincode validation matches 6-digit pattern
   describe("Property 3: Pincode validation matches 6-digit pattern", () => {
-    /**
-     * Validates: Requirements 1.5, 8.6
-     */
+
     const pincodeRegex = /^\d{6}$/;
 
     it("accepts valid 6-digit pincodes", () => {
@@ -202,15 +190,15 @@ describe("Validation Schemas - Property Tests", () => {
 
     it("rejects strings that don't match the 6-digit pattern", () => {
       const invalidPincodeArb = fc.oneof(
-        // Too short (1-5 digits)
+
         fc
           .array(fc.integer({ min: 0, max: 9 }), { minLength: 1, maxLength: 5 })
           .map((d) => d.join("")),
-        // Too long (7-12 digits)
+
         fc
           .array(fc.integer({ min: 0, max: 9 }), { minLength: 7, maxLength: 12 })
           .map((d) => d.join("")),
-        // Contains non-digit characters (length 6)
+
         fc.string({ minLength: 6, maxLength: 6 }).filter((s) => /[^0-9]/.test(s))
       );
 
@@ -224,11 +212,8 @@ describe("Validation Schemas - Property Tests", () => {
     });
   });
 
-  // Feature: website-improvements, Property 4: Status update validation accepts only valid enum members
   describe("Property 4: Status update validation accepts only valid enum members", () => {
-    /**
-     * Validates: Requirements 1.6
-     */
+
     it("accepts all valid OrderStatus enum values", () => {
       fc.assert(
         fc.property(fc.constantFrom(...ORDER_STATUS_VALUES), (status) => {

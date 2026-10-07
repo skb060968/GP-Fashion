@@ -15,19 +15,18 @@ export interface ListingChip {
 interface CategoryListingProps {
   title: string
   description?: string
-  /** Full-width banner above the heading. */
+
   banner?: { src: string; alt?: string }
-  /** Small line above the title, e.g. the parent category. */
+
   eyebrow?: { label: string; href: string }
-  /** Navigation chips under the intro (classifications, views). */
+
   chips?: ListingChip[]
-  /** Small note under the chips, e.g. where the bestseller list comes from. */
+
   note?: string
   products: Product[]
   emptyMessage?: string
 }
 
-/** Banner, centred heading, optional chips, then the product grid. */
 export default function CategoryListing({
   title,
   description,

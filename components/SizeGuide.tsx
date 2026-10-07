@@ -10,11 +10,6 @@ type Unit = "in" | "cm"
 
 const fmt = (inches: number, unit: Unit) => (unit === "in" ? inches.toString() : Math.round(inches * 2.54).toString())
 
-/**
- * "Size guide" link that opens a native <dialog> with the body-measurement
- * table for the product's category, a unit toggle, and how-to-measure tips.
- * Sizes the product doesn't come in are shown dimmed.
- */
 export default function SizeGuide({ category, availableSizes }: { category: CategorySlug; availableSizes: string[] }) {
   const guide = sizeGuides[category]
   const ref = useRef<HTMLDialogElement>(null)
@@ -24,7 +19,6 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
   const show = () => { ref.current?.showModal(); setOpen(true) }
   const close = () => ref.current?.close()
 
-  // Keep `open` in sync when the dialog closes via Escape.
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -33,7 +27,6 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
     return () => el.removeEventListener("close", onClose)
   }, [])
 
-  // Lock page scroll while open.
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -55,11 +48,11 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
       <dialog
         ref={ref}
         aria-labelledby="size-guide-title"
-        onClick={(e) => { if (e.target === ref.current) close() }} // backdrop click
+        onClick={(e) => { if (e.target === ref.current) close() }}
         className="m-0 max-h-[100dvh] w-full max-w-none bg-transparent p-0 backdrop:bg-black/50 backdrop:backdrop-blur-sm sm:m-auto sm:max-h-[90vh] sm:max-w-xl"
       >
         <div className="flex max-h-[100dvh] flex-col bg-white text-black sm:max-h-[90vh]">
-          {/* Header */}
+
           <div className="flex items-start justify-between gap-4 border-b border-black/10 px-6 py-5 sm:px-8">
             <div>
               <h2 id="size-guide-title" className="font-cinzel text-lg font-bold uppercase tracking-[0.15em] sm:text-xl">Size Guide</h2>
@@ -71,7 +64,7 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
           </div>
 
           <div className="overflow-y-auto px-6 py-6 sm:px-8">
-            {/* Unit toggle */}
+
             <div role="radiogroup" aria-label="Units" className="inline-flex rounded-full border border-black/15 p-0.5 font-jost text-xs font-semibold uppercase tracking-[0.12em]">
               {(["in", "cm"] as Unit[]).map((u) => (
                 <button
@@ -87,7 +80,6 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
               ))}
             </div>
 
-            {/* Table */}
             <div className="mt-5 overflow-x-auto">
               <table className="w-full border-collapse font-jost text-sm">
                 <thead>
@@ -117,7 +109,6 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
               </table>
             </div>
 
-            {/* How to measure */}
             <h3 className="mt-8 font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">How to measure</h3>
             <dl className="mt-3 space-y-3 font-jost text-sm text-black/75">
               {guide.measurements.map((m, i) => (

@@ -7,13 +7,8 @@ const SESSION_KEY = "pb-splash-shown"
 const MIN_VISIBLE_MS = 1000
 const FADE_MS = 500
 
-/**
- * Branded preloader. Covers the page with the logo on first load of the
- * session, waits for the window `load` event (or at least MIN_VISIBLE_MS),
- * then fades out and unmounts. Skipped on later navigations in the same tab.
- */
 export default function SplashScreen() {
-  // "visible" drives the fade; "mounted" removes it from the DOM afterwards.
+
   const [visible, setVisible] = useState(true)
   const [mounted, setMounted] = useState(true)
 
@@ -51,7 +46,6 @@ export default function SplashScreen() {
     }
   }, [])
 
-  // Lock scroll while the splash is covering the page.
   useEffect(() => {
     if (!mounted) return
     const prev = document.body.style.overflow

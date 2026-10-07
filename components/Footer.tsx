@@ -12,10 +12,9 @@ export default function Footer() {
     <footer className="border-t border-black/10 bg-white text-black">
       <div className="container-max py-16 sm:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4 md:gap-10">
-          {/* Brand: logo + wordmark stacked, as in the navbar */}
+
           <div className="flex flex-col items-center md:col-span-2 md:items-start">
-           {/* Shrink-to-fit column so the icon row centres under the wordmark
-               regardless of whether the block is left- or centre-aligned. */}
+
            <div className="inline-flex flex-col items-center">
             <Link
               href="/"
@@ -62,7 +61,6 @@ export default function Footer() {
            </div>
           </div>
 
-          {/* Quick Links */}
           <div className="text-center md:text-left">
             <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
               {footer.quickLinksHeading}
@@ -78,7 +76,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Services */}
           <div className="text-center md:text-left">
             <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
               {footer.servicesHeading}
@@ -95,7 +92,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Policies + copyright */}
         <div className="mt-14 flex flex-col items-center gap-4 border-t border-black/10 pt-6 font-jost text-xs tracking-wide text-black/50 sm:flex-row sm:justify-between sm:text-sm">
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {footer.policyLinks.map((link) => (

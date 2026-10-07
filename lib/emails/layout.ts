@@ -1,6 +1,4 @@
-// lib/emails/layout.ts
-// Shared, table-based HTML email shell and building blocks. Inline styles only,
-// system fonts only (webfonts are unreliable in email clients), 600px wide.
+
 
 import { formatRupees } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
@@ -16,7 +14,6 @@ export const BRAND = {
   instagram: "https://www.instagram.com/piyushbholla.label",
 }
 
-/** Public site origin, with any accidental path stripped from SITE_URL. */
 export function siteUrl(): string {
   const raw = process.env.SITE_URL || "https://gpfashion.in"
   try {
@@ -41,8 +38,6 @@ export function escapeHtml(s: string | number | null | undefined): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
 }
-
-/* ----------------------------- blocks ----------------------------- */
 
 export function heading(text: string) {
   return `<h1 style="margin:0 0 12px;font:700 22px/1.3 ${FONT};letter-spacing:2px;text-transform:uppercase;color:${INK};">${escapeHtml(text)}</h1>`
@@ -79,14 +74,12 @@ export function button(text: string, href: string, variant: "solid" | "outline" 
     </table>`
 }
 
-/** Big order number treatment used on confirmations. */
 export function orderNumber(code: string) {
   return `
     ${label("Order number")}
     <p style="margin:0;font:700 28px/1.2 ${FONT};letter-spacing:6px;color:${INK};">${escapeHtml(code)}</p>`
 }
 
-/** Two- or three-column facts row (status, payment, date). */
 export function facts(items: { k: string; v: string }[]) {
   const cells = items
     .map(
@@ -155,12 +148,6 @@ export function orderFacts(order: OrderEmailData) {
   ])
 }
 
-/* ----------------------------- shell ----------------------------- */
-
-/**
- * Wraps body sections in the branded shell. `sections` are already-rendered
- * HTML fragments; each is placed in its own padded block.
- */
 export function shell(opts: { preheader: string; sections: string[]; footerNote?: string }) {
   const site = siteUrl()
   const body = opts.sections
@@ -176,7 +163,7 @@ export function shell(opts: { preheader: string; sections: string[]; footerNote?
   <title>${escapeHtml(BRAND.name)}</title>
 </head>
 <body style="margin:0;padding:0;background:${BG};">
-  <!-- preheader -->
+
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${BG};">${escapeHtml(opts.preheader)}</div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BG};">
@@ -184,7 +171,6 @@ export function shell(opts: { preheader: string; sections: string[]; footerNote?
       <td align="center" style="padding:32px 12px;">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;">
 
-          <!-- header: wordmark -->
           <tr>
             <td align="center" style="padding:36px 40px 28px;">
               <a href="${site}" target="_blank" style="text-decoration:none;color:${INK};">
@@ -201,7 +187,6 @@ export function shell(opts: { preheader: string; sections: string[]; footerNote?
           ${spacer(36)}
           ${rule()}
 
-          <!-- footer -->
           <tr>
             <td align="center" style="padding:24px 40px 32px;">
               ${opts.footerNote ? `<p style="margin:0 0 14px;font:400 12px/1.6 ${SANS};color:${MUTED};">${opts.footerNote}</p>` : ""}

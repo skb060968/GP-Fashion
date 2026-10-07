@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export interface CouponValidationResult {
   valid: boolean;
-  discountAmount?: number; // in paise
+  discountAmount?: number;
   error?:
     | "NOT_FOUND"
     | "INACTIVE"
@@ -11,11 +11,6 @@ export interface CouponValidationResult {
     | "MIN_ORDER_NOT_MET";
 }
 
-/**
- * Pure discount calculation — exported for testing.
- * percentage: Math.round(subtotal * value / 100)
- * fixed: value (already in paise)
- */
 export function calculateDiscount(
   discountType: "PERCENTAGE" | "FIXED",
   discountValue: number,
@@ -27,10 +22,6 @@ export function calculateDiscount(
   return discountValue;
 }
 
-/**
- * Validates a coupon code against the database and order subtotal.
- * Checks in order: exists → active → not expired → usage limit → min order amount.
- */
 export async function validateCoupon(
   code: string,
   orderSubtotal: number
@@ -71,10 +62,6 @@ export async function validateCoupon(
   return { valid: true, discountAmount };
 }
 
-/**
- * Increments the currentUses counter for a coupon.
- * Uses Prisma's atomic increment to avoid race conditions.
- */
 export async function applyCoupon(code: string): Promise<void> {
   await prisma.coupon.update({
     where: { code },

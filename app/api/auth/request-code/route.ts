@@ -8,7 +8,6 @@ import { loginCodeEmail } from "@/lib/emails/loginCode"
 const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 10 })
 const schema = z.object({ email: z.string().email().max(254) })
 
-/** POST /api/auth/request-code { email } — always 200 so emails can't be enumerated. */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
   const rate = limiter.check(ip)
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
       const { subject, html } = loginCodeEmail(issued.code, Math.round(LOGIN_CODE_TTL_MS / 60000))
       await sendMail({ to: email, subject, html })
     }
-    // Same response whether or not a code was issued (per-email limit hit).
+
     return NextResponse.json({ sent: true })
   } catch (err) {
     console.error("LOGIN_CODE_SEND_FAILED:", err)

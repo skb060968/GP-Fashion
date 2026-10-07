@@ -4,7 +4,6 @@ import { requireAdmin } from "@/lib/security/adminAuth";
 import { ordersToCsv } from "@/lib/admin/csvExport";
 import { buildOrderWhere, parseOrderFilters } from "@/lib/admin/orderQuery";
 
-/** GET /api/admin/orders/export — same filters as the list, no pagination. */
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
@@ -20,7 +19,7 @@ export async function GET(req: NextRequest) {
     });
 
     const csv = ordersToCsv(orders);
-    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }); // yyyy-mm-dd
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
     return new Response(csv, {
       status: 200,

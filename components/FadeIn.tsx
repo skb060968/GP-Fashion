@@ -5,14 +5,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 interface FadeInProps {
   children: ReactNode
   className?: string
-  /** Stagger delay in ms. */
+
   delay?: number
 }
 
-/**
- * Fades and lifts its children into view the first time they enter the
- * viewport. Purely presentational; content is always in the DOM.
- */
 export default function FadeIn({ children, className = "", delay = 0 }: FadeInProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [shown, setShown] = useState(false)

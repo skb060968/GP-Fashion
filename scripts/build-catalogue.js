@@ -1,26 +1,5 @@
-/**
- * Build the product catalogue from source folders.
- *
- *   catalogue/taxonomy.json                    ordered list of classifications
- *   catalogue/_collections/<slug>/meta.json    one folder per release (+ cover image)
- *   catalogue/<slug>/meta.json                 product details (see catalogue/README.md)
- *   catalogue/<slug>/cover.jpg                 cover photo (jpg/jpeg/png/webp)
- *   catalogue/<slug>/01.jpg, 02.jpg            further photos, shown in filename order
- *
- * Produces:
- *   public/images/shop/items/<slug>/<slug>-cover.webp, <slug>-1.webp, ...   (1200x1600, 3:4)
- *   public/images/shop/thumbnails/<slug>/<slug>-cover.webp                  (300x400, 3:4)
- *   public/images/shop/collections/<slug>.webp                              (1600x900, 16:9)
- *   lib/data/shop.ts                                                         (products + taxonomy)
- *   lib/data/collections.ts                                                  (collections)
- *
- * Usage:
- *   npm run catalogue            # build (skips images whose output is newer than the source)
- *   npm run catalogue -- --force # re-encode every image
- *
- * Output for slugs that no longer exist in catalogue/ is removed, so deleting
- * a product or collection is just deleting its source folder and re-running.
- */
+
+
 const fs = require("fs")
 const path = require("path")
 const sharp = require("sharp")
@@ -43,11 +22,11 @@ const THUMB_QUALITY = 80
 
 const IMAGE_EXT = [".jpg", ".jpeg", ".png", ".webp"]
 const CATEGORIES = ["menswear", "womenswear"]
-// Must match orderItemSchema in lib/validation/schemas.ts and SIZES in app/shop/ShopClient.tsx
+
 const SIZES = ["S", "M", "L", "XL"]
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
-// Reserved by the category pages (/menswear/new-arrivals etc.); a classification can't use them.
+
 const RESERVED_VIEWS = ["new-arrivals", "bestsellers"]
 
 const force = process.argv.includes("--force")
@@ -79,9 +58,7 @@ async function encode(src, out, size, quality) {
   if (isFresh(src, out)) return false
   fs.mkdirSync(path.dirname(out), { recursive: true })
 
-  // Never upscale, but always keep the target aspect ratio: if the source is
-  // smaller than the target box, shrink the box to fit inside the source.
-  const img = sharp(src).rotate() // honour EXIF orientation from phone cameras
+  const img = sharp(src).rotate()
   const m = await img.metadata()
   const rotated = (m.orientation ?? 1) >= 5
   const srcW = rotated ? m.height : m.width
@@ -111,10 +88,6 @@ function listImages(label, dir) {
   return { cover, others: files }
 }
 
-// ---------------------------------------------------------------------------
-// Taxonomy
-// ---------------------------------------------------------------------------
-
 function readTaxonomy() {
   const t = readJson(TAXONOMY_FILE, "taxonomy")
   if (!Array.isArray(t.classifications) || t.classifications.length === 0) fail("taxonomy: \"classifications\" must be a non-empty array")
@@ -128,10 +101,6 @@ function readTaxonomy() {
   }
   return t.classifications.map((c) => ({ slug: c.slug, title: c.title.trim() }))
 }
-
-// ---------------------------------------------------------------------------
-// Collections
-// ---------------------------------------------------------------------------
 
 async function buildCollection(slug) {
   const dir = path.join(COLLECTIONS_SRC, slug)
@@ -163,10 +132,6 @@ async function buildCollection(slug) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Products
-// ---------------------------------------------------------------------------
-
 function readMeta(slug, dir, taxonomy, collections) {
   const meta = readJson(path.join(dir, "meta.json"), slug)
 
@@ -197,8 +162,8 @@ function readMeta(slug, dir, taxonomy, collections) {
     collection,
     releaseDate,
     description: (meta.description || "").trim(),
-    price: meta.priceInr * 100, // paise
-    sizes: SIZES.filter((s) => meta.sizes.includes(s)), // canonical order
+    price: meta.priceInr * 100,
+    sizes: SIZES.filter((s) => meta.sizes.includes(s)),
     bestseller: meta.bestseller === true,
     order: meta.order ?? 1000,
   }
@@ -212,7 +177,6 @@ async function buildProduct(slug, taxonomy, collections) {
   const itemDir = path.join(ITEMS_DIR, slug)
   const thumbDir = path.join(THUMBS_DIR, slug)
 
-  // Remove stale outputs (e.g. a photo was deleted or renumbered)
   for (const d of [itemDir, thumbDir]) if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true })
 
   let encoded = 0
@@ -250,10 +214,6 @@ async function buildProduct(slug, taxonomy, collections) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Output
-// ---------------------------------------------------------------------------
-
 function removeOrphans(productSlugs, collectionSlugs) {
   for (const base of [ITEMS_DIR, THUMBS_DIR]) {
     if (!fs.existsSync(base)) continue
@@ -275,10 +235,7 @@ function removeOrphans(productSlugs, collectionSlugs) {
 }
 
 function writeShopTs(products, taxonomy) {
-  const src = `// AUTO-GENERATED by scripts/build-catalogue.js. Do not edit.
-// Source of truth: catalogue/taxonomy.json, catalogue/<slug>/meta.json and photos. Run \`npm run catalogue\`.
-
-export type ProductCategory = "menswear" | "womenswear"
+  const src = `export type ProductCategory = "menswear" | "womenswear"
 
 export interface Classification {
   slug: string
@@ -289,28 +246,19 @@ export interface Product {
   slug: string
   name: string
   category: ProductCategory
-  /** Slug from catalogue/taxonomy.json. */
   classification: string
-  /** Slug of the release it belongs to (lib/data/collections.ts), or null. */
   collection: string | null
-  /** YYYY-MM-DD. Inherited from the collection unless overridden. */
   releaseDate: string
   description: string
-  /** Price in paise. */
   price: number
   sizes: string[]
-  /** Manual bestseller flag, used only until real sales data exists. */
   bestseller: boolean
-  /** Sort position within its category; lower first. */
   order: number
-  /** Gallery images, cover first. 1200x1600 webp. */
   images: string[]
   coverImage: string
-  /** 300x400 webp used in bag, checkout and order emails. */
   coverThumbnail: string
 }
 
-/** Classifications in menu order. */
 export const classifications: Classification[] = ${JSON.stringify(taxonomy, null, 2)}
 
 export const products: Product[] = ${JSON.stringify(products, null, 2)}
@@ -319,20 +267,13 @@ export const products: Product[] = ${JSON.stringify(products, null, 2)}
 }
 
 function writeCollectionsTs(collections) {
-  const src = `// AUTO-GENERATED by scripts/build-catalogue.js. Do not edit.
-// Source of truth: catalogue/_collections/<slug>/meta.json and cover image. Run \`npm run catalogue\`.
-
-export interface Collection {
+  const src = `export interface Collection {
   slug: string
   name: string
-  /** e.g. "Festive 2026". May be empty. */
   season: string
-  /** YYYY-MM-DD */
   releaseDate: string
   description: string
-  /** Sort position; lower first. Ties broken by newest release. */
   order: number
-  /** 1600x900 webp. */
   coverImage: string
 }
 

@@ -1,5 +1,4 @@
-// lib/emails/sendOrderPlaced.ts
-// One place that turns a freshly created order into the admin + customer emails.
+
 
 import type { Address, Order, OrderItem } from "@prisma/client"
 import { sendMail } from "@/lib/mailer"
@@ -38,7 +37,6 @@ export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | nu
   }
 }
 
-/** Sends admin + customer "order placed" emails. Never throws; logs failures. */
 export async function sendOrderPlacedEmails(order: OrderWithRelations) {
   const data = toOrderEmailData(order)
   if (!data) return

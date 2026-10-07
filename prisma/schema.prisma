@@ -9,21 +9,19 @@ datasource db {
 
 model Order {
   id            String          @id @default(cuid())
-  orderCode     String   @unique    
+  orderCode     String   @unique
   amount        Int
-  discount      Int             @default(0)        // ✅ new field for order-level discount
-  couponCode    String?                             // applied coupon code (null if no coupon)
+  discount      Int             @default(0)
+  couponCode    String?
   paymentMethod PaymentMethod
   status        OrderStatus
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @default(now()) @updatedAt
-  notes         String?                             // internal admin notes, never shown to customers
+  notes         String?
 
   razorpayPaymentId  String?
   razorpayOrderId    String?
 
-  // Set when a signed-in customer places the order. Guest orders stay null and
-  // are matched to an account by email at read time.
   user          User?           @relation(fields: [userId], references: [id])
   userId        String?
 
@@ -34,13 +32,9 @@ model Order {
   @@index([userId])
 }
 
-// ---------------------------------------------------------------------------
-// Customer accounts (passwordless: email + one-time code)
-// ---------------------------------------------------------------------------
-
 model User {
   id          String        @id @default(cuid())
-  email       String        @unique                  // stored lower-cased
+  email       String        @unique
   name        String?
   phone       String?
   createdAt   DateTime      @default(now())
@@ -54,7 +48,6 @@ model User {
   bag         BagItem[]
 }
 
-/** A saved product. Snapshot fields so the list renders without a catalogue lookup. */
 model WishlistItem {
   id             String   @id @default(cuid())
   slug           String
@@ -72,7 +65,6 @@ model WishlistItem {
   @@index([userId])
 }
 
-/** A line in the customer's shopping bag. */
 model BagItem {
   id             String   @id @default(cuid())
   slug           String
@@ -92,7 +84,7 @@ model BagItem {
 
 model UserSession {
   id        String   @id @default(cuid())
-  tokenHash String   @unique                           // sha256 of the cookie token
+  tokenHash String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -104,8 +96,8 @@ model UserSession {
 
 model LoginCode {
   id         String    @id @default(cuid())
-  email      String                                    // lower-cased
-  codeHash   String                                    // sha256(email:code)
+  email      String
+  codeHash   String
   expiresAt  DateTime
   attempts   Int       @default(0)
   consumedAt DateTime?
@@ -116,7 +108,7 @@ model LoginCode {
 
 model UserAddress {
   id           String   @id @default(cuid())
-  label        String?                                 // "Home", "Office"
+  label        String?
   fullName     String
   phone        String
   addressLine1 String
@@ -137,7 +129,7 @@ model Address {
   id           String   @id @default(cuid())
   fullName     String
   phone        String
-  email        String?                         // ✅ new field for customer email
+  email        String?
   addressLine1 String
   addressLine2 String?
   city         String
@@ -154,7 +146,7 @@ model OrderItem {
   slug           String
   size           String
   price          Int
-  quantity       Int    @default(1)            // ✅ new field for number of items
+  quantity       Int    @default(1)
   coverThumbnail String
 
   order          Order  @relation(fields: [orderId], references: [id])
@@ -165,7 +157,7 @@ model StatusHistory {
   id        String      @id @default(cuid())
   status    OrderStatus
   changedAt DateTime    @default(now())
-  note      String?                           // optional reason recorded with the change
+  note      String?
 
   order     Order       @relation(fields: [orderId], references: [id])
   orderId   String
@@ -178,23 +170,22 @@ enum PaymentMethod {
 }
 
 enum OrderStatus {
-  UNDER_VERIFICATION   // Order placed, payment claimed by customer
-  VERIFIED             // Payment verified by admin
-  REJECTED             // Payment rejected (fake / mismatch)
+  UNDER_VERIFICATION
+  VERIFIED
+  REJECTED
 
-  PROCESSING           // Order accepted, being prepared
-  SHIPPED              // Given to courier
-  DELIVERED            // Successfully delivered
+  PROCESSING
+  SHIPPED
+  DELIVERED
 
-  CANCELLED            // Cancelled before shipment
-  REFUNDED             // Money returned to customer
+  CANCELLED
+  REFUNDED
 
-  RETURN_REQUESTED      // Customer requested a whole-order return or exchange
-  RETURN_RECEIVED       // Returned pieces received and inspected
-  EXCHANGE_DISPATCHED   // Replacement pieces handed to the courier
-  EXCHANGE_COMPLETED    // Replacement delivered; exchange is complete
+  RETURN_REQUESTED
+  RETURN_RECEIVED
+  EXCHANGE_DISPATCHED
+  EXCHANGE_COMPLETED
 }
-
 
 enum DiscountType {
   PERCENTAGE
@@ -205,9 +196,9 @@ model Coupon {
   id             String       @id @default(cuid())
   code           String       @unique
   discountType   DiscountType
-  discountValue  Int                // percentage (e.g. 10 for 10%) or fixed amount in paise
-  minOrderAmount Int?               // optional minimum order subtotal in paise
-  maxUses        Int?               // optional usage cap
+  discountValue  Int
+  minOrderAmount Int?
+  maxUses        Int?
   currentUses    Int          @default(0)
   expiresAt      DateTime?
   isActive       Boolean      @default(true)
@@ -216,7 +207,7 @@ model Coupon {
 
 model AdminSession {
   id          String   @id @default(cuid())
-  tokenHash   String   @unique        // sha256 of the random token
+  tokenHash   String   @unique
   expiresAt   DateTime
   createdAt   DateTime @default(now())
 }

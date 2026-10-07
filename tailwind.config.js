@@ -1,18 +1,5 @@
-/** @type {import('tailwindcss').Config} */
 
-/**
- * Fluid type scale.
- *
- * Each size is clamp(min, preferred, max) where:
- *   - min      = the current fixed size (unchanged at/below 1280px)
- *   - preferred = 0.5·V + (V/25.6)vw, which equals the current size at a
- *                 viewport of 1280px and grows with the viewport beyond it
- *   - max      = 1.5× the current size (reached around 2560px)
- *
- * Result: phones, tablets and laptops (≤1280px) render exactly as before,
- * while large monitors and TVs scale every `text-*` class up proportionally.
- * Line-heights match Tailwind's default ratios so unchanged sizes don't shift.
- */
+
 const fluid = (min, pref, max, lineHeight) => [`clamp(${min}, ${pref}, ${max})`, { lineHeight }]
 
 module.exports = {
@@ -24,7 +11,7 @@ module.exports = {
   theme: {
     extend: {
       screens: {
-        // Very large monitors and TVs.
+
         "3xl": "1920px",
       },
       fontSize: {

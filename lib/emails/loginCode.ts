@@ -1,4 +1,4 @@
-// lib/emails/loginCode.ts
+
 import { escapeHtml, heading, paragraph, shell } from "./layout"
 
 export function loginCodeEmail(code: string, minutes: number) {

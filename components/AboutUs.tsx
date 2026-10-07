@@ -2,10 +2,6 @@ import Image from "next/image"
 import FadeIn from "@/components/FadeIn"
 import { aboutUs } from "@/lib/data/aboutUs"
 
-/**
- * Homepage "About Us": brand story followed by the four brand values.
- * Anchored from the navbar menu via id="about-us".
- */
 export default function AboutUs() {
   const { heading, paragraphs, founder, valuesHeading, values } = aboutUs
 
@@ -15,13 +11,13 @@ export default function AboutUs() {
       aria-labelledby="about-us-heading"
       className="bg-white text-black"
     >
-      {/* Hairline separating this section from the one above */}
+
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="section-divider" />
       </div>
 
       <div className="container-max py-20 sm:py-24 lg:py-32">
-        {/* Brand story */}
+
         <FadeIn className="text-center">
           <h2
             id="about-us-heading"
@@ -42,7 +38,6 @@ export default function AboutUs() {
           </div>
         </FadeIn>
 
-        {/* Founder */}
         <div className="mt-20 border-t border-black/10 pt-16 sm:mt-24 lg:mt-32 lg:pt-20">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
             <FadeIn className="mx-auto w-full max-w-md lg:col-span-5 lg:max-w-none">
@@ -75,7 +70,6 @@ export default function AboutUs() {
           </div>
         </div>
 
-        {/* Values */}
         <div className="mt-20 border-t border-black/10 pt-16 sm:mt-24 lg:mt-32 lg:pt-20">
           <FadeIn className="text-center">
             <h3 className="font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-4xl lg:tracking-[0.25em]">

@@ -16,7 +16,6 @@ type Common = {
 type InputFieldProps = Common & { as?: "input" } & InputHTMLAttributes<HTMLInputElement>
 type TextareaFieldProps = Common & { as: "textarea" } & TextareaHTMLAttributes<HTMLTextAreaElement>
 
-/** Labelled form field with inline error, used across checkout. */
 export default function Field(props: InputFieldProps | TextareaFieldProps) {
   const { label, name, error, hint, optional } = props
   const id = `field-${name}`

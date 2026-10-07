@@ -1,21 +1,11 @@
-/**
- * Convert JPG/PNG images to WebP in place.
- *
- * Usage:
- *   node scripts/convert-to-webp.js                 # all of public/images
- *   node scripts/convert-to-webp.js public/images/home
- *   node scripts/convert-to-webp.js public/images/home --keep   # keep originals
- *
- * Skips folders listed in SKIP_FOLDERS. After converting, it greps app/,
- * components/ and lib/ for references to the old filenames so you know what
- * to update.
- */
+
+
 const fs = require("fs")
 const path = require("path")
 const sharp = require("sharp")
 
 const ROOT = path.join(__dirname, "..")
-const SKIP_FOLDERS = ["shop", "brand", "payments"] // already webp, or must stay png
+const SKIP_FOLDERS = ["shop", "brand", "payments"]
 const INPUT_EXT = [".jpg", ".jpeg", ".png"]
 const QUALITY = 85
 

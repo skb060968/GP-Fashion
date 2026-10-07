@@ -15,11 +15,6 @@ export class InvalidTransitionError extends Error {
   }
 }
 
-/**
- * Moves an order to a new status, recording the change (and optional note)
- * in StatusHistory. Validates the transition and runs atomically.
- * Returns null if the order does not exist.
- */
 export async function updateOrderStatus(orderCode: string, newStatus: OrderStatus, note?: string) {
   return prisma.$transaction(async (tx) => {
     const current = await tx.order.findUnique({ where: { orderCode }, select: { id: true, status: true } });
@@ -46,7 +41,6 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
   });
 }
 
-/** Saves the admin's internal notes for an order. Returns null if not found. */
 export async function updateOrderNotes(orderCode: string, notes: string) {
   const exists = await prisma.order.findUnique({ where: { orderCode }, select: { id: true } });
   if (!exists) return null;
@@ -57,9 +51,6 @@ export async function updateOrderNotes(orderCode: string, notes: string) {
   });
 }
 
-/**
- * Build email data from an order (for use in route handler's after() callback).
- */
 export function buildOrderEmailData(order: {
   orderCode: string;
   amount: number;

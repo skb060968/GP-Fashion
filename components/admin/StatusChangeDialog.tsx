@@ -14,11 +14,6 @@ export type StatusChangeTarget = {
   customerEmail: string | null
 }
 
-/**
- * Confirmation for moving an order to a new status. Lets the admin attach a
- * note and decide whether the customer is emailed. Performs the PATCH itself
- * and hands the updated order back.
- */
 export default function StatusChangeDialog<T = unknown>({
   target,
   transition,

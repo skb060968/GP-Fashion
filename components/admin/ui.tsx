@@ -3,8 +3,6 @@
 import { useEffect, useRef, type ReactNode } from "react"
 import { X } from "lucide-react"
 
-/* ------------------------------ Card ------------------------------ */
-
 export function Card({
   title,
   action,
@@ -31,13 +29,9 @@ export function Card({
   )
 }
 
-/* ---------------------------- Skeleton ---------------------------- */
-
 export function Skeleton({ className = "" }: { className?: string }) {
   return <div aria-hidden className={`animate-pulse rounded bg-black/[0.06] ${className}`} />
 }
-
-/* --------------------------- EmptyState --------------------------- */
 
 export function EmptyRow({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
   return (
@@ -48,8 +42,6 @@ export function EmptyRow({ title, hint, action }: { title: string; hint?: string
     </div>
   )
 }
-
-/* ------------------------------ Alert ----------------------------- */
 
 export function Alert({
   tone = "error",
@@ -77,8 +69,6 @@ export function Alert({
   )
 }
 
-/* ------------------------------ Dialog ---------------------------- */
-
 export function Dialog({
   open,
   onClose,
@@ -104,7 +94,7 @@ export function Dialog({
     document.body.style.overflow = "hidden"
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose()
     document.addEventListener("keydown", onKey)
-    // Focus the first focusable control in the panel.
+
     const first = panelRef.current?.querySelector<HTMLElement>(
       "input, textarea, select, button:not([data-dialog-close])"
     )
@@ -151,8 +141,6 @@ export function Dialog({
   )
 }
 
-/* ----------------------------- Buttons ---------------------------- */
-
 const BTN = "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 font-jost text-sm font-semibold transition-colors focus-visible:ring-black disabled:cursor-not-allowed disabled:opacity-40"
 export const btn = {
   primary: `${BTN} bg-black text-white hover:bg-black/85 disabled:hover:bg-black`,
@@ -160,8 +148,6 @@ export const btn = {
   danger: `${BTN} bg-red-600 text-white hover:bg-red-700 disabled:hover:bg-red-600`,
   ghost: `${BTN} text-black/70 hover:bg-black/5 hover:text-black`,
 }
-
-/* ------------------------------ Inputs ---------------------------- */
 
 export const input =
   "rounded-md border border-black/15 bg-white px-3 py-2 font-jost text-sm text-black placeholder:text-black/40 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"

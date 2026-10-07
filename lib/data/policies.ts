@@ -1,6 +1,4 @@
-// lib/data/policies.ts
-// Legal and policy pages. Plain text; each section renders as a heading plus
-// paragraphs. Keep figures (days, hours) in step with lib/data/faq.ts.
+
 
 export interface PolicySection {
   heading: string
@@ -12,7 +10,7 @@ export interface Policy {
   slug: string
   title: string
   description: string
-  updated: string // YYYY-MM-DD
+  updated: string
   sections: PolicySection[]
 }
 

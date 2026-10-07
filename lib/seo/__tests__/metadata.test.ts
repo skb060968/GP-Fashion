@@ -1,11 +1,7 @@
-// Feature: website-improvements, Property 17: Each public page has unique metadata
+
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { getAllPageMetadata } from "@/lib/seo/metadata";
-
-/**
- * Validates: Requirements 7.5, 7.6
- */
 
 describe("Page Metadata Uniqueness - Property Tests", () => {
   const pages = getAllPageMetadata();

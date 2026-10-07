@@ -1,10 +1,8 @@
--- CreateEnum
+
 CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED');
 
--- AlterTable
 ALTER TABLE "Order" ADD COLUMN "couponCode" TEXT;
 
--- CreateTable
 CREATE TABLE "Coupon" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -20,7 +18,6 @@ CREATE TABLE "Coupon" (
     CONSTRAINT "Coupon_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "AdminSession" (
     "id" TEXT NOT NULL,
     "tokenHash" TEXT NOT NULL,
@@ -30,8 +27,6 @@ CREATE TABLE "AdminSession" (
     CONSTRAINT "AdminSession_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX "Coupon_code_key" ON "Coupon"("code");
 
--- CreateIndex
 CREATE UNIQUE INDEX "AdminSession_tokenHash_key" ON "AdminSession"("tokenHash");

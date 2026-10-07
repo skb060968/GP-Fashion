@@ -3,7 +3,6 @@ import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/security/adminAuth";
 
-/** Start of the current and previous calendar month in IST, as UTC instants. */
 function monthBoundsIST(now = new Date()) {
   const ist = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
   const y = ist.getUTCFullYear();
@@ -36,7 +35,6 @@ const rowSelect = {
   items: { select: { quantity: true } },
 } as const;
 
-/** GET /api/admin/dashboard */
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;

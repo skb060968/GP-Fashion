@@ -20,7 +20,6 @@ const VIEW_COPY: Record<"new-arrivals" | "bestsellers", (category: string) => st
   bestsellers: (c) => `The ${c.toLowerCase()} pieces our customers come back for.`,
 }
 
-/** Title and description for a category page or one of its views. */
 export function categoryViewMetadata(category: CategorySlug, view?: string): Metadata {
   const meta = categoryMeta[category]
   const path = view ? `/${category}/${view}` : `/${category}`
@@ -45,11 +44,6 @@ export function categoryViewMetadata(category: CategorySlug, view?: string): Met
   }
 }
 
-/**
- * Renders /menswear, /womenswear and their views (/menswear/new-arrivals,
- * /menswear/<classification>, /menswear/bestsellers). Shared by both category
- * route folders so the two stay identical.
- */
 export default async function CategoryPage({ category, view }: { category: CategorySlug; view?: string }) {
   const meta = categoryMeta[category]
   const views = getCategoryViews(category)

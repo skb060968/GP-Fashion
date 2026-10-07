@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import crypto from "crypto";
 
-// Mock prisma
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     adminSession: {
@@ -27,7 +26,6 @@ const mockedPrisma = prisma as unknown as {
   };
 };
 
-/** The session helpers fire best-effort housekeeping calls; give them resolved mocks. */
 function resetMocks() {
   vi.clearAllMocks();
   mockedPrisma.adminSession.deleteMany.mockResolvedValue({ count: 0 });
@@ -66,7 +64,7 @@ describe("createSession", () => {
     expect(callArg.data.tokenHash).toMatch(/^[0-9a-f]{64}$/);
 
     const expiresAt = callArg.data.expiresAt.getTime();
-    // expiresAt should be SESSION_DURATION_MS from now
+
     expect(expiresAt).toBeGreaterThanOrEqual(before + SESSION_DURATION_MS);
     expect(expiresAt).toBeLessThanOrEqual(after + SESSION_DURATION_MS);
   });
@@ -108,7 +106,7 @@ describe("validateSession", () => {
 
     mockedPrisma.adminSession.findUnique.mockResolvedValue({
       tokenHash: hashed,
-      expiresAt: new Date(Date.now() - 1000), // expired
+      expiresAt: new Date(Date.now() - 1000),
     });
     mockedPrisma.adminSession.delete.mockResolvedValue({});
 
@@ -140,13 +138,11 @@ describe("deleteSession", () => {
 
 import * as fc from "fast-check";
 
-// Feature: website-improvements, Property 6: Session tokens are unique and validate via round-trip
 describe("Property 6: Session tokens are unique and validate via round-trip", () => {
   beforeEach(() => {
     resetMocks();
   });
 
-  // **Validates: Requirements 2.5, 2.6**
   it("each created session token is at least 64 hex characters and unique", async () => {
     await fc.assert(
       fc.asyncProperty(fc.integer({ min: 2, max: 5 }), async (count) => {
@@ -159,13 +155,11 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
           tokens.push(token);
         }
 
-        // Every token is at least 64 hex characters (32 bytes)
         for (const token of tokens) {
           expect(token.length).toBeGreaterThanOrEqual(64);
           expect(token).toMatch(/^[0-9a-f]+$/);
         }
 
-        // All tokens are unique
         const uniqueTokens = new Set(tokens);
         expect(uniqueTokens.size).toBe(tokens.length);
       }),
@@ -173,7 +167,6 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
     );
   });
 
-  // **Validates: Requirements 2.5, 2.6**
   it("validateSession returns true for a created token and false for a different token", async () => {
     await fc.assert(
       fc.asyncProperty(fc.constant(null), async () => {
@@ -182,7 +175,6 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
 
         const { token, hashedToken } = await createSession();
 
-        // Mock findUnique to return a valid non-expired session for the created token
         mockedPrisma.adminSession.findUnique.mockImplementation(
           async (args: { where: { tokenHash: string } }) => {
             if (args.where.tokenHash === hashedToken) {
@@ -195,11 +187,9 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
           }
         );
 
-        // Original token validates successfully
         const isValid = await validateSession(token);
         expect(isValid).toBe(true);
 
-        // A different random token does not validate
         const differentToken = crypto.randomBytes(32).toString("hex");
         const isInvalid = await validateSession(differentToken);
         expect(isInvalid).toBe(false);

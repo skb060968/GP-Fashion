@@ -1,5 +1,4 @@
-// lib/data/aboutUs.ts
-// Copy for the homepage "About Us" section.
+
 
 export const aboutUs = {
   heading: "About Us",

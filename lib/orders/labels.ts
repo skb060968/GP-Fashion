@@ -15,7 +15,6 @@ export const ORDER_STATUS_LABEL = {
   REFUNDED: "Refunded",
 } satisfies Record<OrderStatusValue, string>
 
-/** Shorter labels for the admin, where payment and return context is visible. */
 export const ADMIN_STATUS_LABEL = {
   UNDER_VERIFICATION: "Awaiting verification",
   VERIFIED: "Verified",
@@ -31,7 +30,6 @@ export const ADMIN_STATUS_LABEL = {
   REFUNDED: "Refunded",
 } satisfies Record<OrderStatusValue, string>
 
-/** Subject line of the customer email sent when an order reaches a status. */
 export function statusEmailSubject(status: string, orderCode: string): string {
   switch (status) {
     case "VERIFIED":
@@ -71,7 +69,6 @@ export const PAYMENT_METHOD_LABEL: Record<string, string> = {
   COD: "Cash on delivery",
 }
 
-/** Ordered milestones shown on the tracking timeline for normal fulfilment. */
 export const TRACKING_STEPS = [
   { key: "PLACED", label: "Order placed" },
   { key: "VERIFIED", label: "Payment verified" },
@@ -82,7 +79,6 @@ export const TRACKING_STEPS = [
 
 const POST_DELIVERY_STATUSES = ["RETURN_REQUESTED", "RETURN_RECEIVED", "EXCHANGE_DISPATCHED", "EXCHANGE_COMPLETED"]
 
-/** Index of the furthest completed fulfilment milestone, or -1 for failures. */
 export function trackingProgress(status: string, historyStatuses: string[] = []): number {
   switch (status) {
     case "UNDER_VERIFICATION":
@@ -103,7 +99,7 @@ export function trackingProgress(status: string, historyStatuses: string[] = [])
     case "REFUNDED":
       return historyStatuses.includes("RETURN_RECEIVED") ? 4 : -1
     default:
-      return -1 // REJECTED, CANCELLED, non-return refund
+      return -1
   }
 }
 
@@ -112,10 +108,6 @@ export type PostDeliveryTracking = {
   progress: number
 }
 
-/**
- * Return/exchange timeline for a delivered order. History disambiguates a
- * return refund from a refund after cancellation.
- */
 export function postDeliveryTracking(status: string, historyStatuses: string[] = []): PostDeliveryTracking | null {
   const wasReturned = POST_DELIVERY_STATUSES.includes(status) || historyStatuses.includes("RETURN_REQUESTED")
   if (!wasReturned) return null

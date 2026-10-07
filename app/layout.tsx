@@ -6,8 +6,6 @@ import { CartProvider } from "@/context/CartContext"
 import { WishlistProvider } from "@/context/WishlistContext"
 import { UserProvider } from "@/context/UserContext"
 
-// Fonts are self-hosted (app/fonts) so the build never depends on fetching
-// from Google Fonts. Both are variable fonts covering the latin subset.
 const cinzel = localFont({
   src: "./fonts/Cinzel-Variable.woff2",
   weight: "400 900",
@@ -15,7 +13,6 @@ const cinzel = localFont({
   variable: "--font-cinzel",
 })
 
-// Geometric sans for navigation / UI labels, paired with Cinzel for the wordmark.
 const jost = localFont({
   src: "./fonts/Jost-Variable.woff2",
   weight: "100 900",

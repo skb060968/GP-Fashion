@@ -1,10 +1,8 @@
--- CreateEnum
+
 CREATE TYPE "PaymentMethod" AS ENUM ('UPI_MANUAL', 'COD');
 
--- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('UNDER_VERIFICATION', 'VERIFIED', 'REJECTED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED');
 
--- CreateTable
 CREATE TABLE "Order" (
     "id" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
@@ -16,7 +14,6 @@ CREATE TABLE "Order" (
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Address" (
     "id" TEXT NOT NULL,
     "fullName" TEXT NOT NULL,
@@ -32,7 +29,6 @@ CREATE TABLE "Address" (
     CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "OrderItem" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -46,7 +42,6 @@ CREATE TABLE "OrderItem" (
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "StatusHistory" (
     "id" TEXT NOT NULL,
     "status" "OrderStatus" NOT NULL,
@@ -56,14 +51,10 @@ CREATE TABLE "StatusHistory" (
     CONSTRAINT "StatusHistory_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX "Address_orderId_key" ON "Address"("orderId");
 
--- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "StatusHistory" ADD CONSTRAINT "StatusHistory_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

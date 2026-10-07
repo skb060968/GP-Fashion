@@ -4,8 +4,6 @@ import { prisma } from "@/lib/prisma"
 import { createRateLimiter } from "@/lib/security/rateLimiter"
 import { orderAccessToken } from "@/lib/security/orderAccess"
 
-// Order codes are sequential, so this endpoint is the obvious place to guess
-// (code, phone) pairs. Keep it slow.
 const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 20 })
 
 const schema = z.object({
@@ -13,7 +11,6 @@ const schema = z.object({
   phone: z.string().trim().regex(/^\d{10}$/),
 })
 
-/** POST /api/orders/track { orderCode, phone } */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
   const rate = limiter.check(ip)
@@ -36,7 +33,6 @@ export async function POST(req: NextRequest) {
       include: { address: true, items: true, history: { select: { status: true }, orderBy: { changedAt: "asc" } } },
     })
 
-    // Same answer for "no such order" and "wrong phone" so codes can't be probed.
     if (!order || !order.address || order.address.phone !== phone) {
       return NextResponse.json({ error: "We couldn't find an order with those details." }, { status: 404 })
     }
@@ -46,7 +42,7 @@ export async function POST(req: NextRequest) {
       status: order.status,
       amount: order.amount,
       createdAt: order.createdAt,
-      // Lets the client open the invoice for this order without signing in.
+
       accessToken: orderAccessToken(order.orderCode),
       history: order.history,
       items: order.items.map((item) => ({

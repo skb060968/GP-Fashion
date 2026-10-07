@@ -1,9 +1,8 @@
-// lib/data/footer.ts
-// SINGLE SOURCE OF TRUTH — FOOTER CONTENT
+
 
 export const footer = {
   quickLinksHeading: "Quick Links",
-  // Mirrors the navbar menu. Extend as revamped pages come online.
+
   quickLinks: [
     { label: "Menswear", href: "/menswear" },
     { label: "Womenswear", href: "/womenswear" },
@@ -14,7 +13,6 @@ export const footer = {
     { label: "My Account", href: "/account" },
   ],
 
-  // Shown in the bottom bar next to the copyright. Slugs match lib/data/policies.ts
   policyLinks: [
     { label: "Shipping & Returns", href: "/policies/shipping-returns" },
     { label: "Terms", href: "/policies/terms" },
@@ -22,7 +20,7 @@ export const footer = {
   ],
 
   servicesHeading: "Services",
-  // Anchors match the slugs in lib/data/services.ts
+
   servicesList: [
     { label: "Ready-to-Wear", href: "/services#ready-to-wear" },
     { label: "Made to Measure", href: "/services#made-to-measure" },

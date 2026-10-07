@@ -4,6 +4,6 @@ export function formatDateDDMMYYYY(dateInput: string | Date): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    timeZone: "Asia/Kolkata", // ensures IST even on Vercel
+    timeZone: "Asia/Kolkata",
   });
 }

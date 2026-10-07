@@ -61,7 +61,6 @@ export default function OrdersListClient() {
   const router = useRouter()
   const sp = useSearchParams()
 
-  // Filters live in the URL so the back button and refresh keep them.
   const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1)
   const status = sp.get("status") ?? "All"
   const paymentMethod = sp.get("paymentMethod") ?? ""
@@ -87,7 +86,6 @@ export default function OrdersListClient() {
     [router, sp]
   )
 
-  // Debounced search → URL
   useEffect(() => {
     if (searchInput === search) return
     const t = setTimeout(() => setParams({ search: searchInput.trim() }), 300)
@@ -135,7 +133,6 @@ export default function OrdersListClient() {
         }
       />
 
-      {/* Status chips */}
       <div className="-mx-4 mb-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="flex gap-2">
           {CHIPS.map((c) => {
@@ -161,7 +158,6 @@ export default function OrdersListClient() {
         </div>
       </div>
 
-      {/* Search + filters */}
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40" strokeWidth={1.75} aria-hidden />
@@ -212,7 +208,6 @@ export default function OrdersListClient() {
         </div>
       )}
 
-      {/* Desktop table */}
       <div className="hidden overflow-hidden rounded-xl border border-black/10 bg-white md:block">
         <table className="w-full text-left font-jost text-sm">
           <thead className="bg-stone-50 text-[11px] uppercase tracking-[0.15em] text-black/55">
@@ -284,7 +279,6 @@ export default function OrdersListClient() {
         )}
       </div>
 
-      {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {loading && !data
           ? Array.from({ length: 4 }).map((_, i) => (
@@ -325,7 +319,6 @@ export default function OrdersListClient() {
         )}
       </div>
 
-      {/* Pagination */}
       {data && data.totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between font-jost text-sm">
           <p className="text-black/60">

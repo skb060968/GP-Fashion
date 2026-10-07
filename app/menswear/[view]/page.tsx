@@ -4,7 +4,6 @@ import { getCategoryViews } from "@/lib/data/categories"
 
 const CATEGORY = "menswear"
 
-// Bestsellers read the orders table; refresh the cached page hourly.
 export const revalidate = 3600
 
 type Props = { params: Promise<{ view: string }> }

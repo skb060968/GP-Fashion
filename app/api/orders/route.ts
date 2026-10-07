@@ -10,7 +10,6 @@ import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
-// Helper: generate short order codes like 26001, 26002, etc.
 async function generateOrderCode(year: number) {
   const yearSuffix = year.toString().slice(-2);
 
@@ -20,7 +19,7 @@ async function generateOrderCode(year: number) {
   });
 
   const lastSeq = lastOrder
-    ? parseInt(lastOrder.orderCode.slice(2)) // after YY
+    ? parseInt(lastOrder.orderCode.slice(2))
     : 0;
 
   const nextSeq = (lastSeq + 1).toString().padStart(3, "0");
@@ -30,7 +29,7 @@ async function generateOrderCode(year: number) {
 
 export async function POST(req: Request) {
   try {
-    // Rate limiting check
+
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || req.headers.get("x-real-ip")
       || "unknown";
@@ -42,7 +41,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check payload size before parsing
     const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
     if (contentLength > 102400) {
       return NextResponse.json(
@@ -53,7 +51,6 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    // Validate with Zod schema
     const result = createOrderSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
@@ -64,7 +61,6 @@ export async function POST(req: Request) {
 
     const { items, address, amount: subtotal, paymentMethod, couponCode } = result.data;
 
-    // 🎟️ Coupon validation — server calculates discount on original subtotal
     let discount = 0;
     let validCoupon = false;
     if (couponCode) {
@@ -79,26 +75,21 @@ export async function POST(req: Request) {
       validCoupon = true;
     }
 
-    // Final amount = subtotal minus discount
     const finalAmount = subtotal - discount;
 
-    // 🔑 Generate orderCode
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
 
-    // Link to the customer's account when they are signed in (guest checkout stays possible).
     const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
 
-    // 1️⃣ Create order with relations + initial history, returning the
-    //    relations in the same call so no second round trip is needed.
     const order = await prisma.order.create({
       include: { address: true, items: true },
       data: {
-        orderCode, // 👈 new short code
+        orderCode,
         userId: sessionUser?.id ?? null,
         amount: finalAmount,
         discount,
-        paymentMethod: paymentMethod as PaymentMethod, // Zod validates the enum value
+        paymentMethod: paymentMethod as PaymentMethod,
         status: OrderStatus.UNDER_VERIFICATION,
         couponCode: validCoupon ? couponCode : null,
 
@@ -135,16 +126,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ Return immediately to frontend. The full order is included so the
-    //    confirmation page can render without fetching it again.
-    //    `accessToken` lets the confirmation page and its invoice link read the
-    //    order back without a sign-in (see lib/security/orderAccess.ts).
     const response = NextResponse.json(
       { success: true, orderId: order.orderCode, accessToken: orderAccessToken(order.orderCode), order },
       { status: 201 }
     );
 
-    // 🔔 Coupon bookkeeping + emails after the response (kept alive by `after`)
     after(async () => {
       if (validCoupon && couponCode) {
         try {

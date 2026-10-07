@@ -1,6 +1,4 @@
-// lib/admin/fetch.ts
-// fetch() wrapper for admin client components: on 401 (expired session) it
-// sends the user to the login page instead of leaving the UI stuck.
+
 
 export class AdminApiError extends Error {
   constructor(public status: number, message: string) {
@@ -24,7 +22,6 @@ export async function adminFetch<T = unknown>(input: string, init?: RequestInit)
     throw new AdminApiError(res.status, data?.error || `Request failed (${res.status})`)
   }
 
-  // 204 / empty body
   const text = await res.text()
   return (text ? JSON.parse(text) : undefined) as T
 }

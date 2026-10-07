@@ -13,9 +13,6 @@ import { categoryMeta, getCategoryViews, getCollections, CATEGORY_SLUGS } from "
 type MenuLeaf = { label: string; href: string }
 type MenuItem = MenuLeaf | { label: string; children: MenuLeaf[] }
 
-// Menswear / Womenswear expand to "All", New Arrivals, the classifications
-// that currently have pieces, and Bestsellers. Collections expands to "All"
-// plus each release. Everything comes from the generated catalogue data.
 const menuItems: MenuItem[] = [
   ...CATEGORY_SLUGS.map((category) => ({
     label: categoryMeta[category].title,
@@ -48,13 +45,11 @@ const iconLinks = [
   { label: "Account", href: "/account", Icon: User },
 ]
 
-// Shared icon sizing so Menu and the right-hand icons scale together.
-// phone 28 → sm 36 → lg 44 → 2xl 64
 const ICON_CLASS = "h-7 w-7 sm:h-9 sm:w-9 lg:h-11 lg:w-11 2xl:h-16 2xl:w-16"
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
-  // Which accordion group (Menswear / Womenswear / Collections) is expanded.
+
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -64,11 +59,8 @@ export default function Navbar() {
 
   const bagCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Hide on scroll down, reveal on scroll up. Always shown near the top of the
-  // page and while the menu is open.
   const [hidden, setHidden] = useState(false)
 
-  // Route change: close the menu and show the bar (new pages start at the top).
   useEffect(() => {
     setMenuOpen(false)
     setHidden(false)
@@ -77,12 +69,8 @@ export default function Navbar() {
   useEffect(() => {
     let lastY = window.scrollY
     let ticking = false
-    const THRESHOLD = 8 // ignore tiny jitters
+    const THRESHOLD = 8
 
-    // While an in-page anchor scroll is running we ignore direction, so an
-    // upward programmatic scroll (e.g. from a footer link) doesn't reveal the
-    // bar on top of the section heading. Suppression lasts until the scroll
-    // position has been still for a moment, however long the scroll takes.
     let suppressing = false
     let settleTimer: ReturnType<typeof setTimeout> | undefined
     let safetyTimer: ReturnType<typeof setTimeout> | undefined
@@ -128,13 +116,11 @@ export default function Navbar() {
       setHidden(true)
       setMenuOpen(false)
       if (settleTimer) clearTimeout(settleTimer)
-      settleTimer = setTimeout(endSuppression, 150) // in case no scroll happens
+      settleTimer = setTimeout(endSuppression, 150)
       if (safetyTimer) clearTimeout(safetyTimer)
       safetyTimer = setTimeout(endSuppression, 4000)
     }
 
-    // Full page load straight onto a home-page section (e.g. /#about-us):
-    // the browser has already scrolled, so start hidden.
     if (
       window.location.pathname === "/" &&
       window.location.hash &&
@@ -155,12 +141,10 @@ export default function Navbar() {
 
   const navHidden = hidden && !menuOpen
 
-  // Collapse any open group when the menu closes so it reopens tidy.
   useEffect(() => {
     if (!menuOpen) setOpenGroup(null)
   }, [menuOpen])
 
-  // Close on outside click / Escape
   useEffect(() => {
     if (!menuOpen) return
     const onPointerDown = (e: PointerEvent) => {
@@ -179,10 +163,6 @@ export default function Navbar() {
     }
   }, [menuOpen])
 
-  // Hover intent: open immediately, close after a short delay so the
-  // pointer can travel from the trigger into the dropdown.
-  // Only a real mouse should trigger hover. Touch taps emit a synthetic
-  // "enter" before the click, which would open then immediately toggle closed.
   const openMenu = (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse") return
     if (closeTimer.current) clearTimeout(closeTimer.current)
@@ -204,10 +184,7 @@ export default function Navbar() {
         aria-label="Primary"
         className="relative flex h-[var(--nav-h)] w-full items-center justify-between px-3 sm:px-6 lg:px-10 2xl:px-14"
       >
-        {/* Left: Menu */}
-        {/* Wrapper spans the full bar height (not `relative`) so the dropdown
-            positions against the nav and hovering anywhere in this column keeps
-            the menu open while the pointer travels down to it. */}
+
         <div
           ref={menuRef}
           className="flex h-full items-center"
@@ -232,7 +209,6 @@ export default function Navbar() {
             </span>
           </button>
 
-          {/* Dropdown */}
           <div
             id="primary-menu"
             className={`absolute left-3 top-full max-h-[calc(100vh-var(--nav-h))] w-52 origin-top-left overflow-y-auto border border-t-0 border-black/10 bg-white py-2 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-3 lg:left-10 lg:w-80 lg:py-4 2xl:left-14 ${
@@ -299,8 +275,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Center: Logo + name. Absolutely positioned so it is always at the
-            exact centre of the viewport regardless of the side widths. */}
         <Link
           href="/"
           aria-label="Piyush Bholla, home"
@@ -314,8 +288,7 @@ export default function Navbar() {
             priority
             className="h-12 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
           />
-          {/* On phones the name wraps to two lines so it never collides with
-              the icons; from sm upward it sits on one line. */}
+
           <span className="mt-1 text-center font-cinzel text-base font-bold uppercase leading-tight tracking-[0.15em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-4xl lg:tracking-[0.25em] 2xl:text-5xl 2xl:tracking-[0.3em]">
             Piyush
             <br className="sm:hidden" />
@@ -324,7 +297,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Right: Wishlist / Bag / Login */}
         <div className="-mr-2 flex items-center sm:gap-1 lg:gap-4">
           {iconLinks.map(({ label, href, Icon }) => {
             const isBag = label === "Bag"

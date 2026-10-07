@@ -1,19 +1,16 @@
-// lib/data/sizeGuide.ts
-// Body measurements for each size, shown in the "Size guide" dialog on product
-// pages. Values are in inches; the dialog converts to centimetres.
-// Edit the numbers here once the label's grading is finalised.
+
 
 import type { CategorySlug } from "./categories"
 
 export type SizeGuideRow = { size: string; values: number[] }
 
 export interface SizeGuide {
-  /** Column headings, in order. */
+
   measurements: string[]
   rows: SizeGuideRow[]
-  /** One tip per measurement, same order as `measurements`. */
+
   howToMeasure: string[]
-  /** Advice shown under the table. */
+
   notes: string[]
 }
 

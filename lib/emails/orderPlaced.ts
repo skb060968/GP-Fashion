@@ -1,5 +1,4 @@
-// lib/emails/orderPlaced.ts
-// "New order" emails. Returns { subject, html } so call sites stay in sync.
+
 
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
 import { paymentLabel } from "@/lib/orders/labels"
@@ -18,8 +17,6 @@ import {
 } from "./layout"
 
 const firstName = (full: string) => full.trim().split(/\s+/)[0] || "there"
-
-/* ------------------------------ customer ------------------------------ */
 
 export function orderPlacedEmailCustomer(order: OrderEmailData) {
   const site = siteUrl()
@@ -47,8 +44,6 @@ export function orderPlacedEmailCustomer(order: OrderEmailData) {
     html,
   }
 }
-
-/* ------------------------------- admin ------------------------------- */
 
 export function orderPlacedEmailAdmin(order: OrderEmailData) {
   const site = siteUrl()

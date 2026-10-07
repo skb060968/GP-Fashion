@@ -4,7 +4,6 @@ import { z } from "zod";
 import { validateCoupon } from "@/lib/services/couponService";
 import { createRateLimiter } from "@/lib/security/rateLimiter";
 
-// Stops someone brute-forcing coupon codes from the checkout page.
 const limiter = createRateLimiter({ windowMs: 10 * 60 * 1000, maxRequests: 30 });
 
 const schema = z.object({

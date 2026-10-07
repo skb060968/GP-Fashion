@@ -29,7 +29,6 @@ export const metadata: Metadata = {
   },
 }
 
-// Keyed by slug from lib/data/services.ts
 const iconMap: Record<string, LucideIcon> = {
   "ready-to-wear": Shirt,
   "made-to-measure": Ruler,
@@ -44,7 +43,7 @@ export default function ServicesPage() {
 
   return (
     <div className="bg-white text-black">
-      {/* ================= HERO + SERVICES GRID ================= */}
+
       <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
         <div className="container-max">
           <FadeIn className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
@@ -101,7 +100,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ================= PROCESS + CTA ================= */}
       <section>
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="section-divider" />

@@ -1,8 +1,4 @@
-/**
- * Pure CSV export helper for order data.
- * Money is written in rupees (two decimals) and dates in IST, so the file
- * opens readably in Excel / Sheets without conversion.
- */
+
 
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
 
@@ -60,17 +56,14 @@ export function escapeCsvField(value: string): string {
   return value;
 }
 
-/** "Style 1 (M x2); Style 3 (L x1)" */
 export function formatItems(items: CsvOrderItem[]): string {
   return items.map((item) => `${item.name} (${item.size} x${item.quantity})`).join("; ");
 }
 
-/** Paise → "1299.00" */
 export function formatCsvMoney(paise: number): string {
   return (paise / 100).toFixed(2);
 }
 
-/** "2026-10-05 19:45" in IST */
 export function formatCsvDate(d: Date | string): string {
   const date = d instanceof Date ? d : new Date(d);
   if (Number.isNaN(date.getTime())) return "";

@@ -34,7 +34,7 @@ export default function BagClient() {
             />
           ) : (
             <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
-              {/* Items */}
+
               <ul className="divide-y divide-black/10 lg:col-span-8">
                 {cart.map((item, index) => (
                   <li key={`${item.slug}-${item.size}`} className="py-8 first:pt-0">
@@ -76,7 +76,7 @@ export default function BagClient() {
                           </div>
 
                           <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4">
-                            {/* Quantity */}
+
                             <div className="inline-flex items-center border border-black/20">
                               <button
                                 type="button"
@@ -103,7 +103,6 @@ export default function BagClient() {
                               </button>
                             </div>
 
-                            {/* Price */}
                             <div className="text-right font-jost">
                               <p className="text-base font-semibold tabular-nums sm:text-lg">
                                 {formatRupees(item.price * item.quantity)}
@@ -122,7 +121,6 @@ export default function BagClient() {
                 ))}
               </ul>
 
-              {/* Summary */}
               <FadeIn delay={120} className="lg:col-span-4">
                 <aside className="card-elevated p-8 lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
                   <h2 className="font-cinzel text-lg font-bold uppercase tracking-[0.15em]">

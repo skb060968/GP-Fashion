@@ -22,7 +22,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ items: items.map((i) => ({ ...i, coverImage: i.coverImage ?? undefined })) })
 }
 
-/** PUT replaces the whole list with the client's current state. */
 export async function PUT(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })
@@ -30,7 +29,6 @@ export async function PUT(req: NextRequest) {
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) return NextResponse.json({ error: "Invalid wishlist" }, { status: 400 })
 
-  // De-duplicate by slug, keeping the first occurrence.
   const seen = new Set<string>()
   const items = parsed.data.items.filter((i) => (seen.has(i.slug) ? false : (seen.add(i.slug), true)))
 

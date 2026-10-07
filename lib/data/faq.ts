@@ -1,5 +1,4 @@
-// lib/data/faq.ts
-// Questions shown on /contact. Keep answers factual; they describe how the store actually works.
+
 
 export const faq = [
   {

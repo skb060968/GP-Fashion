@@ -20,7 +20,6 @@ export function createRateLimiter(config: RateLimiterConfig) {
     const now = Date.now();
     const entry = store.get(key);
 
-    // Lazy cleanup: if the window has passed, reset the entry
     if (entry && now >= entry.resetAt) {
       store.delete(key);
     }

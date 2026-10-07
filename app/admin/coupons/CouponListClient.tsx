@@ -231,7 +231,6 @@ export default function CouponListClient() {
       {error && <div className="mb-4"><Alert onDismiss={() => setError(null)}>{error}</Alert></div>}
       {flash && <div className="mb-4"><Alert tone="success" onDismiss={() => setFlash(null)}>{flash}</Alert></div>}
 
-      {/* Desktop table */}
       <div className="hidden overflow-hidden rounded-xl border border-black/10 bg-white md:block">
         <table className="w-full text-left font-jost text-sm">
           <thead className="bg-stone-50 text-[11px] uppercase tracking-[0.15em] text-black/55">
@@ -282,7 +281,6 @@ export default function CouponListClient() {
         )}
       </div>
 
-      {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {loading && !data
           ? Array.from({ length: 3 }).map((_, i) => (

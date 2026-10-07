@@ -100,7 +100,6 @@ function WishlistCard({ item }: { item: WishlistItem }) {
           {formatRupees(item.price)}
         </p>
 
-        {/* Size picker */}
         {item.sizes.length > 1 && (
           <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
             {item.sizes.map((s) => {

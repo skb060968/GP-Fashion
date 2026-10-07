@@ -4,10 +4,6 @@ import { usePathname } from "next/navigation"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
 import { whatsappHref } from "@/lib/whatsapp"
 
-/**
- * Floating "chat on WhatsApp" button, bottom-right on every storefront page.
- * Hidden during checkout so it doesn't sit over the Place order button.
- */
 export default function WhatsAppButton() {
   const pathname = usePathname()
   if (pathname.startsWith("/checkout") || pathname.startsWith("/admin")) return null

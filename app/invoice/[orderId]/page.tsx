@@ -41,7 +41,7 @@ export default function InvoicePage() {
 
 function InvoiceContent() {
   const { orderId } = useParams<{ orderId: string }>()
-  // Access token from track-order; signed-in owners and admins don't need one.
+
   const token = useSearchParams().get("t")
   const query = token ? `?t=${token}` : ""
   const [order, setOrder] = useState<Order | null>(null)
@@ -56,7 +56,6 @@ function InvoiceContent() {
       .finally(() => setLoading(false))
   }, [orderId, query])
 
-  // Document title becomes the default PDF filename when printing.
   useEffect(() => {
     if (order) document.title = `Invoice-${order.orderCode}`
     return () => {
@@ -93,7 +92,7 @@ function InvoiceContent() {
     <div className="bg-white text-black">
       <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20 print:p-0">
         <div className="container-max">
-          {/* Actions (screen only) */}
+
           <div className="mx-auto mb-8 flex max-w-3xl flex-col items-center gap-4 print:hidden sm:flex-row sm:justify-between">
             <Link
               href="/track-order"
@@ -113,9 +112,8 @@ function InvoiceContent() {
             </div>
           </div>
 
-          {/* Invoice sheet */}
           <article className="invoice-card mx-auto max-w-3xl border border-black/10 bg-white p-8 sm:p-12 print:border-0 print:p-0">
-            {/* Header */}
+
             <header className="flex flex-col items-start justify-between gap-8 border-b border-black/10 pb-8 sm:flex-row sm:items-center">
               <div className="flex flex-col items-center">
                 <Image
@@ -139,7 +137,6 @@ function InvoiceContent() {
               </div>
             </header>
 
-            {/* Parties */}
             <div className="grid grid-cols-1 gap-8 py-8 font-jost text-sm sm:grid-cols-2">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Billed to</p>
@@ -186,7 +183,6 @@ function InvoiceContent() {
               </div>
             </div>
 
-            {/* Items */}
             <table className="w-full border-t border-black/10 font-jost text-sm">
               <thead>
                 <tr className="text-left text-xs font-semibold uppercase tracking-[0.15em] text-black/50">
@@ -210,7 +206,6 @@ function InvoiceContent() {
               </tbody>
             </table>
 
-            {/* Totals */}
             <dl className="ml-auto mt-6 max-w-xs space-y-2 font-jost text-sm text-black/70">
               <div className="flex justify-between">
                 <dt>Subtotal</dt>
@@ -232,7 +227,6 @@ function InvoiceContent() {
               </div>
             </dl>
 
-            {/* Footer */}
             <footer className="mt-12 border-t border-black/10 pt-6 text-center font-jost text-xs leading-relaxed text-black/50">
               <p>Thank you for shopping with Piyush Bholla.</p>
               <p>This invoice is generated electronically and does not require a signature.</p>

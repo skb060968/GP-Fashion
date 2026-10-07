@@ -5,12 +5,11 @@ import { useWishlist, type WishlistItem } from "@/context/WishlistContext"
 
 interface WishlistButtonProps {
   item: WishlistItem
-  /** "overlay" sits on an image corner; "inline" sits next to text. */
+
   variant?: "overlay" | "inline"
   className?: string
 }
 
-/** Heart toggle for saving a product to the wishlist. */
 export default function WishlistButton({ item, variant = "overlay", className = "" }: WishlistButtonProps) {
   const { isWishlisted, toggleWishlist } = useWishlist()
   const active = isWishlisted(item.slug)

@@ -36,20 +36,18 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const category = product.category
   const classification = getClassification(product.classification)
   const collection = product.collection ? getCollection(product.collection) : undefined
-  // Breadcrumb: Home / Menswear / Cocktail & Formalwear / Product
+
   const crumbs = [
     { href: `/${category}`, label: categoryMeta[category].title },
     ...(classification ? [{ href: `/${category}/${classification.slug}`, label: classification.title }] : []),
   ]
   const crumb = crumbs[crumbs.length - 1]
 
-  // Gallery: cover first, then the rest in order, de-duplicated.
   const gallery = Array.from(new Set([product.coverImage, ...product.images]))
   const active = gallery[index] ?? gallery[0]
   const hasMany = gallery.length > 1
   const step = (delta: number) => setIndex((i) => (i + delta + gallery.length) % gallery.length)
 
-  // Swipe on touch devices.
   const touchStartX = useRef<number | null>(null)
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX }
   const onTouchEnd = (e: React.TouchEvent) => {
@@ -92,7 +90,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     <div className="bg-white text-black">
       <section className="pb-20 pt-6 sm:pt-10 lg:pb-32 lg:pt-12">
         <div className="container-max">
-          {/* Breadcrumb */}
+
           <nav aria-label="Breadcrumb" className="mb-6 font-jost text-xs uppercase tracking-[0.15em] text-black/50 lg:mb-10">
             <ol className="flex flex-wrap items-center gap-2">
               <li><Link href="/" className="hover:text-black">Home</Link></li>
@@ -108,10 +106,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           </nav>
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-            {/* Gallery */}
+
             <FadeIn className="lg:col-span-7">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-[4.5rem_1fr]">
-                {/* Thumbnails (left on desktop, below on phones) */}
+
                 {gallery.length > 1 && (
                   <ul className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible" aria-label="Product images">
                     {gallery.map((src, i) => {
@@ -184,7 +182,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               </div>
             </FadeIn>
 
-            {/* Details */}
             <FadeIn delay={100} className="lg:col-span-5">
               <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
                 <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
@@ -207,7 +204,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </p>
                 )}
 
-                {/* Size */}
                 <div id="size-picker" className="mt-8">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Size</span>
@@ -238,7 +234,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </div>
                 </div>
 
-                {/* Quantity */}
                 <div className="mt-6">
                   <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Quantity</span>
                   <div className="mt-3 inline-flex items-center border border-black/20">
@@ -252,7 +247,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="mt-8 flex flex-col gap-3">
                   <button type="button" onClick={() => add()} className="btn-solid-dark w-full">
                     {added ? (
@@ -266,7 +260,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </button>
                 </div>
 
-                {/* Details */}
                 <ul className="mt-10 space-y-2 border-t border-black/10 pt-6 font-jost text-sm text-black/70">
                   {DETAILS.map((d) => (
                     <li key={d} className="flex gap-3">
@@ -281,7 +274,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   <a
                     href={whatsappHref(`Hello, I have a question about the ${product.name}.`)}
                     onClick={(e) => {
-                      // Include the page URL so the studio knows exactly which piece.
+
                       e.currentTarget.href = whatsappHref(`Hello, I have a question about the ${product.name} (${window.location.href}).`)
                     }}
                     target="_blank"

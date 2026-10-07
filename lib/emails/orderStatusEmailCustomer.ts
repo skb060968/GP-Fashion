@@ -1,5 +1,4 @@
-// lib/emails/orderStatusEmailCustomer.ts
-// Sent to the customer whenever the admin changes an order's status.
+
 
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
 import { formatRupees } from "@/lib/money"

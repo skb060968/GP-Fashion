@@ -1,5 +1,4 @@
-// lib/security/userSession.ts
-// Customer sessions: opaque token in an httpOnly cookie, sha256 hash in the DB.
+
 
 import crypto from "crypto"
 import type { NextRequest } from "next/server"
@@ -8,8 +7,8 @@ import { prisma } from "@/lib/prisma"
 import { hashToken } from "./session"
 
 export const USER_COOKIE = "pb_session"
-export const USER_SESSION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days, sliding
-const RENEW_AFTER_MS = 24 * 60 * 60 * 1000 // extend at most once a day
+export const USER_SESSION_MS = 30 * 24 * 60 * 60 * 1000
+const RENEW_AFTER_MS = 24 * 60 * 60 * 1000
 
 export type SessionUser = {
   id: string
@@ -26,7 +25,6 @@ export async function createUserSession(userId: string) {
   return { token, expiresAt }
 }
 
-/** Resolves the user for a raw cookie token, renewing the session if due. */
 export async function userFromToken(token: string | undefined): Promise<SessionUser | null> {
   if (!token || token.length !== 64) return null
   const tokenHash = hashToken(token)
@@ -49,12 +47,10 @@ export async function userFromToken(token: string | undefined): Promise<SessionU
   return session.user
 }
 
-/** For route handlers. */
 export function getUserFromRequest(req: NextRequest) {
   return userFromToken(req.cookies.get(USER_COOKIE)?.value)
 }
 
-/** For server components / layouts. */
 export async function getCurrentUser() {
   const store = await cookies()
   return userFromToken(store.get(USER_COOKIE)?.value)
@@ -69,13 +65,11 @@ export function userCookieOptions(expiresAt: Date) {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const, // lax so links from the confirmation email open signed in
+    sameSite: "lax" as const,
     path: "/",
     expires: expiresAt,
   }
 }
-
-/* ------------------------------ login codes ------------------------------ */
 
 export const LOGIN_CODE_TTL_MS = 10 * 60 * 1000
 export const LOGIN_CODE_MAX_ATTEMPTS = 5
@@ -87,10 +81,6 @@ function codeHash(email: string, code: string) {
   return crypto.createHash("sha256").update(`${email}:${code}`).digest("hex")
 }
 
-/**
- * Issues a fresh 6-digit code for the email, invalidating earlier unused ones.
- * Returns null when the per-email rate limit is hit.
- */
 export async function issueLoginCode(emailRaw: string): Promise<{ code: string; expiresAt: Date } | null> {
   const email = normaliseEmail(emailRaw)
   const since = new Date(Date.now() - 15 * 60 * 1000)
@@ -113,7 +103,6 @@ export type VerifyResult =
   | { ok: true; user: SessionUser }
   | { ok: false; reason: "invalid" | "expired" | "too_many_attempts" }
 
-/** Checks a code; on success creates the user if needed and returns them. */
 export async function verifyLoginCode(emailRaw: string, codeRaw: string): Promise<VerifyResult> {
   const email = normaliseEmail(emailRaw)
   const code = codeRaw.replace(/\D/g, "")

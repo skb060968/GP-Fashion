@@ -32,7 +32,7 @@ export default function ContactPage() {
     <div className="bg-white text-black">
       <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
         <div className="container-max">
-          {/* ================= HEADER ================= */}
+
           <FadeIn className="mx-auto max-w-3xl text-center">
             <h1 className="font-cinzel text-3xl font-bold uppercase tracking-[0.2em] sm:text-4xl lg:text-6xl lg:tracking-[0.25em]">
               {contact.heading}
@@ -43,9 +43,8 @@ export default function ContactPage() {
             </p>
           </FadeIn>
 
-          {/* ================= CONTENT ================= */}
           <div className="mt-16 grid grid-cols-1 items-start gap-12 lg:mt-20 lg:grid-cols-2 lg:gap-16">
-            {/* LEFT INFO */}
+
             <FadeIn className="space-y-10">
               <div>
                 <h2 className="font-cinzel text-2xl font-bold uppercase tracking-[0.15em] sm:text-3xl">
@@ -65,7 +64,6 @@ export default function ContactPage() {
               </div>
             </FadeIn>
 
-            {/* RIGHT FORM */}
             <FadeIn delay={120}>
               <div className="card-elevated p-8 lg:p-10">
                 <h3 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em] sm:text-2xl">
@@ -102,7 +100,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* ================= FAQ ================= */}
       <section>
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="section-divider" />
@@ -136,7 +133,6 @@ export default function ContactPage() {
   )
 }
 
-/* ================= INFO ITEM ================= */
 function Info({
   icon: Icon,
   label,

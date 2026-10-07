@@ -6,15 +6,14 @@ import { useCart } from "@/context/CartContext"
 import { formatRupees } from "@/lib/money"
 
 interface OrderSummaryProps {
-  /** Discount in the same unit as prices (paise), already validated by the server. */
+
   discount?: number
-  /** Optional slot rendered between the line items and the totals (e.g. coupon input). */
+
   children?: ReactNode
-  /** Optional slot rendered after the totals (e.g. the primary action button). */
+
   footer?: ReactNode
 }
 
-/** Sticky order summary card used on the address and payment steps. */
 export default function OrderSummary({ discount = 0, children, footer }: OrderSummaryProps) {
   const { cart } = useCart()
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0)

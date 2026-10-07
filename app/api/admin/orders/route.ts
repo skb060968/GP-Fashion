@@ -5,11 +5,6 @@ import { buildOrderWhere, parseOrderFilters } from "@/lib/admin/orderQuery";
 
 const PAGE_SIZE = 20;
 
-/**
- * GET /api/admin/orders?page&search&status&paymentMethod&from&to
- * Returns a lean page of orders plus per-status counts for the current
- * search/payment/date filters (so the status chips show live numbers).
- */
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
@@ -19,7 +14,7 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
     const filters = parseOrderFilters(searchParams);
     const where = buildOrderWhere(filters);
-    // Counts ignore the status filter so every chip stays populated.
+
     const whereNoStatus = buildOrderWhere({ ...filters, status: null });
 
     const [rows, totalCount, grouped] = await Promise.all([

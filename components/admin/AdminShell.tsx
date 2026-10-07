@@ -85,14 +85,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen bg-stone-50 text-black">
-      {/* Desktop sidebar */}
+
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-black/10 bg-white lg:flex">
         <div className="border-b border-black/10 px-5 py-5">{brand}</div>
         <div className="flex-1 overflow-y-auto px-3 py-4">{nav}</div>
         <div className="border-t border-black/10 px-3 py-3">{footerLinks}</div>
       </aside>
 
-      {/* Mobile top bar */}
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-black/10 bg-white px-4 lg:hidden">
         {brand}
         <button
@@ -119,7 +118,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </div>
       )}
 
-      {/* Content */}
       <main className="lg:pl-60">
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">{children}</div>
       </main>
@@ -127,7 +125,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   )
 }
 
-/** Page title row used at the top of every admin page. */
 export function AdminPageHeader({
   title,
   description,

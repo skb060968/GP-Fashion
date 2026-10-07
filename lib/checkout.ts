@@ -1,5 +1,4 @@
-// lib/checkout.ts
-// Shared constants/types for the client-side checkout flow.
+
 
 export const ADDRESS_STORAGE_KEY = "checkout_address"
 

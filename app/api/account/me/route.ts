@@ -3,7 +3,6 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { getUserFromRequest } from "@/lib/security/userSession"
 
-/** GET /api/account/me → { user } or { user: null } */
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
   return NextResponse.json({ user })
@@ -19,7 +18,6 @@ const schema = z.object({
     .optional(),
 })
 
-/** PATCH /api/account/me { name?, phone? } */
 export async function PATCH(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })

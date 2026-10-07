@@ -1,28 +1,38 @@
-# Local databases
-*.db
-*.sqlite
-*.sqlite-journal
+.git/
+.gitignore
+.vscode/
+.idea/
+.kiro/
+.vercel/
 
-# Build artifacts
+node_modules/
 .next/
 out/
 build/
-
-# Logs
-*.log
-
-# Coverage / test output
+dist/
+.turbo/
+.cache/
 coverage/
 .nyc_output/
+*.tsbuildinfo
+next-env.d.ts
 
-# IDE / OS clutter
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+.env*
+*.pem
+*.key
+*.log
 
-# Prisma generated code (if you keep it in repo but don’t want deployed)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
 lib/generated/prisma/
 
-# kiro
-.kiro/
+catalogue/
+scripts/
+prisma/migrations/
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+vitest.config.ts
+LICENSE

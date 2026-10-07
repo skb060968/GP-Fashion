@@ -1,6 +1,4 @@
-// lib/pdf/InvoiceDocument.tsx
-// Server-side PDF invoice rendered with @react-pdf/renderer.
-// Keep the layout in step with app/invoice/[orderId]/page.tsx.
+
 
 import path from "node:path"
 import { readFileSync } from "node:fs"
@@ -33,8 +31,6 @@ export type InvoiceOrder = {
 const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts")
 const LOGO_PATH = path.join(process.cwd(), "public", "images", "brand", "logo-mark.png")
 
-// Read once per process; passing a Buffer avoids react-pdf treating the
-// Windows-style absolute path as a remote URL.
 let logoBuffer: Buffer | null = null
 function logo() {
   if (!logoBuffer) logoBuffer = readFileSync(LOGO_PATH)
@@ -52,12 +48,11 @@ function registerFonts() {
       { src: path.join(FONT_DIR, "Jost-SemiBold.ttf"), fontWeight: 600 },
     ],
   })
-  // Keep words whole; the invoice has no long prose.
+
   Font.registerHyphenationCallback((word) => [word])
   fontsRegistered = true
 }
 
-// react-pdf's built-in fonts lack the rupee glyph; Jost has it.
 const rupees = (paise: number) => `\u20B9${(paise / 100).toLocaleString("en-IN")}`
 
 const BLACK = "#000000"
@@ -155,7 +150,7 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
       subject={`Invoice for order ${order.orderCode}`}
     >
       <Page size="A4" style={s.page}>
-        {/* Header */}
+
         <View style={s.header}>
           <View style={s.brand}>
             <Image src={logo()} style={s.logo} />
@@ -170,7 +165,6 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           </View>
         </View>
 
-        {/* Parties */}
         <View style={s.parties}>
           <View style={s.party}>
             <Text style={s.label}>Billed to</Text>
@@ -211,7 +205,6 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           </View>
         </View>
 
-        {/* Items */}
         <View style={s.table}>
           <View style={s.thead}>
             <Text style={[s.th, s.cItem]}>Item</Text>
@@ -231,7 +224,6 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           ))}
         </View>
 
-        {/* Totals */}
         <View style={s.totals}>
           <View style={s.totalRow}>
             <Text style={s.muted}>Subtotal</Text>
@@ -253,7 +245,6 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           </View>
         </View>
 
-        {/* Footer */}
         <View style={s.footer} fixed>
           <Text>Thank you for shopping with Piyush Bholla.</Text>
           <Text>This invoice is generated electronically and does not require a signature.</Text>

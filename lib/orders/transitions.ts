@@ -1,6 +1,4 @@
-// lib/orders/transitions.ts
-// Legal admin transitions for the whole-order lifecycle. Every status must
-// appear in TRANSITIONS, making additions compile-time exhaustive.
+
 
 export const ORDER_STATUSES = [
   "UNDER_VERIFICATION",
@@ -21,13 +19,13 @@ export type OrderStatusValue = (typeof ORDER_STATUSES)[number]
 
 export type Transition = {
   to: OrderStatusValue
-  /** Button label in the admin. */
+
   label: string
-  /** Visual weight: primary is the expected next step, danger is destructive. */
+
   intent: "primary" | "secondary" | "danger"
-  /** One line shown in the confirmation dialog. */
+
   description: string
-  /** Some decisions need a reason/reference in the permanent history. */
+
   noteRequired?: boolean
   notePlaceholder?: string
 }
@@ -123,7 +121,6 @@ export function canTransition(from: string, to: string): boolean {
   return Boolean(transitionFor(from, to))
 }
 
-/** Statuses with an expected next operational action. */
 export const ACTION_REQUIRED_STATUSES: OrderStatusValue[] = [
   "UNDER_VERIFICATION",
   "VERIFIED",
@@ -134,5 +131,4 @@ export const ACTION_REQUIRED_STATUSES: OrderStatusValue[] = [
   "EXCHANGE_DISPATCHED",
 ]
 
-/** Statuses with no outgoing transition. */
 export const FINAL_STATUSES: OrderStatusValue[] = ["EXCHANGE_COMPLETED", "REFUNDED"]

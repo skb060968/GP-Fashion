@@ -27,7 +27,6 @@ const CartContext = createContext<CartContextType | null>(null)
 
 const key = (i: Pick<CartItem, "slug" | "size">) => `${i.slug}|${i.size}`
 
-/** Union by slug+size, summing quantities (capped) when both sides have a line. */
 const mergeCarts = (server: CartItem[], local: CartItem[]) => {
   const map = new Map<string, CartItem>()
   for (const i of server) map.set(key(i), { ...i })
@@ -49,7 +48,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) setCart(JSON.parse(stored))
     } catch {
-      /* ignore corrupt storage */
+
     }
     setLoaded(true)
   }, [])

@@ -12,7 +12,6 @@ import { adminOrderPatchSchema } from "@/lib/validation/schemas";
 import { sendMail } from "@/lib/mailer";
 import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer";
 
-// GET
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
@@ -39,7 +38,6 @@ export async function GET(
   }
 }
 
-// PATCH: { action: "status", status, note?, notifyCustomer? } | { action: "notes", notes }
 export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }

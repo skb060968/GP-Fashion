@@ -1,4 +1,4 @@
-// lib/data/index.ts
+
 
 import { siteInfo } from "./siteInfo"
 import { services } from "./services"
@@ -8,10 +8,6 @@ import { contact } from "./contact"
 import { faq } from "./faq"
 import { products as shop } from "./shop"
 
-/**
- * Central content object used by pages/components.
- *   import { content } from "@/lib/data"
- */
 export const content = {
   siteInfo,
   services,

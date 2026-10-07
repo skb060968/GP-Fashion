@@ -23,7 +23,7 @@ interface OrderData {
   status: string
   amount: number
   createdAt: string
-  /** Proves this lookup matched the phone number; unlocks the invoice. */
+
   accessToken: string
   history: { status: string }[]
   items: OrderItem[]
@@ -77,7 +77,6 @@ export default function TrackOrderClient() {
             meta="Enter your order number and the mobile number used at checkout"
           />
 
-          {/* Lookup form */}
           <FadeIn className="mx-auto mt-14 max-w-xl lg:mt-16">
             <form onSubmit={handleTrack} noValidate className="card-elevated p-6 sm:p-8">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -122,7 +121,6 @@ export default function TrackOrderClient() {
             </form>
           </FadeIn>
 
-          {/* Result */}
           {order && (
             <FadeIn className="mx-auto mt-12 max-w-3xl">
               <div className="card-elevated p-6 sm:p-8">
@@ -143,7 +141,6 @@ export default function TrackOrderClient() {
                   </div>
                 </div>
 
-                {/* Timeline */}
                 <div className="mt-8 border-t border-black/10 pt-8">
                   {failed ? (
                     <div className="rounded-lg border border-black/10 p-5 font-jost">
@@ -195,7 +192,6 @@ export default function TrackOrderClient() {
 
                 <ReturnTimeline status={order.status} history={historyStatuses} />
 
-                {/* Items */}
                 <ul className="mt-8 divide-y divide-black/10 border-t border-black/10">
                   {order.items.map((item) => (
                     <li key={item.id} className="flex items-center justify-between gap-4 py-4 font-jost text-sm">

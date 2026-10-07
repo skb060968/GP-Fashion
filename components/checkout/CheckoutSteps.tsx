@@ -10,7 +10,6 @@ const STEPS = [
 
 export type CheckoutStep = (typeof STEPS)[number]["key"]
 
-/** Horizontal progress indicator shown at the top of every checkout page. */
 export default function CheckoutSteps({ current }: { current: CheckoutStep }) {
   const currentIndex = STEPS.findIndex((s) => s.key === current)
 

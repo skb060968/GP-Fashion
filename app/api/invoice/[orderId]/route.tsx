@@ -6,15 +6,10 @@ import { canReadOrder } from "@/lib/security/orderAccess"
 
 export const runtime = "nodejs"
 
-/**
- * GET /api/invoice/<orderCode>.pdf?t=<access token>
- * Streams the order's invoice as a PDF download. Same access rules as
- * /api/orders/<orderCode>: token, signed-in owner, or admin.
- */
 export async function GET(req: NextRequest, context: { params: Promise<{ orderId: string }> }) {
   try {
     const { orderId } = await context.params
-    // Strip an optional ".pdf" suffix so /api/invoice/26040.pdf also works.
+
     const orderCode = orderId.replace(/\.pdf$/i, "")
 
     const order = await prisma.order.findUnique({

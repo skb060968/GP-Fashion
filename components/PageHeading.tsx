@@ -2,12 +2,11 @@ import FadeIn from "@/components/FadeIn"
 
 interface PageHeadingProps {
   title: string
-  /** Small line under the rule, e.g. "3 items". */
+
   meta?: string
   as?: "h1" | "h2"
 }
 
-/** Centred Cinzel page title with the house hairline rule. */
 export default function PageHeading({ title, meta, as: Tag = "h1" }: PageHeadingProps) {
   return (
     <FadeIn className="mx-auto max-w-3xl text-center">

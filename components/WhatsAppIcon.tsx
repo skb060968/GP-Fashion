@@ -1,6 +1,5 @@
 import type { SVGProps } from "react"
 
-/** WhatsApp glyph (lucide has no brand icons). Inherits currentColor. */
 export default function WhatsAppIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>

@@ -65,10 +65,8 @@ export default function AdminOrderDetailClient() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [flash, setFlash] = useState<{ tone: "success" | "error"; text: string } | null>(null)
 
-  // Status change dialog
   const [pending, setPending] = useState<Transition | null>(null)
 
-  // Notes
   const [notes, setNotes] = useState("")
   const [notesSaving, setNotesSaving] = useState(false)
   const [notesSavedAt, setNotesSavedAt] = useState<number | null>(null)
@@ -106,7 +104,7 @@ export default function AdminOrderDetailClient() {
       await navigator.clipboard.writeText(text)
       setFlash({ tone: "success", text: `${label} copied.` })
     } catch {
-      /* ignore */
+
     }
   }
 
@@ -115,8 +113,6 @@ export default function AdminOrderDetailClient() {
     const t = setTimeout(() => setFlash(null), 4000)
     return () => clearTimeout(t)
   }, [flash])
-
-  /* ------------------------------ states ------------------------------ */
 
   if (loadError) {
     return (
@@ -187,9 +183,9 @@ export default function AdminOrderDetailClient() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* ---------------------------- main column ---------------------------- */}
+
         <div className="space-y-6 lg:col-span-2">
-          {/* Next steps */}
+
           <Card title="Next step">
             {transitions.length === 0 ? (
               <p className="font-jost text-sm text-black/60">This order is closed. No further changes are expected.</p>
@@ -209,7 +205,6 @@ export default function AdminOrderDetailClient() {
             )}
           </Card>
 
-          {/* Items */}
           <Card title={`Items (${order.items.reduce((n, i) => n + i.quantity, 0)})`} padded={false}>
             <ul className="divide-y divide-black/5">
               {order.items.map((it) => (
@@ -247,7 +242,6 @@ export default function AdminOrderDetailClient() {
             </dl>
           </Card>
 
-          {/* Timeline */}
           <Card title="History" padded={false}>
             <ol className="divide-y divide-black/5">
               {history.map((h, i) => (
@@ -267,9 +261,8 @@ export default function AdminOrderDetailClient() {
           </Card>
         </div>
 
-        {/* ---------------------------- side column ---------------------------- */}
         <div className="space-y-6">
-          {/* Customer */}
+
           <Card
             title="Customer"
             action={
@@ -313,7 +306,6 @@ export default function AdminOrderDetailClient() {
             )}
           </Card>
 
-          {/* Payment */}
           <Card title="Payment">
             <dl className="space-y-2 font-jost text-sm">
               <div className="flex justify-between">
@@ -342,7 +334,6 @@ export default function AdminOrderDetailClient() {
             </dl>
           </Card>
 
-          {/* Notes */}
           <Card
             title="Internal notes"
             action={

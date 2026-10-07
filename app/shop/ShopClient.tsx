@@ -72,7 +72,6 @@ export default function ShopClient() {
         <div className="container-max">
           <PageHeading title="All Pieces" meta={`${results.length} of ${all.length} ${all.length === 1 ? "piece" : "pieces"}`} />
 
-          {/* Search */}
           <FadeIn className="mx-auto mt-12 max-w-2xl lg:mt-16">
             <label className="relative block">
               <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-black/40" strokeWidth={1.5} aria-hidden />
@@ -93,7 +92,6 @@ export default function ShopClient() {
             </label>
           </FadeIn>
 
-          {/* Filters */}
           <FadeIn delay={80} className="mt-8 flex flex-col items-center gap-4">
             <div className="flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="Category">
               {CATEGORIES.map((c) => (
@@ -132,7 +130,6 @@ export default function ShopClient() {
             </div>
           </FadeIn>
 
-          {/* Results */}
           {results.length === 0 ? (
             <FadeIn className="mx-auto mt-20 max-w-md text-center">
               <h2 className="font-cinzel text-xl font-bold uppercase tracking-[0.15em]">Nothing matches</h2>

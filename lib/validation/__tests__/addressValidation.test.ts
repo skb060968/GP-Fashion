@@ -2,8 +2,6 @@ import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { validateAddress } from "../addressValidation";
 
-// --- Generators ---
-
 const validPhoneArb = fc
   .tuple(
     fc.constantFrom(6, 7, 8, 9),
@@ -15,7 +13,6 @@ const validPincodeArb = fc
   .array(fc.integer({ min: 0, max: 9 }), { minLength: 6, maxLength: 6 })
   .map((digits) => digits.join(""));
 
-// Email is required: order confirmations are sent to it.
 const validEmailArb = fc.constantFrom(
   "test@example.com",
   "user@domain.co",
@@ -39,11 +36,7 @@ const validAddressArb = fc.record({
   pincode: validPincodeArb,
 });
 
-// Feature: website-improvements, Property 18: Address validation accepts valid and rejects invalid addresses
 describe("Property 18: Address validation accepts valid and rejects invalid addresses", () => {
-  /**
-   * Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5, 8.6
-   */
 
   it("accepts any valid address", () => {
     fc.assert(
@@ -70,11 +63,11 @@ describe("Property 18: Address validation accepts valid and rejects invalid addr
 
   it("rejects addresses with invalid phone number", () => {
     const invalidPhoneArb = fc.oneof(
-      // Too short
+
       fc.array(fc.integer({ min: 0, max: 9 }), { minLength: 1, maxLength: 9 }).map((d) => d.join("")),
-      // Too long
+
       fc.array(fc.integer({ min: 0, max: 9 }), { minLength: 11, maxLength: 15 }).map((d) => d.join("")),
-      // Starts with 0-5
+
       fc
         .tuple(
           fc.constantFrom(0, 1, 2, 3, 4, 5),
@@ -132,11 +125,11 @@ describe("Property 18: Address validation accepts valid and rejects invalid addr
 
   it("rejects addresses with invalid pincode", () => {
     const invalidPincodeArb = fc.oneof(
-      // Too short
+
       fc.array(fc.integer({ min: 0, max: 9 }), { minLength: 1, maxLength: 5 }).map((d) => d.join("")),
-      // Too long
+
       fc.array(fc.integer({ min: 0, max: 9 }), { minLength: 7, maxLength: 12 }).map((d) => d.join("")),
-      // Non-digit characters
+
       fc.string({ minLength: 6, maxLength: 6 }).filter((s) => /[^0-9]/.test(s))
     );
 
@@ -152,16 +145,12 @@ describe("Property 18: Address validation accepts valid and rejects invalid addr
   });
 });
 
-// Feature: website-improvements, Property 19: Valid address persistence round-trip
 describe("Property 19: Valid address persistence round-trip", () => {
-  /**
-   * Validates: Requirements 8.8
-   */
 
   it("valid address survives JSON serialize/parse round-trip and remains valid", () => {
     fc.assert(
       fc.property(validAddressArb, (address) => {
-        // Simulate localStorage round-trip
+
         const serialized = JSON.stringify(address);
         const deserialized = JSON.parse(serialized);
 

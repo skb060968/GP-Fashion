@@ -50,23 +50,20 @@ export default function AddressPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [saveToBook, setSaveToBook] = useState(true)
 
-  // Prefill from a previous attempt (e.g. user came back via "Change").
   useEffect(() => {
     try {
       const stored = localStorage.getItem(ADDRESS_STORAGE_KEY)
       if (stored) setForm({ ...EMPTY, ...JSON.parse(stored) })
     } catch {
-      /* ignore corrupt storage */
+
     }
     setHydrated(true)
   }, [])
 
-  // Nothing to check out: send them back to the bag.
   useEffect(() => {
     if (hydrated && cart.length === 0) router.replace("/bag")
   }, [hydrated, cart.length, router])
 
-  // Signed in: offer saved addresses and prefill from the default one.
   useEffect(() => {
     if (!ready || !user) return
     fetch("/api/account/addresses", { credentials: "same-origin" })
@@ -121,7 +118,6 @@ export default function AddressPage() {
 
     localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(trimmed))
 
-    // Save to the address book in the background when asked; never block checkout on it.
     if (user && saveToBook && !selectedId) {
       const { email, ...book } = trimmed
       void email
@@ -148,7 +144,7 @@ export default function AddressPage() {
           </div>
 
           <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
-            {/* Form */}
+
             <FadeIn className="lg:col-span-7">
               {ready && !user && (
                 <p className="mb-8 rounded-lg border border-black/10 bg-stone-50 p-4 font-jost text-sm text-black/70">
@@ -327,7 +323,6 @@ export default function AddressPage() {
               </form>
             </FadeIn>
 
-            {/* Summary */}
             <FadeIn delay={120} className="lg:col-span-5">
               <OrderSummary />
             </FadeIn>

@@ -118,7 +118,6 @@ export default function DashboardClient() {
         </div>
       )}
 
-      {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-7">
         {kpis.map((k) => (
           <Link
@@ -132,7 +131,6 @@ export default function DashboardClient() {
         ))}
       </div>
 
-      {/* Revenue strip */}
       <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-black/10 bg-black p-5 text-white lg:col-span-1">
           <p className="font-jost text-[11px] font-semibold uppercase tracking-[0.15em] text-white/60">Revenue · {monthName}</p>
@@ -164,7 +162,6 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {/* Queues */}
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card
           title="Needs verification"

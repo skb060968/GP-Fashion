@@ -8,7 +8,6 @@ import { couponState, couponStateWhere, type CouponState } from "@/lib/admin/cou
 const PAGE_SIZE = 20;
 const STATES: CouponState[] = ["ACTIVE", "INACTIVE", "EXPIRED", "EXHAUSTED"];
 
-/** GET /api/admin/coupons?page&search&state */
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
@@ -23,7 +22,6 @@ export async function GET(req: NextRequest) {
 
     const base: Prisma.CouponWhereInput = search ? { code: { contains: search, mode: "insensitive" } } : {};
 
-    // Exhausted needs a column-vs-column comparison, so fetch the candidate set and filter in JS.
     const exhaustedCandidates = await prisma.coupon.findMany({
       where: { ...base, ...couponStateWhere("EXHAUSTED", now) },
       select: { id: true, maxUses: true, currentUses: true },

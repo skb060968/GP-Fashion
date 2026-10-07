@@ -46,7 +46,7 @@ function SuccessContent() {
       setLoading(false)
       return
     }
-    // The payment step stashes the created order so we can render at once.
+
     try {
       const cached = sessionStorage.getItem(`order:${orderId}`)
       if (cached) {
@@ -55,7 +55,7 @@ function SuccessContent() {
         return
       }
     } catch {
-      /* fall through to fetch */
+
     }
     fetch(`/api/orders/${orderId}${token ? `?t=${token}` : ""}`, { credentials: "same-origin" })
       .then((r) => (r.ok ? r.json() : null))
@@ -93,7 +93,7 @@ function SuccessContent() {
             </FadeIn>
           ) : (
             <div className="mx-auto mt-14 max-w-3xl lg:mt-16">
-              {/* Headline */}
+
               <FadeIn className="flex flex-col items-center text-center">
                 <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-white">
                   <Check className="h-7 w-7" strokeWidth={2} aria-hidden />
@@ -111,7 +111,6 @@ function SuccessContent() {
                 <p className="mt-1 font-cinzel text-3xl font-bold tracking-[0.2em]">{order.orderCode}</p>
               </FadeIn>
 
-              {/* Details */}
               <FadeIn delay={120} className="mt-12">
                 <div className="card-elevated p-6 sm:p-8">
                   <dl className="grid grid-cols-1 gap-6 font-jost text-sm sm:grid-cols-3">

@@ -1,11 +1,7 @@
-// Feature: website-improvements, Property 16: Product JSON-LD contains required Schema.org fields
+
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { generateProductJsonLd } from "@/lib/seo/jsonld";
-
-/**
- * Validates: Requirements 7.4
- */
 
 describe("Product JSON-LD - Property Tests", () => {
   const productArb = fc.record({

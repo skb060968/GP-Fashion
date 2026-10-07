@@ -1,6 +1,4 @@
-// lib/data/services.ts
-// What PIYUSH BHOLLA LABEL offers, for customers and for partners.
-// Slugs double as anchor ids on /services and are linked from the footer.
+
 
 export const services = [
   {

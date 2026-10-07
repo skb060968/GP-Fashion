@@ -43,17 +43,15 @@ export default function PaymentPage() {
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
   const total = Math.max(0, subtotal - (coupon?.discount ?? 0))
 
-  // Load address; bounce back if a step was skipped.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(ADDRESS_STORAGE_KEY)
       if (stored) setAddress(JSON.parse(stored))
     } catch {
-      /* ignore */
+
     }
     setHydrated(true)
-    // Wake the database and the API function while the customer is still
-    // reading the page, so "Place order" doesn't pay for a cold start.
+
     fetch("/api/warmup", { method: "POST" }).catch(() => {})
   }, [])
 
@@ -137,21 +135,19 @@ export default function PaymentPage() {
       }
 
       const data = await res.json()
-      // Hand the order to the confirmation page so it renders instantly
-      // instead of fetching it again.
+
       if (data.order) {
         try {
           sessionStorage.setItem(`order:${data.orderId}`, JSON.stringify(data.order))
         } catch {
-          /* storage full or disabled: confirmation page will fetch instead */
+
         }
       }
       clearCart()
       localStorage.removeItem(ADDRESS_STORAGE_KEY)
-      // The access token lets the confirmation page (and its invoice link)
-      // read the order back for a guest who isn't signed in.
+
       router.push(`/checkout/success?orderId=${data.orderId}&t=${data.accessToken}`)
-      // keep `placing` true until navigation completes
+
     } catch {
       setOrderError("We couldn't place your order. Please check your connection and try again.")
       setPlacing(false)
@@ -171,9 +167,9 @@ export default function PaymentPage() {
           </div>
 
           <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
-            {/* Main column */}
+
             <div className="space-y-12 lg:col-span-7">
-              {/* Shipping to */}
+
               <FadeIn>
                 <div className="flex items-baseline justify-between">
                   <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
@@ -201,7 +197,6 @@ export default function PaymentPage() {
                 </address>
               </FadeIn>
 
-              {/* Payment method */}
               <FadeIn delay={80}>
                 <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
                   Payment method
@@ -226,7 +221,6 @@ export default function PaymentPage() {
                   />
                 </div>
 
-                {/* UPI details */}
                 <div className="mt-6 rounded-lg border border-black/10 p-6 sm:p-8">
                   <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[auto_1fr]">
                     <div className="mx-auto w-56 shrink-0 overflow-hidden rounded-lg border border-black/10 bg-white p-2 sm:w-60">
@@ -292,7 +286,6 @@ export default function PaymentPage() {
               )}
             </div>
 
-            {/* Summary */}
             <FadeIn delay={120} className="lg:col-span-5">
               <OrderSummary
                 discount={coupon?.discount ?? 0}
@@ -314,7 +307,7 @@ export default function PaymentPage() {
                   </>
                 }
               >
-                {/* Coupon */}
+
                 <div>
                   <p className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">
                     Promo code

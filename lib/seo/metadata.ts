@@ -1,7 +1,4 @@
-/**
- * Centralized registry of all public, indexable page metadata.
- * Used by property tests to verify uniqueness and completeness.
- */
+
 
 import { CATEGORY_SLUGS, categoryMeta, getAllProducts, getCategoryViews, getCollections } from "@/lib/data/categories";
 import { policies } from "@/lib/data/policies";

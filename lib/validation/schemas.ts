@@ -21,7 +21,6 @@ export const addressSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/, "Invalid pincode. Must be a 6-digit number"),
 });
 
-/** Saved address in a customer's address book. */
 export const userAddressSchema = addressSchema.omit({ email: true }).extend({
   label: z.string().trim().max(40).optional().or(z.literal("")),
   isDefault: z.boolean().optional(),
@@ -38,7 +37,7 @@ export const createOrderSchema = z.object({
 export const updateStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),
   note: z.string().max(500).optional(),
-  /** Defaults to true; the admin can suppress the customer email. */
+
   notifyCustomer: z.boolean().optional(),
 });
 
@@ -46,7 +45,6 @@ export const updateNotesSchema = z.object({
   notes: z.string().max(5000),
 });
 
-/** PATCH /api/admin/orders/[orderId] accepts either a status change or a notes update. */
 export const adminOrderPatchSchema = z.union([
   updateStatusSchema.extend({ action: z.literal("status") }),
   updateNotesSchema.extend({ action: z.literal("notes") }),
@@ -70,10 +68,6 @@ export const couponSchema = z.object({
 
 export type CouponFormData = z.infer<typeof couponSchema>;
 
-/**
- * Converts a ZodError into a flat field-level error map.
- * Nested paths are joined with dots (e.g. "address.phone").
- */
 export function formatZodErrors(error: z.ZodError): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const issue of error.issues) {

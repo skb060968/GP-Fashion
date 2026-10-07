@@ -14,13 +14,11 @@ interface CouponFormProps {
 
 type FieldErrors = Record<string, string>
 
-/** ISO instant → yyyy-mm-dd in IST, for the date input. */
 function toDateInput(iso: string | null): string {
   if (!iso) return ""
   return new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
 }
 
-/** yyyy-mm-dd → end of that day in IST, as an ISO instant. */
 function endOfDayIST(date: string): string {
   return new Date(`${date}T23:59:59.999+05:30`).toISOString()
 }
@@ -161,7 +159,6 @@ export default function CouponForm({ coupon, onClose, onSaved }: CouponFormProps
           "What the customer types at checkout."
         )}
 
-        {/* Type segmented control */}
         <div>
           <span className="block font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Discount</span>
           <div role="radiogroup" className="mt-1.5 grid grid-cols-2 gap-2">

@@ -21,10 +21,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main>
-      {/* Hero */}
+
       <Hero />
 
-      {/* Menswear / Womenswear showcases (anchored from the navbar menu) */}
       <CategoryShowcase
         id="menswear"
         title="Menswear"
@@ -43,7 +42,6 @@ export default function Home() {
         ctaHref="/womenswear"
       />
 
-      {/* About Us (brand story + values, anchored from the navbar menu) */}
       <AboutUs />
     </main>
   )

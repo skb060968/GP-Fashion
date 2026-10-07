@@ -1,5 +1,4 @@
-// lib/data/contact.ts
-// SINGLE SOURCE OF TRUTH — CONTACT PAGE CONTENT
+
 
 export const contact = {
   heading: "Contact",
@@ -13,7 +12,7 @@ export const contact = {
   instagram: "https://www.instagram.com/piyushbholla.label",
   email: "piyushbholla@gmail.com",
   phone: "+91 9821818352",
-  // Digits only, with country code; used for wa.me links.
+
   whatsapp: "919821818352",
   location: "New Delhi, India",
 
@@ -22,7 +21,5 @@ export const contact = {
 
   formHeading: "Write to Us",
 
-  // 🔐 Web3Forms Access Key
-  // Safe to keep here (not secret, but centralized)
   web3formKey: "3ff1a5f0-5f4c-42d3-967d-413a0f8adc75",
 }

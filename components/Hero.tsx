@@ -5,8 +5,6 @@ import { useEffect, useRef } from "react"
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // Play only while the hero is on screen. Saves CPU/battery once the user
-  // scrolls past; resumes from the same frame when they scroll back.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -14,7 +12,7 @@ export default function Hero() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // play() returns a promise that rejects if autoplay is blocked; ignore.
+
           video.play().catch(() => {})
         } else {
           video.pause()

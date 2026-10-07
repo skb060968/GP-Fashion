@@ -11,8 +11,6 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   const isAdmin = pathname.startsWith("/admin")
   const isHome = pathname === "/"
 
-  // The navbar is fixed. The home page runs its hero video underneath it;
-  // every other page needs top padding equal to the navbar height.
   const offset = isAdmin || isHome ? "" : "pt-[var(--nav-h)]"
 
   return (

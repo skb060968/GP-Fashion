@@ -10,7 +10,6 @@ interface EmptyStateProps {
   ctaHref: string
 }
 
-/** Centred empty state for list pages (bag, wishlist, orders). */
 export default function EmptyState({ icon: Icon, title, description, ctaLabel, ctaHref }: EmptyStateProps) {
   return (
     <FadeIn className="mx-auto flex max-w-md flex-col items-center py-16 text-center sm:py-24">

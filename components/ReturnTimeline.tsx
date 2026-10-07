@@ -1,7 +1,6 @@
 import { Check, RotateCcw } from "lucide-react"
 import { postDeliveryTracking } from "@/lib/orders/labels"
 
-/** Secondary timeline shown after delivery when a return/exchange is opened. */
 export default function ReturnTimeline({ status, history = [] }: { status: string; history?: string[] }) {
   const tracking = postDeliveryTracking(status, history)
   if (!tracking) return null

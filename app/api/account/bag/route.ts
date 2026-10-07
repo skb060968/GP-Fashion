@@ -22,7 +22,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ items })
 }
 
-/** PUT replaces the whole bag with the client's current state. */
 export async function PUT(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })
@@ -30,7 +29,6 @@ export async function PUT(req: NextRequest) {
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) return NextResponse.json({ error: "Invalid bag" }, { status: 400 })
 
-  // Collapse duplicate slug+size lines by summing quantities (capped at 10).
   const map = new Map<string, z.infer<typeof itemSchema>>()
   for (const i of parsed.data.items) {
     const k = `${i.slug}|${i.size}`

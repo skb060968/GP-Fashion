@@ -34,7 +34,7 @@ describe("createRateLimiter", () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxRequests: 1 });
 
     limiter.check("ip1");
-    vi.advanceTimersByTime(30_000); // advance 30s
+    vi.advanceTimersByTime(30_000);
 
     const result = limiter.check("ip1");
     expect(result.allowed).toBe(false);
@@ -47,7 +47,7 @@ describe("createRateLimiter", () => {
     limiter.check("ip1");
     expect(limiter.check("ip1").allowed).toBe(false);
 
-    vi.advanceTimersByTime(60_000); // window expires
+    vi.advanceTimersByTime(60_000);
 
     expect(limiter.check("ip1").allowed).toBe(true);
   });
@@ -72,15 +72,12 @@ describe("createRateLimiter", () => {
 
   it("reset() on unknown key is a no-op", () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxRequests: 1 });
-    limiter.reset("unknown"); // should not throw
+    limiter.reset("unknown");
   });
 });
 
-// Feature: website-improvements, Property 5: Rate limiter enforces request cap within time window
 describe("Property 5: Rate limiter enforces request cap within time window", () => {
-  /**
-   * Validates: Requirements 2.1, 2.2, 2.3, 2.4
-   */
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -97,13 +94,11 @@ describe("Property 5: Rate limiter enforces request cap within time window", () 
         (maxRequests, key) => {
           const limiter = createRateLimiter({ windowMs: 60_000, maxRequests });
 
-          // First maxRequests calls should all be allowed
           for (let i = 0; i < maxRequests; i++) {
             const result = limiter.check(key);
             expect(result.allowed).toBe(true);
           }
 
-          // The (maxRequests + 1)th call should be blocked
           const blocked = limiter.check(key);
           expect(blocked.allowed).toBe(false);
           expect(blocked.retryAfterSeconds).toBeGreaterThan(0);

@@ -12,7 +12,6 @@ const MESSAGES = {
   too_many_attempts: "Too many attempts. Request a new code.",
 }
 
-/** POST /api/auth/verify-code { email, code } → sets session cookie. */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
   const rate = limiter.check(ip)

@@ -1,5 +1,4 @@
-// lib/data/servicesPage.ts
-// Page-level copy for /services.
+
 
 export const servicesPage = {
   heroTitle: "Services",

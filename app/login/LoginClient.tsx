@@ -25,7 +25,6 @@ export default function LoginClient() {
   const [cooldown, setCooldown] = useState(0)
   const codeRef = useRef<HTMLInputElement>(null)
 
-  // Already signed in → go where they were heading.
   useEffect(() => {
     if (ready && user) router.replace(next)
   }, [ready, user, next, router])

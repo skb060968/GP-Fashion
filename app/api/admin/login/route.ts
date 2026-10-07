@@ -6,7 +6,6 @@ import { ADMIN_COOKIE, createSession, sessionCookieOptions } from "@/lib/securit
 
 const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 5 });
 
-/** Constant-time string comparison so response timing doesn't leak matches. */
 function safeEqual(a: string, b: string) {
   const ab = Buffer.from(a);
   const bb = Buffer.from(b);
