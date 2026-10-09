@@ -1,5 +1,7 @@
 
 
+import { contact } from "./contact"
+
 export interface PolicySection {
   heading: string
   paragraphs: string[]
@@ -16,7 +18,7 @@ export interface Policy {
 
 const BUSINESS = "PIYUSH BHOLLA LABEL"
 const LOCATION = "New Delhi, India"
-const EMAIL = "piyushbholla@gmail.com"
+const EMAIL = contact.email
 
 export const policies: Policy[] = [
   {

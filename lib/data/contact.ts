@@ -10,7 +10,7 @@ export const contact = {
     "PIYUSH BHOLLA LABEL is based in Delhi. We work with customers across India and abroad, and visits to the studio are by appointment.",
 
   instagram: "https://www.instagram.com/piyushbholla.label",
-  email: "piyushbholla@gmail.com",
+  email: "piyushbhollalabel@gmail.com",
   phone: "+91 9821818352",
 
   whatsapp: "919821818352",

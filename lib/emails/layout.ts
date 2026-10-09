@@ -1,5 +1,6 @@
 
 
+import { contact } from "@/lib/data/contact"
 import { formatRupees } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
@@ -9,7 +10,7 @@ export const BRAND = {
   name: "PIYUSH BHOLLA",
   legalName: "Piyush Bholla Label",
   location: "Delhi, India",
-  email: "piyushbholla@gmail.com",
+  email: contact.email,
   phone: "+91 9821818352",
   instagram: "https://www.instagram.com/piyushbholla.label",
 }

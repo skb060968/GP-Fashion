@@ -5,6 +5,7 @@ import { paymentLabel } from "@/lib/orders/labels"
 import { formatRupees } from "@/lib/money"
 import {
   address,
+  BRAND,
   button,
   escapeHtml,
   heading,
@@ -36,7 +37,7 @@ export function orderPlacedEmailCustomer(order: OrderEmailData) {
       address(order.customer),
       button("Track your order", `${site}/track-order`, "outline"),
     ],
-    footerNote: `Questions about your order? Reply to this email or write to us at <a href="mailto:piyushbholla@gmail.com" style="color:#666666;">piyushbholla@gmail.com</a>, quoting order ${escapeHtml(order.orderCode)}.`,
+    footerNote: `Questions about your order? Reply to this email or write to us at <a href="mailto:${BRAND.email}" style="color:#666666;">${escapeHtml(BRAND.email)}</a>, quoting order ${escapeHtml(order.orderCode)}.`,
   })
 
   return {
