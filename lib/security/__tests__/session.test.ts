@@ -8,7 +8,6 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       delete: vi.fn(),
       deleteMany: vi.fn(),
-      update: vi.fn(),
     },
   },
 }));
@@ -29,7 +28,6 @@ const mockedPrisma = prisma as unknown as {
 function resetMocks() {
   vi.clearAllMocks();
   mockedPrisma.adminSession.deleteMany.mockResolvedValue({ count: 0 });
-  mockedPrisma.adminSession.update.mockResolvedValue({});
 }
 
 function hashToken(token: string): string {
@@ -82,6 +80,7 @@ describe("validateSession", () => {
     mockedPrisma.adminSession.findUnique.mockResolvedValue({
       tokenHash: hashed,
       expiresAt: new Date(Date.now() + 3600000),
+      createdAt: new Date(),
     });
 
     expect(await validateSession(token)).toBe(true);
@@ -107,6 +106,7 @@ describe("validateSession", () => {
     mockedPrisma.adminSession.findUnique.mockResolvedValue({
       tokenHash: hashed,
       expiresAt: new Date(Date.now() - 1000),
+      createdAt: new Date(Date.now() - 3600000),
     });
     mockedPrisma.adminSession.delete.mockResolvedValue({});
 
@@ -181,6 +181,7 @@ describe("Property 6: Session tokens are unique and validate via round-trip", ()
               return {
                 tokenHash: hashedToken,
                 expiresAt: new Date(Date.now() + 3600000),
+                createdAt: new Date(),
               };
             }
             return null;

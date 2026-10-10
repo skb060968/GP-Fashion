@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/security/adminAuth";
+import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth";
 import { couponSchema, formatZodErrors } from "@/lib/validation/schemas";
 import { couponState } from "@/lib/admin/couponStatus";
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
-  const denied = await requireAdmin(req);
+  const denied = await requireAdminMutation(req);
   if (denied) return denied;
 
   try {
@@ -64,7 +64,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Ctx) {
-  const denied = await requireAdmin(req);
+  const denied = await requireAdminMutation(req);
   if (denied) return denied;
 
   try {

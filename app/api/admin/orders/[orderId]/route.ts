@@ -7,7 +7,7 @@ import {
   MissingTransitionNoteError,
 } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/security/adminAuth";
+import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth";
 import { adminOrderPatchSchema } from "@/lib/validation/schemas";
 import { sendMail } from "@/lib/mailer";
 import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer";
@@ -42,7 +42,7 @@ export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ orderId: string }> }
 ) {
-  const denied = await requireAdmin(req);
+  const denied = await requireAdminMutation(req);
   if (denied) return denied;
 
   try {

@@ -1,45 +1,73 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import crypto from "crypto";
-import { createRateLimiter } from "@/lib/security/rateLimiter";
-import { ADMIN_COOKIE, createSession, sessionCookieOptions } from "@/lib/security/session";
+import crypto from "crypto"
+import { NextResponse, type NextRequest } from "next/server"
+import { z } from "zod"
+import { createRateLimiter } from "@/lib/security/rateLimiter"
+import {
+  ADMIN_OTP_TTL_MS,
+  AdminChallengeActiveError,
+  invalidateAdminLoginChallenge,
+  issueAdminLoginChallenge,
+} from "@/lib/security/adminLoginChallenge"
+import { adminLoginCodeEmail } from "@/lib/emails/adminLoginCode"
+import { requireSameOriginJson } from "@/lib/security/adminAuth"
+import { sendMail } from "@/lib/mailer"
 
-const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 5 });
+const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 5 })
+const schema = z.object({ email: z.string().email().max(254), password: z.string().min(1).max(256) })
 
-function safeEqual(a: string, b: string) {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ab, bb);
+function safeEqual(value: string, expected: string): boolean {
+  const left = crypto.createHash("sha256").update(value).digest()
+  const right = crypto.createHash("sha256").update(expected).digest()
+  return crypto.timingSafeEqual(left, right)
+}
+
+function maskedEmail(email: string): string {
+  const [local, domain] = email.split("@")
+  if (!domain) return "your admin email"
+  const visible = local.slice(0, 2)
+  return `${visible}${"•".repeat(Math.max(3, local.length - visible.length))}@${domain}`
 }
 
 export async function POST(req: NextRequest) {
-  const clientIp =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown";
-  const rateResult = loginRateLimiter.check(clientIp);
+  const requestDenied = requireSameOriginJson(req)
+  if (requestDenied) return requestDenied
+
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
+  const rateResult = loginRateLimiter.check(clientIp)
   if (!rateResult.allowed) {
     return NextResponse.json(
       { error: "Too many attempts. Please wait a few minutes and try again." },
       { status: 429, headers: { "Retry-After": String(rateResult.retryAfterSeconds) } }
-    );
+    )
   }
 
-  const body = await req.json().catch(() => ({}));
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const password = typeof body.password === "string" ? body.password : "";
-
-  const expectedEmail = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
-  const expectedPassword = process.env.ADMIN_PASSWORD ?? "";
+  const parsed = schema.safeParse(await req.json().catch(() => ({})))
+  const email = parsed.success ? parsed.data.email.trim().toLowerCase() : ""
+  const password = parsed.success ? parsed.data.password : ""
+  const expectedEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase()
+  const expectedPassword = process.env.ADMIN_PASSWORD || ""
 
   if (!expectedEmail || !expectedPassword || !safeEqual(email, expectedEmail) || !safeEqual(password, expectedPassword)) {
-    return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
+    return NextResponse.json({ error: "Unable to sign in with those credentials." }, { status: 401 })
   }
 
-  const { token, expiresAt } = await createSession();
-
-  const res = NextResponse.json({ success: true });
-  res.cookies.set(ADMIN_COOKIE, token, sessionCookieOptions(expiresAt));
-  return res;
+  let challengeId: string | null = null
+  try {
+    const issued = await issueAdminLoginChallenge()
+    challengeId = issued.challengeId
+    const message = adminLoginCodeEmail(issued.code, Math.round(ADMIN_OTP_TTL_MS / 60000))
+    await sendMail({ to: expectedEmail, subject: message.subject, html: message.html })
+    return NextResponse.json({ requiresOtp: true, challengeId, destination: maskedEmail(expectedEmail) })
+  } catch (error) {
+    if (error instanceof AdminChallengeActiveError) {
+      return NextResponse.json({ error: "A verification code was already sent. Use that code or wait five minutes before trying again." }, { status: 429 })
+    }
+    if (challengeId) {
+      await invalidateAdminLoginChallenge(challengeId).catch(() => {})
+      console.error("ADMIN_OTP_DELIVERY_FAILED")
+    } else {
+      console.error("ADMIN_OTP_CHALLENGE_FAILED")
+    }
+    return NextResponse.json({ error: "Unable to send the verification code. Please try again." }, { status: 500 })
+  }
 }

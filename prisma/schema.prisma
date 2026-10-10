@@ -211,3 +211,13 @@ model AdminSession {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
 }
+
+model AdminLoginChallenge {
+  key         String   @id
+  challengeId String   @unique
+  codeHash    String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+}

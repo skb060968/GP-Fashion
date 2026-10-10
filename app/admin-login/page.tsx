@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AlertCircle } from "lucide-react"
 import Field from "@/components/checkout/Field"
 
+type Phase = "password" | "otp"
+
 function LoginForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -13,78 +15,122 @@ function LoginForm() {
   const expired = params.get("expired") === "1"
   const target = next && next.startsWith("/admin") ? next : "/admin"
 
+  const [phase, setPhase] = useState<Phase>("password")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [code, setCode] = useState("")
+  const [challengeId, setChallengeId] = useState("")
+  const [destination, setDestination] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     fetch("/api/admin/session")
-      .then((r) => r.json())
-      .then((d) => (d.authenticated ? router.replace(target) : setChecking(false)))
+      .then((response) => response.json())
+      .then((data) => (data.authenticated ? router.replace(target) : setChecking(false)))
       .catch(() => setChecking(false))
   }, [router, target])
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
+  async function handlePassword(event: React.FormEvent) {
+    event.preventDefault()
     setError("")
     setLoading(true)
     try {
-      const res = await fetch("/api/admin/login", {
+      const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error || "Incorrect email or password.")
-        setLoading(false)
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.challengeId) {
+        setError(data.error || "Unable to sign in. Please try again.")
+        return
+      }
+      setChallengeId(data.challengeId)
+      setDestination(data.destination || "your admin email")
+      setPassword("")
+      setCode("")
+      setPhase("otp")
+    } catch {
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleCode(event: React.FormEvent) {
+    event.preventDefault()
+    setError("")
+    setLoading(true)
+    try {
+      const response = await fetch("/api/admin/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId, code }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        setError(data.error || "Unable to verify the code.")
         return
       }
       router.replace(target)
     } catch {
       setError("Something went wrong. Please try again.")
+    } finally {
       setLoading(false)
     }
+  }
+
+  function startOver() {
+    setPhase("password")
+    setPassword("")
+    setCode("")
+    setChallengeId("")
+    setDestination("")
+    setError("")
   }
 
   if (checking) return null
 
   return (
-    <form onSubmit={handleLogin} noValidate className="card-elevated w-full max-w-sm bg-white p-8">
+    <form onSubmit={phase === "password" ? handlePassword : handleCode} noValidate className="card-elevated w-full max-w-sm bg-white p-8">
       <div className="flex flex-col items-center text-center">
         <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} priority className="h-12 w-auto" />
         <span className="mt-2 font-cinzel text-sm font-bold uppercase tracking-[0.04em]">Piyush Bholla</span>
         <span className="mt-1 font-jost text-[11px] uppercase tracking-[0.2em] text-black/50">Admin</span>
       </div>
 
-      {expired && !error && (
+      {expired && phase === "password" && !error && (
         <p className="mt-6 rounded-md border border-black/10 bg-stone-50 p-3 font-jost text-sm text-black/70">
           Your session has expired. Please sign in again.
         </p>
       )}
 
-      <div className="mt-8 space-y-5">
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          autoComplete="username"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Field
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
+      {phase === "password" ? (
+        <div className="mt-8 space-y-5">
+          <Field label="Email" name="email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          <Field label="Password" name="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <p className="mb-5 font-jost text-sm leading-relaxed text-black/65">
+            Enter the six-digit verification code sent to {destination}. It expires in five minutes.
+          </p>
+          <Field
+            label="Verification code"
+            name="code"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            required
+          />
+        </div>
+      )}
 
       {error && (
         <div role="alert" className="mt-5 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3 font-jost text-sm text-red-800">
@@ -95,11 +141,17 @@ function LoginForm() {
 
       <button
         type="submit"
-        disabled={loading || !email || !password}
+        disabled={loading || (phase === "password" ? !email || !password : code.length !== 6)}
         className="btn-solid-dark mt-6 w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white"
       >
-        {loading ? "Signing in…" : "Sign in"}
+        {loading ? (phase === "password" ? "Sending code…" : "Verifying…") : phase === "password" ? "Continue" : "Verify and sign in"}
       </button>
+
+      {phase === "otp" && (
+        <button type="button" onClick={startOver} className="mt-4 w-full font-jost text-sm text-black/60 underline underline-offset-4 hover:text-black">
+          Start over
+        </button>
+      )}
     </form>
   )
 }

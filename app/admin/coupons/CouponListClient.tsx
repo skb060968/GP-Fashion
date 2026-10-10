@@ -131,7 +131,7 @@ export default function CouponListClient() {
   const toggle = async (c: Coupon) => {
     setBusyId(c.id)
     try {
-      const { coupon } = await adminFetch<{ coupon: Coupon }>(`/api/admin/coupons/${c.id}/toggle`, { method: "PATCH" })
+      const { coupon } = await adminFetch<{ coupon: Coupon }>(`/api/admin/coupons/${c.id}/toggle`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: "{}" })
       setData((d) => d && { ...d, coupons: d.coupons.map((x) => (x.id === c.id ? coupon : x)) })
       setFlash(`${c.code} ${coupon.isActive ? "resumed" : "paused"}.`)
       load()
@@ -146,7 +146,7 @@ export default function CouponListClient() {
     if (!deleting) return
     setBusyId(deleting.id)
     try {
-      await adminFetch(`/api/admin/coupons/${deleting.id}`, { method: "DELETE" })
+      await adminFetch(`/api/admin/coupons/${deleting.id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: "{}" })
       setFlash(`${deleting.code} deleted.`)
       setDeleting(null)
       load()

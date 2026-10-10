@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/security/adminAuth";
+import { requireAdminMutation } from "@/lib/security/adminAuth";
 import { couponState } from "@/lib/admin/couponStatus";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const denied = await requireAdmin(req);
+  const denied = await requireAdminMutation(req);
   if (denied) return denied;
 
   try {
