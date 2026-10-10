@@ -70,12 +70,24 @@ export const classifications: Classification[] = [
     "title": "Leisurewear"
   },
   {
-    "slug": "cocktail-formalwear",
-    "title": "Cocktail & Formalwear"
+    "slug": "partywear",
+    "title": "Partywear"
+  },
+  {
+    "slug": "formalwear",
+    "title": "Formalwear"
+  },
+  {
+    "slug": "occasionwear",
+    "title": "Occasionwear"
   },
   {
     "slug": "outerwear",
     "title": "Outerwear"
+  },
+  {
+    "slug": "playwear",
+    "title": "Playwear"
   },
   {
     "slug": "dresses-gowns",
@@ -92,18 +104,6 @@ export const classifications: Classification[] = [
   {
     "slug": "co-ord-sets",
     "title": "Co-ord Sets"
-  },
-  {
-    "slug": "tailoring",
-    "title": "Tailoring"
-  },
-  {
-    "slug": "occasionwear",
-    "title": "Occasionwear"
-  },
-  {
-    "slug": "playwear",
-    "title": "Playwear"
   },
   {
     "slug": "bags",
@@ -132,10 +132,6 @@ export const classifications: Classification[] = [
   {
     "slug": "other-accessories",
     "title": "Other Accessories"
-  },
-  {
-    "slug": "general",
-    "title": "General"
   }
 ]
 
@@ -145,7 +141,7 @@ export const products: Product[] = [
     "name": "Noir Bespoke Suit",
     "category": "menswear",
     "classification": "outerwear",
-    "collection": "deepawali-2026",
+    "collection": "winter-2026",
     "releaseDate": "2026-10-06",
     "description": "",
     "price": 1599000,
@@ -167,31 +163,5 @@ export const products: Product[] = [
     ],
     "coverImage": "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
     "coverThumbnail": "/images/shop/thumbnails/noir-bespoke-suit/noir-bespoke-suit-cover.webp"
-  },
-  {
-    "slug": "diva-ball-gown",
-    "name": "Diva Ball Gown",
-    "category": "womenswear",
-    "classification": "ethnic-wear",
-    "collection": "winter-2026",
-    "releaseDate": "2026-10-06",
-    "description": "",
-    "price": 1099000,
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
-    ],
-    "bestseller": true,
-    "order": 10,
-    "images": [
-      "/images/shop/items/diva-ball-gown/diva-ball-gown-cover.webp",
-      "/images/shop/items/diva-ball-gown/diva-ball-gown-1.webp",
-      "/images/shop/items/diva-ball-gown/diva-ball-gown-2.webp",
-      "/images/shop/items/diva-ball-gown/diva-ball-gown-3.webp"
-    ],
-    "coverImage": "/images/shop/items/diva-ball-gown/diva-ball-gown-cover.webp",
-    "coverThumbnail": "/images/shop/thumbnails/diva-ball-gown/diva-ball-gown-cover.webp"
   }
 ]
