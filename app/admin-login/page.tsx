@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Eye, EyeOff } from "lucide-react"
 import Field from "@/components/checkout/Field"
 
 type Phase = "password" | "otp"
@@ -13,14 +13,17 @@ function LoginForm() {
   const params = useSearchParams()
   const next = params.get("next")
   const expired = params.get("expired") === "1"
-  const target = next && next.startsWith("/admin") ? next : "/admin"
+  const target = next === "/admin" || next?.startsWith("/admin/") ? next : "/admin"
+  const challengeParam = params.get("challenge")
+  const resumableChallengeId = challengeParam && /^[a-f0-9]{64}$/.test(challengeParam) ? challengeParam : ""
 
-  const [phase, setPhase] = useState<Phase>("password")
+  const [phase, setPhase] = useState<Phase>(resumableChallengeId ? "otp" : "password")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [passwordVisible, setPasswordVisible] = useState(false)
   const [code, setCode] = useState("")
-  const [challengeId, setChallengeId] = useState("")
-  const [destination, setDestination] = useState("")
+  const [challengeId, setChallengeId] = useState(resumableChallengeId)
+  const [destination, setDestination] = useState(resumableChallengeId ? "your admin email" : "")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
@@ -31,6 +34,14 @@ function LoginForm() {
       .then((data) => (data.authenticated ? router.replace(target) : setChecking(false)))
       .catch(() => setChecking(false))
   }, [router, target])
+
+  function replaceChallengeInUrl(value?: string) {
+    const updated = new URLSearchParams(params.toString())
+    if (value) updated.set("challenge", value)
+    else updated.delete("challenge")
+    const query = updated.toString()
+    router.replace(`/admin-login${query ? `?${query}` : ""}`, { scroll: false })
+  }
 
   async function handlePassword(event: React.FormEvent) {
     event.preventDefault()
@@ -47,9 +58,11 @@ function LoginForm() {
         setError(data.error || "Unable to sign in. Please try again.")
         return
       }
+      replaceChallengeInUrl(data.challengeId)
       setChallengeId(data.challengeId)
       setDestination(data.destination || "your admin email")
       setPassword("")
+      setPasswordVisible(false)
       setCode("")
       setPhase("otp")
     } catch {
@@ -83,8 +96,10 @@ function LoginForm() {
   }
 
   function startOver() {
+    replaceChallengeInUrl()
     setPhase("password")
     setPassword("")
+    setPasswordVisible(false)
     setCode("")
     setChallengeId("")
     setDestination("")
@@ -110,12 +125,35 @@ function LoginForm() {
       {phase === "password" ? (
         <div className="mt-8 space-y-5">
           <Field label="Email" name="email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <Field label="Password" name="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          <Field
+            label="Password"
+            name="password"
+            type={passwordVisible ? "text" : "password"}
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            endAdornment={(
+              <button
+                type="button"
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                aria-controls="field-password"
+                aria-pressed={passwordVisible}
+                onClick={() => setPasswordVisible((visible) => !visible)}
+                className="rounded p-2 text-black/50 transition-colors hover:text-black focus-visible:ring-black"
+              >
+                {passwordVisible ? <EyeOff className="h-5 w-5" strokeWidth={1.5} aria-hidden /> : <Eye className="h-5 w-5" strokeWidth={1.5} aria-hidden />}
+              </button>
+            )}
+            required
+          />
         </div>
       ) : (
         <div className="mt-8">
-          <p className="mb-5 font-jost text-sm leading-relaxed text-black/65">
+          <p className="mb-3 font-jost text-sm leading-relaxed text-black/65">
             Enter the six-digit verification code sent to {destination}. It expires in five minutes.
+          </p>
+          <p className="mb-5 font-jost text-xs leading-relaxed text-black/50">
+            You can leave this page to read the email. Copy the code, then use the Continue verification link in that email to reopen this screen.
           </p>
           <Field
             label="Verification code"

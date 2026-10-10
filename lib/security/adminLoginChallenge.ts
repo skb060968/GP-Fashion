@@ -59,9 +59,10 @@ export async function invalidateAdminLoginChallenge(challengeId: string): Promis
 }
 
 export async function consumeAdminLoginChallenge(challengeId: string, codeRaw: string, now = new Date()) {
-  if (!/^[a-f0-9]{64}$/.test(challengeId) || codeRaw.length > 64) return { ok: false as const }
+  const code = codeRaw.trim()
+  if (!/^[a-f0-9]{64}$/.test(challengeId) || !/^\d{6}$/.test(code)) return { ok: false as const }
 
-  const codeHash = hashCode(challengeId, codeRaw.trim())
+  const codeHash = hashCode(challengeId, code)
   const session = newSessionMaterial(now)
 
   return prisma.$transaction(async (tx) => {

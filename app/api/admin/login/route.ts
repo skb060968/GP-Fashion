@@ -55,12 +55,18 @@ export async function POST(req: NextRequest) {
   try {
     const issued = await issueAdminLoginChallenge()
     challengeId = issued.challengeId
-    const message = adminLoginCodeEmail(issued.code, Math.round(ADMIN_OTP_TTL_MS / 60000))
+    const message = adminLoginCodeEmail(issued.code, Math.round(ADMIN_OTP_TTL_MS / 60000), issued.challengeId)
     await sendMail({ to: expectedEmail, subject: message.subject, html: message.html })
-    return NextResponse.json({ requiresOtp: true, challengeId, destination: maskedEmail(expectedEmail) })
+    return NextResponse.json(
+      { requiresOtp: true, challengeId, destination: maskedEmail(expectedEmail) },
+      { headers: { "Cache-Control": "no-store" } }
+    )
   } catch (error) {
     if (error instanceof AdminChallengeActiveError) {
-      return NextResponse.json({ error: "A verification code was already sent. Use that code or wait five minutes before trying again." }, { status: 429 })
+      return NextResponse.json(
+        { error: "A verification code was already sent. Use the Continue verification link in that email or wait five minutes before trying again." },
+        { status: 429, headers: { "Cache-Control": "no-store" } }
+      )
     }
     if (challengeId) {
       await invalidateAdminLoginChallenge(challengeId).catch(() => {})

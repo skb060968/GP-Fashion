@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react"
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react"
 
 const BASE =
   "w-full rounded-lg border bg-white px-4 py-3 font-jost text-black placeholder:text-black/35 transition focus:outline-none focus:ring-1"
@@ -13,13 +13,14 @@ type Common = {
   optional?: boolean
 }
 
-type InputFieldProps = Common & { as?: "input" } & InputHTMLAttributes<HTMLInputElement>
+type InputFieldProps = Common & { as?: "input"; endAdornment?: ReactNode } & InputHTMLAttributes<HTMLInputElement>
 type TextareaFieldProps = Common & { as: "textarea" } & TextareaHTMLAttributes<HTMLTextAreaElement>
 
 export default function Field(props: InputFieldProps | TextareaFieldProps) {
   const { label, name, error, hint, optional } = props
   const id = `field-${name}`
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
+  const endAdornment = props.as === "textarea" ? undefined : props.endAdornment
 
   return (
     <div>
@@ -38,14 +39,17 @@ export default function Field(props: InputFieldProps | TextareaFieldProps) {
           className={`${BASE} mt-2 ${error ? BAD : OK}`}
         />
       ) : (
-        <input
-          {...stripCommon(props)}
-          id={id}
-          name={name}
-          aria-invalid={Boolean(error)}
-          aria-describedby={describedBy}
-          className={`${BASE} mt-2 ${error ? BAD : OK}`}
-        />
+        <div className="relative mt-2">
+          <input
+            {...stripCommon(props)}
+            id={id}
+            name={name}
+            aria-invalid={Boolean(error)}
+            aria-describedby={describedBy}
+            className={`${BASE} ${endAdornment ? "pr-12" : ""} ${error ? BAD : OK}`}
+          />
+          {endAdornment && <div className="absolute inset-y-0 right-2 flex items-center">{endAdornment}</div>}
+        </div>
       )}
 
       {error ? (
@@ -61,8 +65,8 @@ export default function Field(props: InputFieldProps | TextareaFieldProps) {
   )
 }
 
-function stripCommon<T extends Common & { as?: string }>(props: T) {
-  const { label, name, error, hint, optional, as, ...rest } = props
-  void label; void name; void error; void hint; void optional; void as
+function stripCommon<T extends Common & { as?: string; endAdornment?: ReactNode }>(props: T) {
+  const { label, name, error, hint, optional, as, endAdornment, ...rest } = props
+  void label; void name; void error; void hint; void optional; void as; void endAdornment
   return rest
 }

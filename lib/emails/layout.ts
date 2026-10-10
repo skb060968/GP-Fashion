@@ -66,7 +66,7 @@ export function button(text: string, href: string, variant: "solid" | "outline" 
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
       <tr>
         <td align="center" bgcolor="${solid ? INK : "#ffffff"}" style="border-radius:999px;border:1px solid ${INK};">
-          <a href="${href}" target="_blank"
+          <a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"
              style="display:inline-block;padding:13px 32px;font:700 12px/1 ${SANS};letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:${solid ? "#ffffff" : INK};border-radius:999px;">
             ${escapeHtml(text)}
           </a>

@@ -8,7 +8,7 @@ import { ADMIN_COOKIE, sessionCookieOptions } from "@/lib/security/session"
 const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 20 })
 const schema = z.object({
   challengeId: z.string().regex(/^[a-f0-9]{64}$/),
-  code: z.string().min(1).max(64),
+  code: z.string().regex(/^\d{6}$/),
 })
 
 export async function POST(req: NextRequest) {

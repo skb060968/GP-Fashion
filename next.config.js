@@ -35,7 +35,10 @@ const nextConfig = {
   },
 
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }]
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/admin-login", headers: [{ key: "Cache-Control", value: "no-store" }] },
+    ]
   },
 }
 
