@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Ruler, X } from "lucide-react"
 import { sizeGuides } from "@/lib/data/sizeGuide"
-import type { CategorySlug } from "@/lib/data/categories"
+import { categoryMeta, type CategorySlug } from "@/lib/data/categories"
 
 type Unit = "in" | "cm"
 
@@ -34,6 +34,8 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
     return () => { document.body.style.overflow = prev }
   }, [open])
 
+  if (!guide) return null
+
   return (
     <>
       <button
@@ -56,7 +58,7 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
           <div className="flex items-start justify-between gap-4 border-b border-black/10 px-6 py-5 sm:px-8">
             <div>
               <h2 id="size-guide-title" className="font-cinzel text-lg font-bold uppercase tracking-[0.15em] sm:text-xl">Size Guide</h2>
-              <p className="mt-1 font-jost text-xs uppercase tracking-[0.2em] text-black/50">{category === "menswear" ? "Menswear" : "Womenswear"} · body measurements</p>
+              <p className="mt-1 font-jost text-xs uppercase tracking-[0.2em] text-black/50">{categoryMeta[category].title} · body measurements</p>
             </div>
             <button type="button" onClick={close} aria-label="Close size guide" className="-mr-2 -mt-1 rounded p-2 text-black/60 transition-colors hover:text-black focus-visible:ring-black">
               <X className="h-5 w-5" strokeWidth={1.5} aria-hidden />

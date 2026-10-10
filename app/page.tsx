@@ -2,17 +2,16 @@ import type { Metadata } from "next"
 import Hero from "@/components/Hero"
 import CategoryShowcase from "@/components/CategoryShowcase"
 import AboutUs from "@/components/AboutUs"
+import { ACTIVE_CATEGORY_SLUGS, categoryMeta, getCategoryImage } from "@/lib/data/categories"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 export const metadata: Metadata = {
   title: "Piyush Bholla | Contemporary Designer Label",
-  description:
-    "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
+  description: "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
   openGraph: {
     title: "Piyush Bholla | Contemporary Designer Label",
-    description:
-      "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
+    description: "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
     url: SITE_URL,
     images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }],
   },
@@ -21,26 +20,23 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main>
-
       <Hero />
 
-      <CategoryShowcase
-        id="menswear"
-        title="Menswear"
-        description="Refined tailoring that balances tradition with contemporary style. Pieces for the modern man who values quality, fit, and timeless elegance."
-        image="/images/home/menswear.webp"
-        imageAlt="Two models in looks from the menswear collection"
-        ctaHref="/menswear"
-        priority
-      />
-      <CategoryShowcase
-        id="womenswear"
-        title="Womenswear"
-        description="Timeless silhouettes reimagined with a contemporary sensibility. Every piece tells a story of refined craftsmanship and understated luxury."
-        image="/images/home/womenswear.webp"
-        imageAlt="Two models in trench coats from the womenswear collection"
-        ctaHref="/womenswear"
-      />
+      {ACTIVE_CATEGORY_SLUGS.map((category, index) => {
+        const meta = categoryMeta[category]
+        return (
+          <CategoryShowcase
+            key={category}
+            id={category}
+            title={meta.title}
+            description={meta.description}
+            image={getCategoryImage(category)}
+            imageAlt={`${meta.title} from the current collection`}
+            ctaHref={`/${category}`}
+            priority={index === 0}
+          />
+        )
+      })}
 
       <AboutUs />
     </main>

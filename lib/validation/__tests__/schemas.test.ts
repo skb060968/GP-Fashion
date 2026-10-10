@@ -11,7 +11,7 @@ import { ORDER_STATUSES } from "@/lib/orders/transitions";
 
 const ORDER_STATUS_VALUES = ORDER_STATUSES;
 
-const VALID_SIZES = ["S", "M", "L", "XL"] as const;
+const VALID_SIZES = ["S", "M", "L", "XL", "XXL", "XXXL", "2-3Y", "7-8Y", "13-14Y", "ONE SIZE"] as const;
 const VALID_PAYMENT_METHODS = ["UPI_MANUAL", "COD", "RAZORPAY"] as const;
 
 const digitArb = fc.integer({ min: 0, max: 9 }).map(String);

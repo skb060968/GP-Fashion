@@ -3,6 +3,21 @@
     { "slug": "ethnic-wear", "title": "Ethnic Wear" },
     { "slug": "leisurewear", "title": "Leisurewear" },
     { "slug": "cocktail-formalwear", "title": "Cocktail & Formalwear" },
-    { "slug": "outerwear", "title": "Outerwear" }
+    { "slug": "outerwear", "title": "Outerwear" },
+    { "slug": "dresses-gowns", "title": "Dresses & Gowns" },
+    { "slug": "tops-shirts", "title": "Tops & Shirts" },
+    { "slug": "bottoms", "title": "Bottoms" },
+    { "slug": "co-ord-sets", "title": "Co-ord Sets" },
+    { "slug": "tailoring", "title": "Tailoring" },
+    { "slug": "occasionwear", "title": "Occasionwear" },
+    { "slug": "playwear", "title": "Playwear" },
+    { "slug": "bags", "title": "Bags" },
+    { "slug": "jewellery", "title": "Jewellery" },
+    { "slug": "belts", "title": "Belts" },
+    { "slug": "scarves-stoles", "title": "Scarves & Stoles" },
+    { "slug": "footwear", "title": "Footwear" },
+    { "slug": "headwear", "title": "Headwear" },
+    { "slug": "other-accessories", "title": "Other Accessories" },
+    { "slug": "general", "title": "General" }
   ]
 }

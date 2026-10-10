@@ -9,7 +9,7 @@ import { getCollections, getCollectionProducts } from "@/lib/data/categories"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
-const DESCRIPTION = "Every release from PIYUSH BHOLLA LABEL, newest first. Each collection brings menswear and womenswear together around one idea."
+const DESCRIPTION = "Every release from PIYUSH BHOLLA LABEL, newest first. Each collection brings the label's categories together around one idea."
 
 export const metadata: Metadata = {
   title: "Collections | Piyush Bholla",

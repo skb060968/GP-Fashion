@@ -34,6 +34,7 @@ export default function PaymentPage() {
   const [confirmed, setConfirmed] = useState(false)
   const [placing, setPlacing] = useState(false)
   const [orderError, setOrderError] = useState("")
+  const [reviewBag, setReviewBag] = useState(false)
 
   const [couponInput, setCouponInput] = useState("")
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null)
@@ -96,6 +97,7 @@ export default function PaymentPage() {
   const placeOrder = async () => {
     if (!address || cart.length === 0 || !confirmed || placing) return
     setOrderError("")
+    setReviewBag(false)
     setPlacing(true)
     try {
       let res: Response | null = null
@@ -127,6 +129,9 @@ export default function PaymentPage() {
         } else if (data?.errors) {
           const first = Object.values(data.errors as Record<string, string>)[0]
           setOrderError(first ? `Please check your details: ${first}` : "Please check your details and try again.")
+        } else if (typeof data?.error === "string") {
+          setOrderError(data.error)
+          setReviewBag(true)
         } else {
           setOrderError("We couldn't place your order. Please try again.")
         }
@@ -281,7 +286,10 @@ export default function PaymentPage() {
                   className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 font-jost text-sm text-red-800"
                 >
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-                  <p>{orderError}</p>
+                  <div>
+                    <p>{orderError}</p>
+                    {reviewBag && <Link href="/bag" className="mt-2 inline-block font-semibold underline underline-offset-4">Review your bag</Link>}
+                  </div>
                 </div>
               )}
             </div>

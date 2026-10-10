@@ -21,9 +21,13 @@ const ITEM_QUALITY = 82
 const THUMB_QUALITY = 80
 
 const IMAGE_EXT = [".jpg", ".jpeg", ".png", ".webp"]
-const CATEGORIES = ["menswear", "womenswear"]
-
-const SIZES = ["S", "M", "L", "XL"]
+const SIZE_OPTIONS_BY_CATEGORY = {
+  menswear: ["S", "M", "L", "XL", "XXL", "XXXL"],
+  womenswear: ["S", "M", "L", "XL", "XXL", "XXXL"],
+  kidswear: ["2-3Y", "3-4Y", "4-5Y", "5-6Y", "6-7Y", "7-8Y", "8-9Y", "9-10Y", "10-11Y", "11-12Y", "12-13Y", "13-14Y"],
+  accessories: ["ONE SIZE"],
+}
+const CATEGORIES = Object.keys(SIZE_OPTIONS_BY_CATEGORY)
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -144,7 +148,12 @@ function readMeta(slug, dir, taxonomy, collections) {
     fail(`${slug}: "collection" "${meta.collection}" has no folder under catalogue/_collections/`)
   if (!Number.isInteger(meta.priceInr) || meta.priceInr <= 0) fail(`${slug}: "priceInr" must be a whole number of rupees`)
   if (!Array.isArray(meta.sizes) || meta.sizes.length === 0) fail(`${slug}: "sizes" must be a non-empty array`)
-  for (const s of meta.sizes) if (!SIZES.includes(s)) fail(`${slug}: size "${s}" is not allowed (use ${SIZES.join(", ")})`)
+  const allowedSizes = SIZE_OPTIONS_BY_CATEGORY[meta.category]
+  const sizes = meta.sizes.map((size) => typeof size === "string" ? size.normalize("NFKC").trim().replace(/\s+/g, " ").toUpperCase() : size)
+  for (const size of sizes) {
+    if (typeof size !== "string" || !allowedSizes.includes(size)) fail(`${slug}: size "${size}" is not allowed for ${meta.category} (use ${allowedSizes.join(", ")})`)
+  }
+  if (new Set(sizes).size !== sizes.length) fail(`${slug}: "sizes" contains duplicates`)
   if (meta.description !== undefined && typeof meta.description !== "string") fail(`${slug}: "description" must be a string`)
   if (meta.order !== undefined && !Number.isInteger(meta.order)) fail(`${slug}: "order" must be a whole number`)
   if (meta.bestseller !== undefined && typeof meta.bestseller !== "boolean") fail(`${slug}: "bestseller" must be true or false`)
@@ -163,7 +172,7 @@ function readMeta(slug, dir, taxonomy, collections) {
     releaseDate,
     description: (meta.description || "").trim(),
     price: meta.priceInr * 100,
-    sizes: SIZES.filter((s) => meta.sizes.includes(s)),
+    sizes: allowedSizes.filter((size) => sizes.includes(size)),
     bestseller: meta.bestseller === true,
     order: meta.order ?? 1000,
   }
@@ -235,7 +244,11 @@ function removeOrphans(productSlugs, collectionSlugs) {
 }
 
 function writeShopTs(products, taxonomy) {
-  const src = `export type ProductCategory = "menswear" | "womenswear"
+  const src = `export const productCategories = ${JSON.stringify(CATEGORIES)} as const
+
+export type ProductCategory = typeof productCategories[number]
+
+export const sizeOptionsByCategory: Record<ProductCategory, readonly string[]> = ${JSON.stringify(SIZE_OPTIONS_BY_CATEGORY, null, 2)}
 
 export interface Classification {
   slug: string

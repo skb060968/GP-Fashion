@@ -7,6 +7,7 @@ import { getUserFromRequest } from "@/lib/security/userSession";
 import { createRateLimiter } from "@/lib/security/rateLimiter";
 import { orderAccessToken } from "@/lib/security/orderAccess";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
+import { getProduct } from "@/lib/data/categories";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
@@ -59,7 +60,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items, address, amount: subtotal, paymentMethod, couponCode } = result.data;
+    const { items: submittedItems, address, amount: submittedSubtotal, paymentMethod, couponCode } = result.data;
+
+    const items = [];
+    for (const submitted of submittedItems) {
+      const product = getProduct(submitted.slug);
+      if (!product || !product.sizes.includes(submitted.size)) {
+        return NextResponse.json({ error: "A product or selected size is no longer available" }, { status: 400 });
+      }
+      items.push({
+        slug: product.slug,
+        name: product.name,
+        size: submitted.size,
+        price: product.price,
+        quantity: submitted.quantity,
+        coverThumbnail: product.coverThumbnail,
+      });
+    }
+
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (subtotal !== submittedSubtotal) {
+      return NextResponse.json({ error: "Your bag has changed. Please review it before payment." }, { status: 400 });
+    }
 
     let discount = 0;
     let validCoupon = false;

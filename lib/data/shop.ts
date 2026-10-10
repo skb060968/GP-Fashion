@@ -1,4 +1,42 @@
-export type ProductCategory = "menswear" | "womenswear"
+export const productCategories = ["menswear","womenswear","kidswear","accessories"] as const
+
+export type ProductCategory = typeof productCategories[number]
+
+export const sizeOptionsByCategory: Record<ProductCategory, readonly string[]> = {
+  "menswear": [
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "XXXL"
+  ],
+  "womenswear": [
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "XXXL"
+  ],
+  "kidswear": [
+    "2-3Y",
+    "3-4Y",
+    "4-5Y",
+    "5-6Y",
+    "6-7Y",
+    "7-8Y",
+    "8-9Y",
+    "9-10Y",
+    "10-11Y",
+    "11-12Y",
+    "12-13Y",
+    "13-14Y"
+  ],
+  "accessories": [
+    "ONE SIZE"
+  ]
+}
 
 export interface Classification {
   slug: string
@@ -38,6 +76,66 @@ export const classifications: Classification[] = [
   {
     "slug": "outerwear",
     "title": "Outerwear"
+  },
+  {
+    "slug": "dresses-gowns",
+    "title": "Dresses & Gowns"
+  },
+  {
+    "slug": "tops-shirts",
+    "title": "Tops & Shirts"
+  },
+  {
+    "slug": "bottoms",
+    "title": "Bottoms"
+  },
+  {
+    "slug": "co-ord-sets",
+    "title": "Co-ord Sets"
+  },
+  {
+    "slug": "tailoring",
+    "title": "Tailoring"
+  },
+  {
+    "slug": "occasionwear",
+    "title": "Occasionwear"
+  },
+  {
+    "slug": "playwear",
+    "title": "Playwear"
+  },
+  {
+    "slug": "bags",
+    "title": "Bags"
+  },
+  {
+    "slug": "jewellery",
+    "title": "Jewellery"
+  },
+  {
+    "slug": "belts",
+    "title": "Belts"
+  },
+  {
+    "slug": "scarves-stoles",
+    "title": "Scarves & Stoles"
+  },
+  {
+    "slug": "footwear",
+    "title": "Footwear"
+  },
+  {
+    "slug": "headwear",
+    "title": "Headwear"
+  },
+  {
+    "slug": "other-accessories",
+    "title": "Other Accessories"
+  },
+  {
+    "slug": "general",
+    "title": "General"
   }
 ]
 

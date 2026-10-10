@@ -1,11 +1,10 @@
-
+import { ACTIVE_CATEGORY_SLUGS, categoryMeta } from "./categories"
 
 export const footer = {
   quickLinksHeading: "Quick Links",
 
   quickLinks: [
-    { label: "Menswear", href: "/menswear" },
-    { label: "Womenswear", href: "/womenswear" },
+    ...ACTIVE_CATEGORY_SLUGS.map((category) => ({ label: categoryMeta[category].title, href: `/${category}` })),
     { label: "Collections", href: "/collections" },
     { label: "About Us", href: "/#about-us" },
     { label: "Contact", href: "/contact" },

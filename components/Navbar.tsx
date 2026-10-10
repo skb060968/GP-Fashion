@@ -8,13 +8,13 @@ import { Menu, X, Heart, ShoppingBag, User, Search, ChevronDown } from "lucide-r
 import { useCart } from "@/context/CartContext"
 import { useUser } from "@/context/UserContext"
 import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
-import { categoryMeta, getCategoryViews, getCollections, CATEGORY_SLUGS } from "@/lib/data/categories"
+import { categoryMeta, getCategoryViews, getCollections, ACTIVE_CATEGORY_SLUGS } from "@/lib/data/categories"
 
 type MenuLeaf = { label: string; href: string }
 type MenuItem = MenuLeaf | { label: string; children: MenuLeaf[] }
 
 const menuItems: MenuItem[] = [
-  ...CATEGORY_SLUGS.map((category) => ({
+  ...ACTIVE_CATEGORY_SLUGS.map((category) => ({
     label: categoryMeta[category].title,
     children: getCategoryViews(category).map((v) => ({ label: v.title, href: `/${category}/${v.slug}` })),
   })),

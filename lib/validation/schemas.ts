@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
 
+export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
+
 export const orderItemSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
-  size: z.enum(["S", "M", "L", "XL"]),
+  size: sizeLabelSchema,
   price: z.number().int().positive(),
   quantity: z.number().int().min(1).max(10),
   coverThumbnail: z.string().min(1),

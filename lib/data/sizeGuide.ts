@@ -1,20 +1,15 @@
-
-
 import type { CategorySlug } from "./categories"
 
 export type SizeGuideRow = { size: string; values: number[] }
 
 export interface SizeGuide {
-
   measurements: string[]
   rows: SizeGuideRow[]
-
   howToMeasure: string[]
-
   notes: string[]
 }
 
-export const sizeGuides: Record<CategorySlug, SizeGuide> = {
+export const sizeGuides: Partial<Record<CategorySlug, SizeGuide>> = {
   menswear: {
     measurements: ["Chest", "Waist", "Hip", "Shoulder"],
     rows: [
@@ -22,6 +17,8 @@ export const sizeGuides: Record<CategorySlug, SizeGuide> = {
       { size: "M", values: [38, 32, 39, 17.5] },
       { size: "L", values: [40, 34, 41, 18] },
       { size: "XL", values: [42, 36, 43, 18.5] },
+      { size: "XXL", values: [44, 38, 45, 19] },
+      { size: "XXXL", values: [46, 40, 47, 19.5] },
     ],
     howToMeasure: [
       "Around the fullest part of the chest, under the arms, tape level across the back.",
@@ -41,6 +38,8 @@ export const sizeGuides: Record<CategorySlug, SizeGuide> = {
       { size: "M", values: [36, 30, 39, 15] },
       { size: "L", values: [38, 32, 41, 15.5] },
       { size: "XL", values: [40, 34, 43, 16] },
+      { size: "XXL", values: [42, 36, 45, 16.5] },
+      { size: "XXXL", values: [44, 38, 47, 17] },
     ],
     howToMeasure: [
       "Around the fullest part of the bust, tape level across the back, wearing the bra you will wear with the piece.",

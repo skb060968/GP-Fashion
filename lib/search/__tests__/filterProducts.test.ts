@@ -8,7 +8,7 @@ interface TestProduct {
   price: number;
 }
 
-const VALID_SIZES = ["S", "M", "L", "XL"] as const;
+const VALID_SIZES = ["S", "M", "L", "XL", "XXL", "XXXL", "2-3Y", "7-8Y", "13-14Y", "ONE SIZE"] as const;
 
 const productArb: fc.Arbitrary<TestProduct> = fc.record({
   name: fc.string({ minLength: 1, maxLength: 50 }).filter((s) => s.trim().length > 0),

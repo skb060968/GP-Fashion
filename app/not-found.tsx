@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import FadeIn from "@/components/FadeIn"
+import { ACTIVE_CATEGORY_SLUGS, categoryMeta } from "@/lib/data/categories"
 
 export const metadata: Metadata = {
   title: "Page not found | Piyush Bholla",
@@ -25,8 +26,9 @@ export default function NotFound() {
               <Link href="/" className="btn-outline-dark">Home</Link>
             </div>
             <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 font-jost text-sm text-black/60">
-              <li><Link href="/menswear" className="hover:text-black">Menswear</Link></li>
-              <li><Link href="/womenswear" className="hover:text-black">Womenswear</Link></li>
+              {ACTIVE_CATEGORY_SLUGS.map((category) => (
+                <li key={category}><Link href={`/${category}`} className="hover:text-black">{categoryMeta[category].title}</Link></li>
+              ))}
               <li><Link href="/collections" className="hover:text-black">Collections</Link></li>
               <li><Link href="/track-order" className="hover:text-black">Track order</Link></li>
               <li><Link href="/contact" className="hover:text-black">Contact</Link></li>
