@@ -66,6 +66,11 @@ li {
   user-select: text;
 }
 
+#field-password::-ms-reveal,
+#field-password::-ms-clear {
+  display: none;
+}
+
 img,
 video {
   pointer-events: none;
