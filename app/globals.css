@@ -148,6 +148,15 @@ video {
   @apply shadow-xl -translate-y-1;
 }
 
+.help-topic-nav {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.help-topic-nav::-webkit-scrollbar {
+  display: none;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
