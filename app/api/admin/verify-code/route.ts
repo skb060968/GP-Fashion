@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 import { createRateLimiter } from "@/lib/security/rateLimiter"
-import { consumeAdminLoginChallenge } from "@/lib/security/adminLoginChallenge"
+import {
+  ADMIN_LOGIN_CONTEXT_COOKIE,
+  adminLoginContextCookieOptions,
+  consumeAdminLoginChallenge,
+} from "@/lib/security/adminLoginChallenge"
 import { requireSameOriginJson } from "@/lib/security/adminAuth"
 import { ADMIN_COOKIE, sessionCookieOptions } from "@/lib/security/session"
 
@@ -30,6 +34,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({ success: true })
     response.cookies.set(ADMIN_COOKIE, result.token, sessionCookieOptions(result.expiresAt))
+    response.cookies.set(ADMIN_LOGIN_CONTEXT_COOKIE, "", adminLoginContextCookieOptions(new Date(0)))
     return response
   } catch {
     console.error("ADMIN_OTP_VERIFY_FAILED")

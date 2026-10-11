@@ -3,8 +3,11 @@ import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 import { createRateLimiter } from "@/lib/security/rateLimiter"
 import {
+  ADMIN_LOGIN_CONTEXT_COOKIE,
   ADMIN_OTP_TTL_MS,
   AdminChallengeActiveError,
+  adminLoginContextCookieOptions,
+  adminLoginContextToken,
   invalidateAdminLoginChallenge,
   issueAdminLoginChallenge,
 } from "@/lib/security/adminLoginChallenge"
@@ -55,16 +58,22 @@ export async function POST(req: NextRequest) {
   try {
     const issued = await issueAdminLoginChallenge()
     challengeId = issued.challengeId
-    const message = adminLoginCodeEmail(issued.code, Math.round(ADMIN_OTP_TTL_MS / 60000), issued.challengeId)
+    const message = adminLoginCodeEmail(issued.code, Math.round(ADMIN_OTP_TTL_MS / 60000), issued.challengeId, issued.magicToken)
     await sendMail({ to: expectedEmail, subject: message.subject, html: message.html })
-    return NextResponse.json(
+    const response = NextResponse.json(
       { requiresOtp: true, challengeId, destination: maskedEmail(expectedEmail) },
       { headers: { "Cache-Control": "no-store" } }
     )
+    response.cookies.set(
+      ADMIN_LOGIN_CONTEXT_COOKIE,
+      adminLoginContextToken(challengeId),
+      adminLoginContextCookieOptions(issued.expiresAt)
+    )
+    return response
   } catch (error) {
     if (error instanceof AdminChallengeActiveError) {
       return NextResponse.json(
-        { error: "A verification code was already sent. Use the Continue verification link in that email or wait five minutes before trying again." },
+        { error: "A verification code was already sent. Use the verification link in that email or wait five minutes before trying again." },
         { status: 429, headers: { "Cache-Control": "no-store" } }
       )
     }

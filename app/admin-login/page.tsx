@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AlertCircle, Eye, EyeOff } from "lucide-react"
@@ -26,14 +26,43 @@ function LoginForm() {
   const [destination, setDestination] = useState(resumableChallengeId ? "your admin email" : "")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [linkVerifying, setLinkVerifying] = useState(false)
   const [checking, setChecking] = useState(true)
+  const initialised = useRef(false)
 
   useEffect(() => {
+    if (initialised.current) return
+    initialised.current = true
+
+    const fragment = new URLSearchParams(window.location.hash.slice(1))
+    const magicToken = fragment.get("token") || ""
+    if (window.location.hash) window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`)
+
+    if (resumableChallengeId && /^[A-Za-z0-9_-]{43}$/.test(magicToken)) {
+      setPhase("otp")
+      setChallengeId(resumableChallengeId)
+      setChecking(false)
+      setLinkVerifying(true)
+      fetch("/api/admin/verify-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId: resumableChallengeId, token: magicToken }),
+      })
+        .then(async (response) => {
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok) throw new Error(data.error || "This verification link could not be used. Enter the six-digit code instead.")
+          router.replace(target)
+        })
+        .catch((reason) => setError(reason instanceof Error ? reason.message : "This verification link could not be used. Enter the six-digit code instead."))
+        .finally(() => setLinkVerifying(false))
+      return
+    }
+
     fetch("/api/admin/session")
       .then((response) => response.json())
       .then((data) => (data.authenticated ? router.replace(target) : setChecking(false)))
       .catch(() => setChecking(false))
-  }, [router, target])
+  }, [resumableChallengeId, router, target])
 
   function replaceChallengeInUrl(value?: string) {
     const updated = new URLSearchParams(params.toString())
@@ -103,6 +132,7 @@ function LoginForm() {
     setCode("")
     setChallengeId("")
     setDestination("")
+    setLinkVerifying(false)
     setError("")
   }
 
@@ -150,23 +180,27 @@ function LoginForm() {
       ) : (
         <div className="mt-8">
           <p className="mb-3 font-jost text-sm leading-relaxed text-black/65">
-            Enter the six-digit verification code sent to {destination}. It expires in five minutes.
+            {linkVerifying ? "Verifying your secure email link…" : `Enter the six-digit verification code sent to ${destination}. It expires in five minutes.`}
           </p>
-          <p className="mb-5 font-jost text-xs leading-relaxed text-black/50">
-            You can leave this page to read the email. Copy the code, then use the Continue verification link in that email to reopen this screen.
-          </p>
-          <Field
-            label="Verification code"
-            name="code"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]*"
-            maxLength={6}
-            value={code}
-            onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-            required
-          />
+          {!linkVerifying && (
+            <p className="mb-5 font-jost text-xs leading-relaxed text-black/50">
+              Use Verify and sign in from the email for one-click access, or copy and enter the code here.
+            </p>
+          )}
+          {!linkVerifying && (
+            <Field
+              label="Verification code"
+              name="code"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              maxLength={6}
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              required
+            />
+          )}
         </div>
       )}
 
@@ -179,13 +213,13 @@ function LoginForm() {
 
       <button
         type="submit"
-        disabled={loading || (phase === "password" ? !email || !password : code.length !== 6)}
+        disabled={loading || linkVerifying || (phase === "password" ? !email || !password : code.length !== 6)}
         className="btn-solid-dark mt-6 w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white"
       >
-        {loading ? (phase === "password" ? "Sending code…" : "Verifying…") : phase === "password" ? "Continue" : "Verify and sign in"}
+        {linkVerifying ? "Verifying link…" : loading ? (phase === "password" ? "Sending code…" : "Verifying…") : phase === "password" ? "Continue" : "Verify and sign in"}
       </button>
 
-      {phase === "otp" && (
+      {phase === "otp" && !linkVerifying && (
         <button type="button" onClick={startOver} className="mt-4 w-full font-jost text-sm text-black/60 underline underline-offset-4 hover:text-black">
           Start over
         </button>
