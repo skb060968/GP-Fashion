@@ -351,7 +351,7 @@ export const adminHelpTopics: HelpTopic[] = [
     id: "admin-access",
     title: "Admin login and security",
     summary: "Use password plus email verification, understand magic-link fallback, and protect credentials.",
-    keywords: ["admin", "password", "otp", "magic link", "verification", "security", "session"],
+    keywords: ["admin", "change admin email", "admin email", "password", "otp", "magic link", "verification", "security", "session"],
     sections: [
       {
         title: "Sign-in flow",
@@ -365,6 +365,23 @@ export const adminHelpTopics: HelpTopic[] = [
           ] },
           { type: "text", text: "The link credential, OTP, and browser context are separately HMAC-protected. Only hashes are stored. OTP and link compete to consume one challenge, so replay cannot create another session. Admin sessions have an absolute eight-hour lifetime." },
           { type: "note", tone: "danger", text: "Never share ADMIN_PASSWORD, ADMIN_OTP_SECRET, ORDER_ACCESS_SECRET, SMTP_PASS, DATABASE_URL, admin codes, magic links, or session cookies. Store each project’s values separately in Vercel and a trusted password manager." },
+        ],
+      },
+      {
+        title: "Change the admin email",
+        blocks: [
+          { type: "text", text: "ADMIN_EMAIL has three roles in each project: it is the admin login identity, the destination for admin verification codes and magic links, and the recipient of new-order admin notifications." },
+          { type: "steps", items: [
+            "Decide which project is changing. The existing GP Fashion and Piyush Bholla Label projects have independent admin addresses.",
+            "In the local gitignored .env, update ADMIN_EMAIL for GP Fashion development or MAIN_ADMIN_EMAIL for Piyush Bholla Label main. MAIN_ is only a local naming convention.",
+            "Open that Vercel project, then go to Settings → Environment Variables.",
+            "Update the unprefixed ADMIN_EMAIL value in Production and any Preview scope that should use the new administrator.",
+            "Confirm the new mailbox is accessible and can receive mail from the project's configured SMTP sender. SMTP_USER and SMTP_FROM do not need to change unless the sending account or visible sender should also change.",
+            "Save the variable and redeploy that Vercel project. An environment change does not affect an already-built deployment until it is redeployed.",
+            "Test /admin-login with the new address and confirm the OTP and Verify and sign in link arrive there. Place only a controlled test order if you also need to confirm admin order notifications.",
+          ] },
+          { type: "note", tone: "warning", text: "Changing ADMIN_EMAIL requires no code edit or Prisma migration. It does not change the public Contact/Footer address, SMTP sender, customer support mailbox, or Web3Forms destination." },
+          { type: "note", tone: "danger", text: "A verification challenge created before the change may remain usable for up to five minutes, and an existing admin session can remain valid for up to eight hours. If the previous administrator must lose access immediately, have a developer revoke AdminLoginChallenge and AdminSession records on the verified target database after updating Vercel." },
         ],
       },
       {
