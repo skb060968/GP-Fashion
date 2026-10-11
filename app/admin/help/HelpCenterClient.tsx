@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type FormEvent } from "react"
 import { BookOpen, Check, Copy, Info, Search, ShieldAlert, TriangleAlert, X } from "lucide-react"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { input } from "@/components/admin/ui"
@@ -137,6 +137,17 @@ export default function HelpCenterClient() {
     { label: "Classifications", value: classifications.length },
   ]
 
+  const openFirstResult = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const first = topics[0]
+    if (!normalized || !first) return
+    const target = document.getElementById(first.id)
+    if (!target) return
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${first.id}`)
+    target.focus({ preventScroll: true })
+    target.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   return (
     <>
       <AdminPageHeader title="Help Center" description="Searchable operating guide for the storefront, catalogue, orders, deployment, and security." />
@@ -152,23 +163,37 @@ export default function HelpCenterClient() {
 
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-4 sm:p-5">
         <label htmlFor="help-search" className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Search the guide</label>
-        <div className="relative mt-2">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40" strokeWidth={1.75} aria-hidden />
-          <input
-            id="help-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try: add a dress, delete collection, refund, deploy, login code…"
-            className={`${input} w-full pl-9 pr-10`}
-          />
-          {query && (
-            <button type="button" onClick={() => setQuery("")} aria-label="Clear help search" className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-black/45 hover:text-black focus-visible:ring-black">
-              <X className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-            </button>
-          )}
-        </div>
-        <p aria-live="polite" className="mt-2 font-jost text-xs text-black/45">{topics.length} of {adminHelpTopics.length} topics</p>
+        <form onSubmit={openFirstResult} className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40" strokeWidth={1.75} aria-hidden />
+            <input
+              id="help-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Try: add a dress, delete collection, refund, deploy, login code…"
+              className={`${input} w-full pl-9 pr-10`}
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery("")} aria-label="Clear help search" className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-black/45 hover:text-black focus-visible:ring-black">
+                <X className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={!normalized || topics.length === 0}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-black px-5 font-jost text-sm font-semibold text-white transition-colors hover:bg-black/85 focus-visible:ring-black disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <Search className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+            Search
+          </button>
+        </form>
+        <p aria-live="polite" className="mt-2 font-jost text-xs text-black/45">
+          {normalized
+            ? `${topics.length} of ${adminHelpTopics.length} topics match. ${topics.length ? "Press Enter, select Search, or choose a matching topic below." : "Try a different search."}`
+            : `${adminHelpTopics.length} topics available. Start typing to filter the guide.`}
+        </p>
       </div>
 
       {topics.length === 0 ? (
@@ -181,6 +206,9 @@ export default function HelpCenterClient() {
       ) : (
         <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
           <nav aria-label="Help topics" className="help-topic-nav -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:sticky lg:top-8 lg:self-start lg:overflow-visible">
+            <p className="mb-2 shrink-0 font-jost text-[11px] font-semibold uppercase tracking-[0.15em] text-black/45">
+              {normalized ? "Matching topics" : "All topics"}
+            </p>
             <div className="flex gap-2 lg:flex-col">
               {topics.map((topic) => (
                 <a key={topic.id} href={`#${topic.id}`} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2.5 font-jost text-xs font-medium text-black/65 transition-colors hover:border-black hover:text-black focus-visible:ring-black lg:w-full">
