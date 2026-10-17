@@ -101,8 +101,9 @@ export const adminHelpTopics: HelpTopic[] = [
             "Confirm a referenced collection has a matching folder under catalogue/_collections/.",
             "Run npm run catalogue -- --force and review every ok, warning, and rm line.",
           ] },
-          { type: "code", label: "Example catalogue/silk-gown/meta.json", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\", \"XXL\", \"XXXL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"bestseller\": false,\n  \"order\": 10\n}" },
+          { type: "code", label: "Example catalogue/silk-gown/meta.json", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\", \"XXL\", \"XXXL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"bestseller\": false,\n  \"order\": 10,\n  \"colors\": [],\n  \"defaultColor\": \"\"\n}" },
           { type: "note", tone: "info", text: "priceInr is entered as whole rupees. The generator converts it to paise internally. If the product belongs to a collection, it inherits that collection's releaseDate unless the product supplies its own." },
+          { type: "note", tone: "info", text: "You can keep one meta.json template for every product. Leave colors as an empty array and defaultColor as an empty string for a standard single-colour product; fill them in to offer colour variants. See the Product colour variants topic." },
         ],
       },
       {
@@ -146,7 +147,7 @@ export const adminHelpTopics: HelpTopic[] = [
         title: "How colour variants work",
         blocks: [
           { type: "text", text: "A product can be offered in several colours. Each colour keeps its own set of photographs in its own subfolder, and one colour is marked as the default. The product page shows a row of colour swatches; choosing a swatch swaps the gallery to that colour's images. The default colour is pre-selected and is what appears on shop cards, the bag, wishlist, invoices, and order emails when no specific colour is chosen." },
-          { type: "note", tone: "info", text: "Colour variants are optional. A product with no colors field behaves exactly as before: its images sit directly in the product folder and no swatches are shown. Existing products need no changes." },
+          { type: "note", tone: "info", text: "Colour variants are optional. A product whose colors is an empty array (or omitted) behaves as a standard single-colour product: its images sit directly in the product folder and no swatches are shown. You can keep colors and defaultColor in every meta.json and simply leave them blank ([] and \"\") when a product has one colour." },
         ],
       },
       {
@@ -167,12 +168,12 @@ export const adminHelpTopics: HelpTopic[] = [
         title: "Colour fields",
         blocks: [
           { type: "table", headers: ["Field", "Requirement", "Meaning"], rows: [
-            ["colors", "Optional", "Array of colour options; omit entirely for a single-colour product"],
+            ["colors", "Optional", "Array of colour options; leave as [] (or omit) for a single-colour product"],
             ["colors[].slug", "Required", "Lowercase letters, numbers, hyphens; unique within the product"],
             ["colors[].name", "Required", "Customer-facing colour name shown on the swatch, bag, and orders"],
             ["colors[].hex", "Required", "Six-digit hex such as #1a1a1a used to paint the swatch dot"],
             ["colors[].folder", "Optional", "Image subfolder name; defaults to the colour slug"],
-            ["defaultColor", "Optional", "Slug of the pre-selected colour; defaults to the first colour listed"],
+            ["defaultColor", "Optional", "Slug of the pre-selected colour; blank (\"\") or omitted defaults to the first colour listed"],
           ] },
           { type: "note", tone: "warning", text: "Every colour needs its own image subfolder with at least a cover image, or generation stops with an error. Sizes are shared across all colours of a product." },
         ],

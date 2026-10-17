@@ -163,12 +163,14 @@ function readMeta(slug, dir, taxonomy, collections) {
 
   const colors = []
   let defaultColor = null
-  if (meta.colors !== undefined) {
-    if (!Array.isArray(meta.colors) || meta.colors.length === 0) fail(`${slug}: "colors" must be a non-empty array when present`)
+  if (meta.colors !== undefined && meta.colors !== null && !Array.isArray(meta.colors))
+    fail(`${slug}: "colors" must be an array (use [] for a single-colour product)`)
+  const rawColors = Array.isArray(meta.colors) ? meta.colors : []
+  if (rawColors.length > 0) {
     const seenSlug = new Set()
     const seenFolder = new Set()
     const seenName = new Set()
-    for (const c of meta.colors) {
+    for (const c of rawColors) {
       if (!c || typeof c !== "object" || Array.isArray(c)) fail(`${slug}: each entry in "colors" must be an object`)
       if (!SLUG_RE.test(c.slug || "")) fail(`${slug}: color slug "${c.slug}" must be lowercase letters, numbers and hyphens`)
       if (typeof c.name !== "string" || !c.name.trim()) fail(`${slug}: color "${c.slug}" needs a "name"`)
@@ -187,14 +189,13 @@ function readMeta(slug, dir, taxonomy, collections) {
       seenName.add(nameKey)
       colors.push({ slug: c.slug, name: c.name.trim(), hex: c.hex.toLowerCase(), folder })
     }
-    if (meta.defaultColor !== undefined) {
-      if (!colors.some((c) => c.slug === meta.defaultColor)) fail(`${slug}: "defaultColor" "${meta.defaultColor}" is not one of the color slugs`)
-      defaultColor = meta.defaultColor
+    const wantDefault = typeof meta.defaultColor === "string" ? meta.defaultColor.trim() : ""
+    if (wantDefault) {
+      if (!colors.some((c) => c.slug === wantDefault)) fail(`${slug}: "defaultColor" "${wantDefault}" is not one of the color slugs`)
+      defaultColor = wantDefault
     } else {
       defaultColor = colors[0].slug
     }
-  } else if (meta.defaultColor !== undefined) {
-    fail(`${slug}: "defaultColor" is set but "colors" is missing`)
   }
 
   const collection = meta.collection || null

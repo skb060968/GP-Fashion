@@ -148,14 +148,14 @@ export const classifications: Classification[] = [
 
 export const products: Product[] = [
   {
-    "slug": "noir-bespoke-suit",
-    "name": "Noir Bespoke Suit",
+    "slug": "t-shirt",
+    "name": "T-Shirt",
     "category": "menswear",
     "classification": "outerwear",
     "collection": "winter-2026",
     "releaseDate": "2026-10-06",
-    "description": "",
-    "price": 1599000,
+    "description": "Pure wool T-Shirts to keep you warm.",
+    "price": 199000,
     "sizes": [
       "S",
       "M",
@@ -165,16 +165,42 @@ export const products: Product[] = [
     "bestseller": false,
     "order": 10,
     "images": [
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-1.webp",
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-2.webp",
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-3.webp",
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-4.webp",
-      "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-5.webp"
+      "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp"
     ],
-    "coverImage": "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
-    "coverThumbnail": "/images/shop/thumbnails/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
-    "colors": [],
-    "defaultColor": null
+    "coverImage": "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/t-shirt/green/t-shirt-green-cover.webp",
+    "colors": [
+      {
+        "slug": "green",
+        "name": "Green",
+        "hex": "#008000",
+        "images": [
+          "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp"
+        ],
+        "coverImage": "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/t-shirt/green/t-shirt-green-cover.webp"
+      },
+      {
+        "slug": "blue",
+        "name": "Blue",
+        "hex": "#0000ff",
+        "images": [
+          "/images/shop/items/t-shirt/blue/t-shirt-blue-cover.webp"
+        ],
+        "coverImage": "/images/shop/items/t-shirt/blue/t-shirt-blue-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/t-shirt/blue/t-shirt-blue-cover.webp"
+      },
+      {
+        "slug": "red",
+        "name": "Red",
+        "hex": "#ff0000",
+        "images": [
+          "/images/shop/items/t-shirt/red/t-shirt-red-cover.webp"
+        ],
+        "coverImage": "/images/shop/items/t-shirt/red/t-shirt-red-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/t-shirt/red/t-shirt-red-cover.webp"
+      }
+    ],
+    "defaultColor": "green"
   }
 ]
