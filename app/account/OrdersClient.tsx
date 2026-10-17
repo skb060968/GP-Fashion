@@ -17,7 +17,7 @@ type Order = {
   paymentMethod: string
   createdAt: string
   history: { status: string }[]
-  items: { id: string; name: string; size: string; quantity: number; price: number; coverThumbnail: string; slug: string }[]
+  items: { id: string; name: string; size: string; color?: string | null; quantity: number; price: number; coverThumbnail: string; slug: string }[]
 }
 
 const fmtDate = (iso: string) =>
@@ -113,7 +113,7 @@ export default function OrdersClient() {
                           {it.name}
                         </Link>
                         <p className="text-xs text-black/55">
-                          Size {it.size} · Qty {it.quantity}
+                          Size {it.size}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity}
                         </p>
                       </div>
                       <p className="font-jost text-sm tabular-nums">{formatRupees(it.price * it.quantity)}</p>

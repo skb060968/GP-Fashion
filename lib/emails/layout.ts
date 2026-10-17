@@ -113,7 +113,7 @@ export function itemsTable(order: OrderEmailData) {
       <tr>
         <td style="padding:12px 0;border-bottom:1px solid ${RULE};font:400 14px/1.4 ${SANS};color:${INK};">
           <strong>${escapeHtml(it.name)}</strong><br>
-          <span style="color:${MUTED};font-size:12px;">Size ${escapeHtml(it.size)} &middot; Qty ${it.quantity}</span>
+          <span style="color:${MUTED};font-size:12px;">Size ${escapeHtml(it.size)}${it.color ? ` &middot; ${escapeHtml(it.color)}` : ""} &middot; Qty ${it.quantity}</span>
         </td>
         <td align="right" valign="top" style="padding:12px 0;border-bottom:1px solid ${RULE};font:400 14px/1.4 ${SANS};color:${INK};white-space:nowrap;">
           ${formatRupees(it.price * it.quantity)}

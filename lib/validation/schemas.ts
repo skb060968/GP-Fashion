@@ -7,6 +7,7 @@ export const orderItemSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
   size: sizeLabelSchema,
+  color: z.string().trim().max(50).optional(),
   price: z.number().int().positive(),
   quantity: z.number().int().min(1).max(10),
   coverThumbnail: z.string().min(1),

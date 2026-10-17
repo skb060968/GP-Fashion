@@ -33,7 +33,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
 
       <ul className="mt-6 max-h-72 space-y-4 overflow-y-auto pr-1">
         {cart.map((item) => (
-          <li key={`${item.slug}-${item.size}`} className="flex gap-4">
+          <li key={`${item.slug}-${item.size}-${item.color ?? ""}`} className="flex gap-4">
             <div className="relative aspect-[3/4] w-14 shrink-0 overflow-hidden bg-stone-200">
               <Image src={item.coverThumbnail} alt={item.name} fill sizes="3.5rem" className="object-cover" />
               {item.quantity > 1 && (
@@ -44,7 +44,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center font-jost">
               <p className="truncate text-sm font-semibold">{item.name}</p>
-              <p className="mt-0.5 text-xs text-black/60">Size {item.size}</p>
+              <p className="mt-0.5 text-xs text-black/60">Size {item.size}{item.color ? ` · ${item.color}` : ""}</p>
             </div>
             <p className="self-center font-jost text-sm tabular-nums">
               {formatRupees(item.price * item.quantity)}

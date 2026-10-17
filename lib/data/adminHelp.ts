@@ -137,6 +137,60 @@ export const adminHelpTopics: HelpTopic[] = [
     ],
   },
   {
+    id: "colour-variants",
+    title: "Product colour variants",
+    summary: "Offer one product in several colours, each with its own images and a default colour.",
+    keywords: ["colour", "color", "variant", "swatch", "default colour", "multiple colours", "shades"],
+    sections: [
+      {
+        title: "How colour variants work",
+        blocks: [
+          { type: "text", text: "A product can be offered in several colours. Each colour keeps its own set of photographs in its own subfolder, and one colour is marked as the default. The product page shows a row of colour swatches; choosing a swatch swaps the gallery to that colour's images. The default colour is pre-selected and is what appears on shop cards, the bag, wishlist, invoices, and order emails when no specific colour is chosen." },
+          { type: "note", tone: "info", text: "Colour variants are optional. A product with no colors field behaves exactly as before: its images sit directly in the product folder and no swatches are shown. Existing products need no changes." },
+        ],
+      },
+      {
+        title: "Folder layout",
+        blocks: [
+          { type: "steps", items: [
+            "Inside catalogue/<product-slug>/, create one subfolder per colour, for example black/ and ivory/.",
+            "Put each colour's photographs inside its own subfolder: cover.* plus optional 01.*, 02.*, and so on.",
+            "Do not leave loose product images in the product root when using colours; images are read from the colour subfolders.",
+            "Add a colors array and a defaultColor to meta.json.",
+            "Run npm run catalogue -- --force and confirm the ok line reports the colour count.",
+          ] },
+          { type: "code", label: "Example catalogue/silk-gown/meta.json with colours", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"order\": 10,\n  \"colors\": [\n    { \"slug\": \"black\", \"name\": \"Noir Black\", \"hex\": \"#1a1a1a\" },\n    { \"slug\": \"ivory\", \"name\": \"Ivory\", \"hex\": \"#f5f1e6\" }\n  ],\n  \"defaultColor\": \"black\"\n}" },
+          { type: "note", tone: "info", text: "By default each colour reads from a subfolder named after its slug. Add a folder value to a colour if the subfolder name differs from the slug." },
+        ],
+      },
+      {
+        title: "Colour fields",
+        blocks: [
+          { type: "table", headers: ["Field", "Requirement", "Meaning"], rows: [
+            ["colors", "Optional", "Array of colour options; omit entirely for a single-colour product"],
+            ["colors[].slug", "Required", "Lowercase letters, numbers, hyphens; unique within the product"],
+            ["colors[].name", "Required", "Customer-facing colour name shown on the swatch, bag, and orders"],
+            ["colors[].hex", "Required", "Six-digit hex such as #1a1a1a used to paint the swatch dot"],
+            ["colors[].folder", "Optional", "Image subfolder name; defaults to the colour slug"],
+            ["defaultColor", "Optional", "Slug of the pre-selected colour; defaults to the first colour listed"],
+          ] },
+          { type: "note", tone: "warning", text: "Every colour needs its own image subfolder with at least a cover image, or generation stops with an error. Sizes are shared across all colours of a product." },
+        ],
+      },
+      {
+        title: "After generation",
+        blocks: [
+          { type: "list", items: [
+            "Open /shop/<product-slug> and confirm the swatch row appears with the default colour pre-selected.",
+            "Click each swatch and confirm the gallery switches to that colour's photographs.",
+            "Add two different colours of the same product to the bag and confirm they appear as separate lines.",
+            "Confirm the bag, order summary, invoice, and order emails show the chosen colour next to the size.",
+          ] },
+        ],
+      },
+    ],
+  },
+  {
     id: "collections",
     title: "Collections",
     summary: "Create, edit, release, reorder, and remove collection pages safely.",

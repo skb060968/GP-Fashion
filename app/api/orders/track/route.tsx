@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
         id: item.id,
         name: item.name,
         size: item.size,
+        color: item.color,
         price: item.price,
         quantity: item.quantity,
       })),

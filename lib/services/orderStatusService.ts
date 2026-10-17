@@ -59,7 +59,7 @@ export function buildOrderEmailData(order: {
   createdAt: Date;
   paymentMethod: string;
   address: { fullName: string; phone: string; email: string | null; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
-  items: { name: string; size: string; price: number; quantity: number; coverThumbnail: string }[];
+  items: { name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string }[];
 }): OrderEmailData {
   return {
     orderCode: order.orderCode,
@@ -81,6 +81,7 @@ export function buildOrderEmailData(order: {
     items: order.items.map(i => ({
       name: i.name,
       size: i.size,
+      color: i.color ?? null,
       price: i.price,
       quantity: i.quantity,
       coverThumbnail: i.coverThumbnail,

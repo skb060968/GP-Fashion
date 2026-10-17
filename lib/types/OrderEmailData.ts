@@ -19,6 +19,7 @@ export type OrderEmailData = {
   items: {
     name: string;
     size: string;
+    color?: string | null;
     price: number;
     quantity: number;
     coverThumbnail: string;

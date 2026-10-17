@@ -36,7 +36,7 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; slug: string; size: string; price: number; quantity: number; coverThumbnail: string }[]
+  items: { id: string; name: string; slug: string; size: string; color: string | null; price: number; quantity: number; coverThumbnail: string }[]
   history: { id: string; status: string; changedAt: string; note: string | null }[]
 }
 
@@ -217,7 +217,7 @@ export default function AdminOrderDetailClient() {
                       {it.name}
                     </Link>
                     <p className="text-xs text-black/55">
-                      Size {it.size} · Qty {it.quantity} · {formatRupees(it.price)} each
+                      Size {it.size}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity} · {formatRupees(it.price)} each
                     </p>
                   </div>
                   <p className="font-jost text-sm font-semibold tabular-nums">{formatRupees(it.price * it.quantity)}</p>

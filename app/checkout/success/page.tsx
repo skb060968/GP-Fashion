@@ -30,7 +30,7 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; price: number; quantity: number; coverThumbnail: string }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string }[]
 }
 
 function SuccessContent() {
@@ -139,7 +139,7 @@ function SuccessContent() {
                         <div className="min-w-0 flex-1 font-jost">
                           <p className="truncate text-sm font-semibold">{item.name}</p>
                           <p className="mt-0.5 text-xs text-black/60">
-                            Size {item.size} · Qty {item.quantity}
+                            Size {item.size}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                           </p>
                         </div>
                         <p className="font-jost text-sm tabular-nums">{formatRupees(item.price * item.quantity)}</p>

@@ -29,9 +29,16 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
   const [index, setIndex] = useState(0)
   const [size, setSize] = useState<string | null>(product.sizes.length === 1 ? product.sizes[0] : null)
+  const [colorSlug, setColorSlug] = useState<string | null>(product.defaultColor)
   const [qty, setQty] = useState(1)
   const [sizeError, setSizeError] = useState(false)
   const [added, setAdded] = useState(false)
+
+  const activeColor = product.colors.find((c) => c.slug === colorSlug) ?? null
+  const selectColor = (slug: string) => {
+    setColorSlug(slug)
+    setIndex(0)
+  }
 
   const category = product.category
   const classification = getClassification(product.classification)
@@ -43,7 +50,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   ]
   const crumb = crumbs[crumbs.length - 1]
 
-  const gallery = Array.from(new Set([product.coverImage, ...product.images]))
+  const imageSource = activeColor ?? product
+  const gallery = Array.from(new Set([imageSource.coverImage, ...imageSource.images]))
   const active = gallery[index] ?? gallery[0]
   const hasMany = gallery.length > 1
   const step = (delta: number) => setIndex((i) => (i + delta + gallery.length) % gallery.length)
@@ -68,7 +76,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       document.getElementById("size-picker")?.scrollIntoView({ behavior: "smooth", block: "center" })
       return
     }
-    addToCart({ slug: product.slug, name: product.name, price: product.price, coverThumbnail: product.coverThumbnail, size, quantity: qty })
+    addToCart({
+      slug: product.slug,
+      name: product.name,
+      price: product.price,
+      coverThumbnail: activeColor ? activeColor.coverThumbnail : product.coverThumbnail,
+      size,
+      quantity: qty,
+      color: activeColor ? activeColor.name : undefined,
+    })
     if (thenGo === "bag") {
       router.push("/bag")
       return
@@ -202,6 +218,36 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     </Link>{" "}
                     collection.
                   </p>
+                )}
+
+                {product.colors.length > 1 && (
+                  <div className="mt-8">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Colour</span>
+                      {activeColor && <span className="font-jost text-xs text-black/60">{activeColor.name}</span>}
+                    </div>
+                    <div role="radiogroup" aria-label="Colour" className="mt-3 flex flex-wrap gap-2.5">
+                      {product.colors.map((c) => {
+                        const on = c.slug === colorSlug
+                        return (
+                          <button
+                            key={c.slug}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            aria-label={c.name}
+                            title={c.name}
+                            onClick={() => selectColor(c.slug)}
+                            className={`relative h-9 w-9 rounded-full border transition focus-visible:ring-black ${
+                              on ? "border-black ring-1 ring-black ring-offset-2" : "border-black/20 hover:border-black/50"
+                            }`}
+                          >
+                            <span className="absolute inset-[3px] rounded-full" style={{ backgroundColor: c.hex }} aria-hidden />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 <div id="size-picker" className="mt-8">

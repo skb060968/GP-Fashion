@@ -5,6 +5,7 @@ import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
 export interface CsvOrderItem {
   name: string;
   size: string;
+  color?: string | null;
   quantity: number;
   price?: number;
 }
@@ -57,7 +58,7 @@ export function escapeCsvField(value: string): string {
 }
 
 export function formatItems(items: CsvOrderItem[]): string {
-  return items.map((item) => `${item.name} (${item.size} x${item.quantity})`).join("; ");
+  return items.map((item) => `${item.name} (${item.size}${item.color ? `, ${item.color}` : ""} x${item.quantity})`).join("; ");
 }
 
 export function formatCsvMoney(paise: number): string {

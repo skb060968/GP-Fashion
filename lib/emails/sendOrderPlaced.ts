@@ -30,6 +30,7 @@ export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | nu
     items: order.items.map((i) => ({
       name: i.name,
       size: i.size,
+      color: i.color ?? null,
       price: i.price,
       quantity: i.quantity,
       coverThumbnail: i.coverThumbnail ?? "",

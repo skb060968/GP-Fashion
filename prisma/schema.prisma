@@ -69,6 +69,7 @@ model BagItem {
   id             String   @id @default(cuid())
   slug           String
   size           String
+  color          String?
   name           String
   price          Int
   coverThumbnail String
@@ -78,7 +79,7 @@ model BagItem {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
 
-  @@unique([userId, slug, size])
+  @@unique([userId, slug, size, color])
   @@index([userId])
 }
 
@@ -141,15 +142,16 @@ model Address {
 }
 
 model OrderItem {
-  id             String @id @default(cuid())
+  id             String  @id @default(cuid())
   name           String
   slug           String
   size           String
+  color          String?
   price          Int
-  quantity       Int    @default(1)
+  quantity       Int     @default(1)
   coverThumbnail String
 
-  order          Order  @relation(fields: [orderId], references: [id])
+  order          Order   @relation(fields: [orderId], references: [id])
   orderId        String
 }
 

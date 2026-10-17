@@ -68,13 +68,28 @@ export async function POST(req: Request) {
       if (!product || !product.sizes.includes(submitted.size)) {
         return NextResponse.json({ error: "A product or selected size is no longer available" }, { status: 400 });
       }
+
+      let color: string | null = null;
+      let coverThumbnail = product.coverThumbnail;
+      if (product.colors.length > 0) {
+        const chosen = submitted.color
+          ? product.colors.find((c) => c.name === submitted.color)
+          : product.colors.find((c) => c.slug === product.defaultColor) ?? product.colors[0];
+        if (!chosen) {
+          return NextResponse.json({ error: "A selected colour is no longer available" }, { status: 400 });
+        }
+        color = chosen.name;
+        coverThumbnail = chosen.coverThumbnail;
+      }
+
       items.push({
         slug: product.slug,
         name: product.name,
         size: submitted.size,
+        color,
         price: product.price,
         quantity: submitted.quantity,
-        coverThumbnail: product.coverThumbnail,
+        coverThumbnail,
       });
     }
 
@@ -133,6 +148,7 @@ export async function POST(req: Request) {
             name: item.name,
             slug: item.slug,
             size: item.size,
+            color: item.color,
             price: item.price,
             quantity: item.quantity ?? 1,
             coverThumbnail: item.coverThumbnail,

@@ -4,12 +4,13 @@ import {
   productCategories,
   sizeOptionsByCategory,
   type Product,
+  type ProductColor,
   type ProductCategory,
   type Classification,
 } from "./shop"
 import { collections, type Collection } from "./collections"
 
-export type { Product, Classification, Collection }
+export type { Product, ProductColor, Classification, Collection }
 export type CategorySlug = ProductCategory
 export { sizeOptionsByCategory }
 

@@ -30,6 +30,7 @@ const SIZE_OPTIONS_BY_CATEGORY = {
 const CATEGORIES = Object.keys(SIZE_OPTIONS_BY_CATEGORY)
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const HEX_RE = /^#[0-9a-fA-F]{6}$/
 
 const RESERVED_VIEWS = ["new-arrivals", "bestsellers"]
 
@@ -160,6 +161,42 @@ function readMeta(slug, dir, taxonomy, collections) {
   if (meta.releaseDate !== undefined && (!DATE_RE.test(meta.releaseDate) || isNaN(Date.parse(meta.releaseDate))))
     fail(`${slug}: "releaseDate" must be YYYY-MM-DD`)
 
+  const colors = []
+  let defaultColor = null
+  if (meta.colors !== undefined) {
+    if (!Array.isArray(meta.colors) || meta.colors.length === 0) fail(`${slug}: "colors" must be a non-empty array when present`)
+    const seenSlug = new Set()
+    const seenFolder = new Set()
+    const seenName = new Set()
+    for (const c of meta.colors) {
+      if (!c || typeof c !== "object" || Array.isArray(c)) fail(`${slug}: each entry in "colors" must be an object`)
+      if (!SLUG_RE.test(c.slug || "")) fail(`${slug}: color slug "${c.slug}" must be lowercase letters, numbers and hyphens`)
+      if (typeof c.name !== "string" || !c.name.trim()) fail(`${slug}: color "${c.slug}" needs a "name"`)
+      if (typeof c.hex !== "string" || !HEX_RE.test(c.hex)) fail(`${slug}: color "${c.slug}" needs a "hex" value like #1a1a1a`)
+      const folder = typeof c.folder === "string" && c.folder.trim() ? c.folder.trim() : c.slug
+      if (!SLUG_RE.test(folder)) fail(`${slug}: color "${c.slug}" folder "${folder}" must be lowercase letters, numbers and hyphens`)
+      const folderPath = path.join(dir, folder)
+      if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory())
+        fail(`${slug}: color "${c.slug}" needs an image subfolder at catalogue/${slug}/${folder}/`)
+      const nameKey = c.name.trim().toLowerCase()
+      if (seenSlug.has(c.slug)) fail(`${slug}: duplicate color slug "${c.slug}"`)
+      if (seenFolder.has(folder)) fail(`${slug}: duplicate color folder "${folder}"`)
+      if (seenName.has(nameKey)) fail(`${slug}: duplicate color name "${c.name.trim()}"`)
+      seenSlug.add(c.slug)
+      seenFolder.add(folder)
+      seenName.add(nameKey)
+      colors.push({ slug: c.slug, name: c.name.trim(), hex: c.hex.toLowerCase(), folder })
+    }
+    if (meta.defaultColor !== undefined) {
+      if (!colors.some((c) => c.slug === meta.defaultColor)) fail(`${slug}: "defaultColor" "${meta.defaultColor}" is not one of the color slugs`)
+      defaultColor = meta.defaultColor
+    } else {
+      defaultColor = colors[0].slug
+    }
+  } else if (meta.defaultColor !== undefined) {
+    fail(`${slug}: "defaultColor" is set but "colors" is missing`)
+  }
+
   const collection = meta.collection || null
   const releaseDate = meta.releaseDate || (collection ? collections.get(collection).releaseDate : null)
   if (!releaseDate) fail(`${slug}: needs a "releaseDate" because it is not part of a collection`)
@@ -175,37 +212,39 @@ function readMeta(slug, dir, taxonomy, collections) {
     sizes: allowedSizes.filter((size) => sizes.includes(size)),
     bestseller: meta.bestseller === true,
     order: meta.order ?? 1000,
+    colors,
+    defaultColor,
   }
+}
+
+async function encodeVariant(srcDir, label, itemDir, thumbDir, prefix) {
+  const { cover, others } = listImages(label, srcDir)
+
+  let encoded = 0
+  const coverOut = path.join(itemDir, `${prefix}-cover.webp`)
+  const coverThumbOut = path.join(thumbDir, `${prefix}-cover.webp`)
+  encoded += (await encode(path.join(srcDir, cover), coverOut, ITEM_SIZE, ITEM_QUALITY)) ? 1 : 0
+  encoded += (await encode(path.join(srcDir, cover), coverThumbOut, THUMB_SIZE, THUMB_QUALITY)) ? 1 : 0
+
+  const images = [webPath(coverOut)]
+  for (let i = 0; i < others.length; i++) {
+    const out = path.join(itemDir, `${prefix}-${i + 1}.webp`)
+    encoded += (await encode(path.join(srcDir, others[i]), out, ITEM_SIZE, ITEM_QUALITY)) ? 1 : 0
+    images.push(webPath(out))
+  }
+
+  return { images, coverImage: webPath(coverOut), coverThumbnail: webPath(coverThumbOut), encoded }
 }
 
 async function buildProduct(slug, taxonomy, collections) {
   const dir = path.join(SOURCE_DIR, slug)
   const meta = readMeta(slug, dir, taxonomy, collections)
-  const { cover, others } = listImages(slug, dir)
 
-  const itemDir = path.join(ITEMS_DIR, slug)
-  const thumbDir = path.join(THUMBS_DIR, slug)
+  const itemRoot = path.join(ITEMS_DIR, slug)
+  const thumbRoot = path.join(THUMBS_DIR, slug)
+  for (const d of [itemRoot, thumbRoot]) if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true })
 
-  for (const d of [itemDir, thumbDir]) if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true })
-
-  let encoded = 0
-  const coverOut = path.join(itemDir, `${slug}-cover.webp`)
-  const coverThumbOut = path.join(thumbDir, `${slug}-cover.webp`)
-  encoded += (await encode(path.join(dir, cover), coverOut, ITEM_SIZE, ITEM_QUALITY)) ? 1 : 0
-  encoded += (await encode(path.join(dir, cover), coverThumbOut, THUMB_SIZE, THUMB_QUALITY)) ? 1 : 0
-
-  const images = [webPath(coverOut)]
-  for (let i = 0; i < others.length; i++) {
-    const out = path.join(itemDir, `${slug}-${i + 1}.webp`)
-    encoded += (await encode(path.join(dir, others[i]), out, ITEM_SIZE, ITEM_QUALITY)) ? 1 : 0
-    images.push(webPath(out))
-  }
-
-  console.log(
-    `  ok   ${slug.padEnd(28)} ${meta.category.padEnd(10)} ${meta.classification.padEnd(20)} ₹${(meta.price / 100).toLocaleString("en-IN").padStart(8)}   ${images.length} image(s), ${encoded} encoded`
-  )
-
-  return {
+  const base = {
     slug,
     name: meta.name,
     category: meta.category,
@@ -217,9 +256,51 @@ async function buildProduct(slug, taxonomy, collections) {
     sizes: meta.sizes,
     bestseller: meta.bestseller,
     order: meta.order,
-    images,
-    coverImage: webPath(coverOut),
-    coverThumbnail: webPath(coverThumbOut),
+  }
+
+  if (meta.colors.length > 0) {
+    let encoded = 0
+    const colors = []
+    for (const c of meta.colors) {
+      const variant = await encodeVariant(
+        path.join(dir, c.folder),
+        `${slug}/${c.folder}`,
+        path.join(itemRoot, c.slug),
+        path.join(thumbRoot, c.slug),
+        `${slug}-${c.slug}`
+      )
+      encoded += variant.encoded
+      colors.push({ slug: c.slug, name: c.name, hex: c.hex, images: variant.images, coverImage: variant.coverImage, coverThumbnail: variant.coverThumbnail })
+    }
+
+    const def = colors.find((c) => c.slug === meta.defaultColor) ?? colors[0]
+    const totalImages = colors.reduce((n, c) => n + c.images.length, 0)
+    console.log(
+      `  ok   ${slug.padEnd(28)} ${meta.category.padEnd(10)} ${meta.classification.padEnd(20)} ₹${(meta.price / 100).toLocaleString("en-IN").padStart(8)}   ${colors.length} colour(s), ${totalImages} image(s), ${encoded} encoded`
+    )
+
+    return {
+      ...base,
+      images: def.images,
+      coverImage: def.coverImage,
+      coverThumbnail: def.coverThumbnail,
+      colors,
+      defaultColor: def.slug,
+    }
+  }
+
+  const variant = await encodeVariant(dir, slug, itemRoot, thumbRoot, slug)
+  console.log(
+    `  ok   ${slug.padEnd(28)} ${meta.category.padEnd(10)} ${meta.classification.padEnd(20)} ₹${(meta.price / 100).toLocaleString("en-IN").padStart(8)}   ${variant.images.length} image(s), ${variant.encoded} encoded`
+  )
+
+  return {
+    ...base,
+    images: variant.images,
+    coverImage: variant.coverImage,
+    coverThumbnail: variant.coverThumbnail,
+    colors: [],
+    defaultColor: null,
   }
 }
 
@@ -255,6 +336,15 @@ export interface Classification {
   title: string
 }
 
+export interface ProductColor {
+  slug: string
+  name: string
+  hex: string
+  images: string[]
+  coverImage: string
+  coverThumbnail: string
+}
+
 export interface Product {
   slug: string
   name: string
@@ -270,6 +360,8 @@ export interface Product {
   images: string[]
   coverImage: string
   coverThumbnail: string
+  colors: ProductColor[]
+  defaultColor: string | null
 }
 
 export const classifications: Classification[] = ${JSON.stringify(taxonomy, null, 2)}

@@ -11,13 +11,14 @@ export type CartItem = {
   coverThumbnail: string
   size: string
   quantity: number
+  color?: string
 }
 
 type CartContextType = {
   cart: CartItem[]
   addToCart: (item: CartItem) => void
-  removeFromCart: (slug: string, size: string) => void
-  updateQuantity: (slug: string, size: string, qty: number) => void
+  removeFromCart: (slug: string, size: string, color?: string) => void
+  updateQuantity: (slug: string, size: string, qty: number, color?: string) => void
   clearCart: () => void
 }
 
@@ -25,7 +26,9 @@ const STORAGE_KEY = "cart"
 const MAX_QTY = 10
 const CartContext = createContext<CartContextType | null>(null)
 
-const key = (i: Pick<CartItem, "slug" | "size">) => `${i.slug}|${i.size}`
+const key = (i: Pick<CartItem, "slug" | "size" | "color">) => `${i.slug}|${i.size}|${i.color ?? ""}`
+const sameLine = (a: Pick<CartItem, "slug" | "size" | "color">, b: Pick<CartItem, "slug" | "size" | "color">) =>
+  a.slug === b.slug && a.size === b.size && (a.color ?? "") === (b.color ?? "")
 
 const mergeCarts = (server: CartItem[], local: CartItem[]) => {
   const map = new Map<string, CartItem>()
@@ -73,21 +76,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.slug === item.slug && i.size === item.size)
+      const existing = prev.find((i) => sameLine(i, item))
       if (existing) {
         return prev.map((i) =>
-          i.slug === item.slug && i.size === item.size ? { ...i, quantity: Math.min(MAX_QTY, i.quantity + (item.quantity || 1)) } : i
+          sameLine(i, item) ? { ...i, quantity: Math.min(MAX_QTY, i.quantity + (item.quantity || 1)) } : i
         )
       }
       return [...prev, { ...item, quantity: Math.min(MAX_QTY, item.quantity || 1) }]
     })
   }
 
-  const removeFromCart = (slug: string, size: string) => setCart((prev) => prev.filter((i) => !(i.slug === slug && i.size === size)))
+  const removeFromCart = (slug: string, size: string, color?: string) =>
+    setCart((prev) => prev.filter((i) => !sameLine(i, { slug, size, color })))
 
-  const updateQuantity = (slug: string, size: string, qty: number) => {
+  const updateQuantity = (slug: string, size: string, qty: number, color?: string) => {
     const q = Math.max(1, Math.min(MAX_QTY, Math.floor(qty) || 1))
-    setCart((prev) => prev.map((i) => (i.slug === slug && i.size === size ? { ...i, quantity: q } : i)))
+    setCart((prev) => prev.map((i) => (sameLine(i, { slug, size, color }) ? { ...i, quantity: q } : i)))
   }
 
   const clearCart = () => setCart([])

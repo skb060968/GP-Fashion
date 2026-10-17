@@ -14,6 +14,7 @@ interface OrderItem {
   id: string
   name: string
   size: string
+  color?: string | null
   price: number
   quantity: number
 }
@@ -198,7 +199,7 @@ export default function TrackOrderClient() {
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{item.name}</p>
                         <p className="mt-0.5 text-xs text-black/60">
-                          Size {item.size} · Qty {item.quantity}
+                          Size {item.size}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                         </p>
                       </div>
                       <p className="tabular-nums">{formatRupees(item.price * item.quantity)}</p>

@@ -43,6 +43,15 @@ export interface Classification {
   title: string
 }
 
+export interface ProductColor {
+  slug: string
+  name: string
+  hex: string
+  images: string[]
+  coverImage: string
+  coverThumbnail: string
+}
+
 export interface Product {
   slug: string
   name: string
@@ -58,6 +67,8 @@ export interface Product {
   images: string[]
   coverImage: string
   coverThumbnail: string
+  colors: ProductColor[]
+  defaultColor: string | null
 }
 
 export const classifications: Classification[] = [
@@ -162,6 +173,8 @@ export const products: Product[] = [
       "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-5.webp"
     ],
     "coverImage": "/images/shop/items/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
-    "coverThumbnail": "/images/shop/thumbnails/noir-bespoke-suit/noir-bespoke-suit-cover.webp"
+    "coverThumbnail": "/images/shop/thumbnails/noir-bespoke-suit/noir-bespoke-suit-cover.webp",
+    "colors": [],
+    "defaultColor": null
   }
 ]

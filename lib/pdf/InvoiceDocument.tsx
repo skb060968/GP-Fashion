@@ -25,7 +25,7 @@ export type InvoiceOrder = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; price: number; quantity: number }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number }[]
 }
 
 const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts")
@@ -215,7 +215,10 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           </View>
           {order.items.map((item) => (
             <View key={item.id} style={s.tr} wrap={false}>
-              <Text style={[s.cItem, s.strong]}>{item.name}</Text>
+              <View style={s.cItem}>
+                <Text style={s.strong}>{item.name}</Text>
+                {item.color ? <Text style={s.muted}>{item.color}</Text> : null}
+              </View>
               <Text style={[s.cSize, s.muted]}>{item.size}</Text>
               <Text style={[s.cPrice, s.muted]}>{rupees(item.price)}</Text>
               <Text style={[s.cQty, s.muted]}>{item.quantity}</Text>

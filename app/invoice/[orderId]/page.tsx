@@ -28,7 +28,7 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; price: number; quantity: number }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number }[]
 }
 
 export default function InvoicePage() {
@@ -196,7 +196,10 @@ function InvoiceContent() {
               <tbody className="divide-y divide-black/10 border-y border-black/10">
                 {order.items.map((item) => (
                   <tr key={item.id}>
-                    <td className="py-3 pr-4 font-semibold">{item.name}</td>
+                    <td className="py-3 pr-4 font-semibold">
+                      {item.name}
+                      {item.color && <span className="block font-normal text-black/50">{item.color}</span>}
+                    </td>
                     <td className="py-3 pr-4 text-black/70">{item.size}</td>
                     <td className="py-3 pr-4 text-right tabular-nums text-black/70">{formatRupees(item.price)}</td>
                     <td className="py-3 pr-4 text-right tabular-nums text-black/70">{item.quantity}</td>

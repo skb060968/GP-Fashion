@@ -10,16 +10,17 @@ const itemSchema = z.object({
   price: z.number().int().nonnegative(),
   coverThumbnail: z.string().min(1).max(500),
   quantity: z.number().int().min(1).max(10),
+  color: z.string().max(50).optional(),
 })
 const bodySchema = z.object({ items: z.array(itemSchema).max(100) })
 
-const select = { slug: true, size: true, name: true, price: true, coverThumbnail: true, quantity: true } as const
+const select = { slug: true, size: true, name: true, price: true, coverThumbnail: true, quantity: true, color: true } as const
 
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })
   const items = await prisma.bagItem.findMany({ where: { userId: user.id }, orderBy: { updatedAt: "asc" }, select })
-  return NextResponse.json({ items })
+  return NextResponse.json({ items: items.map((i) => ({ ...i, color: i.color ?? undefined })) })
 }
 
 export async function PUT(req: NextRequest) {
@@ -31,7 +32,7 @@ export async function PUT(req: NextRequest) {
 
   const map = new Map<string, z.infer<typeof itemSchema>>()
   for (const i of parsed.data.items) {
-    const k = `${i.slug}|${i.size}`
+    const k = `${i.slug}|${i.size}|${i.color ?? ""}`
     const prev = map.get(k)
     map.set(k, prev ? { ...prev, quantity: Math.min(10, prev.quantity + i.quantity) } : i)
   }
@@ -39,7 +40,9 @@ export async function PUT(req: NextRequest) {
 
   await prisma.$transaction([
     prisma.bagItem.deleteMany({ where: { userId: user.id } }),
-    ...(items.length ? [prisma.bagItem.createMany({ data: items.map((i) => ({ ...i, userId: user.id })) })] : []),
+    ...(items.length
+      ? [prisma.bagItem.createMany({ data: items.map((i) => ({ ...i, color: i.color ?? null, userId: user.id })) })]
+      : []),
   ])
   return NextResponse.json({ ok: true, count: items.length })
 }
