@@ -124,7 +124,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
 
             <FadeIn className="lg:col-span-7">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[4.5rem_1fr]">
+              <div className={`grid grid-cols-1 gap-3 ${hasMany ? "sm:grid-cols-[4.5rem_1fr]" : ""}`}>
 
                 {gallery.length > 1 && (
                   <ul className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible" aria-label="Product images">
