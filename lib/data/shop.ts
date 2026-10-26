@@ -155,7 +155,7 @@ export const products: Product[] = [
     "collection": "winter-2026",
     "releaseDate": "2026-10-06",
     "description": "Pure wool T-Shirts to keep you warm.",
-    "price": 199000,
+    "price": 599000,
     "sizes": [
       "S",
       "M",
