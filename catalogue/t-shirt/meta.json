@@ -2,16 +2,16 @@
   "name": "T-Shirt",
   "category": "menswear",
   "classification": "outerwear",
-  "collection": "winter-2026",
+  "collection": "summer-2027",
   "priceInr": 5990,
   "sizes": ["S", "M", "L", "XL"],
-  "description": "Pure wool T-Shirts to keep you warm.",
+  "description": "Pure cotton T-Shirts to keep you cool.",
   "bestseller": false,
   "order": 10,
   "colors": [
-    { "slug": "green", "name": "Green", "hex": "#008000" }, 
-    { "slug": "blue", "name": "Blue", "hex": "#0000FF" },
+    { "slug": "magenta", "name": "Magenta", "hex": "#ad5b79" }, 
+    { "slug": "sand-brown", "name": "Sand Brown", "hex": "#a18a74" },
     { "slug": "red", "name": "Red", "hex": "#FF0000" }
 	],
-  "defaultColor": "green"
+  "defaultColor": "magenta"
 }

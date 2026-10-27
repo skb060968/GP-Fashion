@@ -10,12 +10,12 @@ export interface Collection {
 
 export const collections: Collection[] = [
   {
-    "slug": "winter-2026",
-    "name": "Winter 2026",
-    "season": "Festive 2026",
-    "releaseDate": "2026-10-06",
-    "description": "The label's first release. Festive dressing for men and women, from kurta sets and anarkalis to evening suits and gowns, finished with hand embroidery from Delhi.",
+    "slug": "summer-2027",
+    "name": "Summer 2027",
+    "season": "2027",
+    "releaseDate": "2026-10-26",
+    "description": "The label's first release.",
     "order": 10,
-    "coverImage": "/images/shop/collections/winter-2026.webp"
+    "coverImage": "/images/shop/collections/summer-2027.webp"
   }
 ]

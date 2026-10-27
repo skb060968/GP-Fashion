@@ -124,30 +124,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
 
             <FadeIn className="lg:col-span-7">
-              <div className={`grid grid-cols-1 gap-3 ${hasMany ? "sm:grid-cols-[4.5rem_1fr]" : ""}`}>
+              <div className="flex flex-col gap-3">
 
-                {gallery.length > 1 && (
-                  <ul className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible" aria-label="Product images">
-                    {gallery.map((src, i) => {
-                      const isActive = i === index
-                      return (
-                        <li key={src} className="shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setIndex(i)}
-                            aria-pressed={isActive}
-                            aria-label={`View image ${i + 1}`}
-                            className={`relative aspect-[3/4] w-16 overflow-hidden bg-stone-100 transition-opacity sm:w-full ${isActive ? "ring-1 ring-black" : "opacity-70 hover:opacity-100"}`}
-                          >
-                            <Image src={src} alt="" fill sizes="4.5rem" className="object-cover" />
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
                 <div
-                  className="group relative order-1 aspect-[3/4] overflow-hidden bg-stone-100 focus-visible:ring-black sm:order-2"
+                  className="group relative aspect-[3/4] overflow-hidden bg-stone-100 focus-visible:ring-black"
                   role={hasMany ? "region" : undefined}
                   aria-roledescription={hasMany ? "carousel" : undefined}
                   aria-label={hasMany ? `${product.name} images` : undefined}
@@ -195,6 +175,27 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     </>
                   )}
                 </div>
+
+                {hasMany && (
+                  <ul className="flex gap-2 overflow-x-auto" aria-label="Product images">
+                    {gallery.map((src, i) => {
+                      const isActive = i === index
+                      return (
+                        <li key={src} className="shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setIndex(i)}
+                            aria-pressed={isActive}
+                            aria-label={`View image ${i + 1}`}
+                            className={`relative aspect-[3/4] w-16 overflow-hidden bg-stone-100 transition-opacity ${isActive ? "ring-1 ring-black" : "opacity-70 hover:opacity-100"}`}
+                          >
+                            <Image src={src} alt="" fill sizes="4.5rem" className="object-cover" />
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
               </div>
             </FadeIn>
 

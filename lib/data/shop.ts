@@ -152,9 +152,9 @@ export const products: Product[] = [
     "name": "T-Shirt",
     "category": "menswear",
     "classification": "outerwear",
-    "collection": "winter-2026",
-    "releaseDate": "2026-10-06",
-    "description": "Pure wool T-Shirts to keep you warm.",
+    "collection": "summer-2027",
+    "releaseDate": "2026-10-26",
+    "description": "Pure cotton T-Shirts to keep you cool.",
     "price": 599000,
     "sizes": [
       "S",
@@ -165,30 +165,30 @@ export const products: Product[] = [
     "bestseller": false,
     "order": 10,
     "images": [
-      "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp"
+      "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp"
     ],
-    "coverImage": "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp",
-    "coverThumbnail": "/images/shop/thumbnails/t-shirt/green/t-shirt-green-cover.webp",
+    "coverImage": "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/t-shirt/magenta/t-shirt-magenta-cover.webp",
     "colors": [
       {
-        "slug": "green",
-        "name": "Green",
-        "hex": "#008000",
+        "slug": "magenta",
+        "name": "Magenta",
+        "hex": "#ad5b79",
         "images": [
-          "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp"
+          "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp"
         ],
-        "coverImage": "/images/shop/items/t-shirt/green/t-shirt-green-cover.webp",
-        "coverThumbnail": "/images/shop/thumbnails/t-shirt/green/t-shirt-green-cover.webp"
+        "coverImage": "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/t-shirt/magenta/t-shirt-magenta-cover.webp"
       },
       {
-        "slug": "blue",
-        "name": "Blue",
-        "hex": "#0000ff",
+        "slug": "sand-brown",
+        "name": "Sand Brown",
+        "hex": "#a18a74",
         "images": [
-          "/images/shop/items/t-shirt/blue/t-shirt-blue-cover.webp"
+          "/images/shop/items/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp"
         ],
-        "coverImage": "/images/shop/items/t-shirt/blue/t-shirt-blue-cover.webp",
-        "coverThumbnail": "/images/shop/thumbnails/t-shirt/blue/t-shirt-blue-cover.webp"
+        "coverImage": "/images/shop/items/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp"
       },
       {
         "slug": "red",
@@ -201,6 +201,6 @@ export const products: Product[] = [
         "coverThumbnail": "/images/shop/thumbnails/t-shirt/red/t-shirt-red-cover.webp"
       }
     ],
-    "defaultColor": "green"
+    "defaultColor": "magenta"
   }
 ]
