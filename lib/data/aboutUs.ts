@@ -16,7 +16,7 @@ export const aboutUs = {
     paragraphs: [
       "Piyush Bholla is an Indian fashion designer and the founder of PIYUSH BHOLLA LABEL. With a design education from NIFT Bengaluru and the Fashion Institute of Technology, New York, his work explores sensuality, individuality, and contemporary form.",
       "His design language brings Western silhouettes into dialogue with Indian craftsmanship, balancing distinctive design with thoughtful construction and refined detail.",
-      "Through PIYUSH BHOLLA LABEL, Piyush creates contemporary fashion that celebrates self-expression, confidence, and an evolving approach to modern luxury.",
+      "Through PIYUSH BHOLLA LABEL, he creates contemporary fashion that celebrates self-expression, confidence, and an evolving approach to modern luxury.",
     ],
   },
   valuesHeading: "Our Values",
