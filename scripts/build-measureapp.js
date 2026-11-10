@@ -2,7 +2,7 @@ const fs = require("fs")
 const path = require("path")
 
 const ROOT = path.join(__dirname, "..")
-const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, "..", "..", "Tailor master", "MeasureApp"))
+const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, "..", "MeasureApp"))
 const OUT_DIR = path.join(ROOT, "measureapp")
 const OUT_FILE = path.join(OUT_DIR, "index.html")
 const EMBED_CSS = ".app-header { display: none !important; }"
