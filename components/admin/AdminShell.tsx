@@ -4,12 +4,13 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, ExternalLink, LayoutDashboard, LogOut, Menu, Package, TicketPercent, X } from "lucide-react"
+import { BookOpen, ExternalLink, LayoutDashboard, LogOut, Menu, Package, Ruler, TicketPercent, X } from "lucide-react"
 
 const NAV = [
   { href: "/admin", label: "Dashboard", Icon: LayoutDashboard, match: (p: string) => p === "/admin" },
   { href: "/admin/orders", label: "Orders", Icon: Package, match: (p: string) => p.startsWith("/admin/orders") },
   { href: "/admin/coupons", label: "Coupons", Icon: TicketPercent, match: (p: string) => p.startsWith("/admin/coupons") },
+  { href: "/admin/measure", label: "Measurements", Icon: Ruler, match: (p: string) => p.startsWith("/admin/measure") },
   { href: "/admin/help", label: "Help", Icon: BookOpen, match: (p: string) => p.startsWith("/admin/help") },
 ] as const
 

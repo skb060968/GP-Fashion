@@ -14,6 +14,8 @@ const contentSecurityPolicy = [
   ...(isDevelopment ? [] : ["upgrade-insecure-requests"]),
 ].join("; ")
 
+const measureAppPolicy = contentSecurityPolicy.replace("frame-ancestors 'none'", "frame-ancestors 'self'")
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "Referrer-Policy", value: "no-referrer" },
@@ -32,12 +34,20 @@ const nextConfig = {
 
   outputFileTracingIncludes: {
     "/api/invoice/[orderId]": ["./lib/pdf/fonts/**", "./public/images/brand/logo-mark.png"],
+    "/admin/measure-app": ["./measureapp/index.html"],
   },
 
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
       { source: "/admin-login", headers: [{ key: "Cache-Control", value: "no-store" }] },
+      {
+        source: "/admin/measure-app",
+        headers: [
+          { key: "Content-Security-Policy", value: measureAppPolicy },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
     ]
   },
 }

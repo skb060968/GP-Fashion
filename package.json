@@ -12,7 +12,8 @@
     "convert-webp": "node scripts/convert-to-webp.js",
     "catalogue": "node scripts/build-catalogue.js",
     "comments:remove": "node scripts/remove-code-comments.js",
-    "comments:check": "node scripts/remove-code-comments.js --check"
+    "comments:check": "node scripts/remove-code-comments.js --check",
+    "measureapp": "node scripts/build-measureapp.js"
   },
   "dependencies": {
     "@fontsource-variable/cinzel": "5.3.0",
