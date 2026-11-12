@@ -7,7 +7,7 @@ export const servicesPage = {
 
   processHeading: "How a Commission Works",
   processDescription:
-    "Whether it is a single adjustment or a garment designed from nothing, every made-to-measure and bespoke order follows the same five steps.",
+    "Every bespoke commission, from a single statement piece to a full wedding wardrobe, follows the same five steps.",
 
   processSteps: [
     "Consultation",

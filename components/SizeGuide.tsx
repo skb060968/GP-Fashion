@@ -131,10 +131,9 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
             </ul>
 
             <p className="mt-6 font-jost text-sm text-black/65">
-              Still unsure, or between sizes? Any piece can be{" "}
-              <Link href="/services#made-to-measure" onClick={close} className="underline underline-offset-4 hover:text-black">made to your measurements</Link>, or{" "}
-              <Link href="/contact" onClick={close} className="underline underline-offset-4 hover:text-black">send us your measurements</Link>{" "}
-              and we will recommend a size.
+              Still unsure, or between sizes?{" "}
+              <Link href="/account/measurements" onClick={close} className="underline underline-offset-4 hover:text-black">Save your measurements</Link>{" "}
+              and choose Made to measure: the price is the same and we confirm the measurements with you before cutting.
             </p>
           </div>
         </div>

@@ -24,14 +24,15 @@ export const policies: Policy[] = [
   {
     slug: "shipping-returns",
     title: "Shipping & Returns",
-    description: "Dispatch times, delivery, exchanges and alterations for PIYUSH BHOLLA LABEL orders.",
-    updated: "2026-10-06",
+    description: "Dispatch times, delivery, exchanges and made-to-measure orders at PIYUSH BHOLLA LABEL.",
+    updated: "2026-11-06",
     sections: [
       {
         heading: "Dispatch",
         paragraphs: [
-          "Ready-to-wear pieces are dispatched within 3 to 5 working days of your payment being verified. You will receive an email at each step: when the order is placed, when payment is confirmed, and when the parcel is handed to the courier.",
-          "Made-to-measure and bespoke orders have their own lead time, which we agree with you before you confirm. As a guide, allow 6 to 10 weeks for most commissions and longer for heavily embroidered work.",
+          "Ready-to-wear pieces in standard sizes are dispatched within 3 to 5 working days of your payment being verified. You will receive an email at each step: when the order is placed, when payment is confirmed, and when the parcel is handed to the courier.",
+          "Made-to-measure pieces are dispatched within 4 to 6 weeks of your payment being verified and your measurements being confirmed.",
+          "Bespoke commissions have their own lead time, which we agree with you before you confirm. As a guide, allow 6 to 10 weeks for most commissions and longer for heavily embroidered work.",
         ],
       },
       {
@@ -49,9 +50,16 @@ export const policies: Policy[] = [
         ],
       },
       {
-        heading: "Made to measure and bespoke",
+        heading: "Made to measure",
         paragraphs: [
-          "Garments cut to your measurements or designed for you are not returnable or exchangeable. If the fit is not right, we will alter the piece at no charge within 30 days of delivery; contact us and we will arrange the alteration.",
+          "Any dress can be made to measure at the same price as a standard size. Save your body measurements under My Account, choose Made to measure on the product page, and pick whose measurements to use. Before cutting, we call or WhatsApp you to confirm the measurements; work starts only after you confirm them.",
+          "Made-to-measure and bespoke garments are cut for you, so they cannot be returned or exchanged.",
+        ],
+      },
+      {
+        heading: "No alterations",
+        paragraphs: [
+          "We do not offer alterations on any order: ready-to-wear, made-to-measure or bespoke. Please check the size guide, or your saved measurements, carefully before you order.",
         ],
       },
       {
@@ -72,7 +80,7 @@ export const policies: Policy[] = [
     slug: "terms",
     title: "Terms & Conditions",
     description: "Terms of sale and use of the PIYUSH BHOLLA LABEL website.",
-    updated: "2026-10-06",
+    updated: "2026-11-06",
     sections: [
       {
         heading: "About us",
@@ -95,14 +103,20 @@ export const policies: Policy[] = [
         ],
       },
       {
-        heading: "Delivery, exchanges and alterations",
-        paragraphs: ["Dispatch times, delivery, exchanges and alterations are set out in our Shipping & Returns policy, which forms part of these terms."],
+        heading: "Delivery and exchanges",
+        paragraphs: ["Dispatch times, delivery and exchanges are set out in our Shipping & Returns policy, which forms part of these terms."],
       },
       {
         heading: "Made to measure and bespoke",
         paragraphs: [
-          "For made-to-measure and bespoke orders we agree the design, fabric, measurements, price and lead time with you in writing before work begins. Changes requested after cutting may carry an additional charge or extend the lead time. These garments are made for you and are not returnable; we will alter them to fit as set out in the Shipping & Returns policy.",
+          "Made-to-measure pieces are made from the body measurements you save in your account, at the same price as standard sizes. We confirm the measurements with you by phone or WhatsApp before cutting, and the piece is dispatched within 4 to 6 weeks of that confirmation. You are responsible for the accuracy of the measurements you provide and confirm.",
+          "For bespoke orders we agree the design, fabric, measurements, price and lead time with you in writing before work begins. Changes requested after cutting may carry an additional charge or extend the lead time.",
+          "Made-to-measure and bespoke garments are made for you and cannot be returned or exchanged.",
         ],
+      },
+      {
+        heading: "No alterations",
+        paragraphs: ["We do not offer alterations on any order, whether ready-to-wear, made-to-measure or bespoke."],
       },
       {
         heading: "Your account",
@@ -134,7 +148,7 @@ export const policies: Policy[] = [
     slug: "privacy",
     title: "Privacy Policy",
     description: "How PIYUSH BHOLLA LABEL collects, uses and protects your personal information.",
-    updated: "2026-10-06",
+    updated: "2026-11-06",
     sections: [
       {
         heading: "Who we are",
@@ -148,6 +162,7 @@ export const policies: Policy[] = [
         bullets: [
           "When you order: your name, phone number, email address and delivery address, the items ordered, and the UPI transaction reference you provide.",
           "When you create an account: your email address, and optionally your name, phone number and saved addresses. We never store a password; you sign in with a one-time code.",
+          "When you save measurements: the body measurements and fit notes you enter in your account, for yourself or for family members, including children's measurements entered by a parent or guardian. This is optional and only needed for made-to-measure orders.",
           "When you use the site: items in your bag and wishlist (stored in your browser, and in your account if you are signed in), and standard server logs such as IP address and browser type.",
           "When you contact us: whatever you include in your message.",
         ],
@@ -158,8 +173,9 @@ export const policies: Policy[] = [
         bullets: [
           "Process and deliver your order and send order updates by email.",
           "Verify payments and prevent fraud.",
-          "Provide your account, saved addresses, bag and wishlist.",
-          "Answer your enquiries and arrange fittings, alterations or commissions.",
+          "Provide your account, saved addresses, saved measurements, bag and wishlist.",
+          "Cut and make made-to-measure garments, and confirm the measurements with you before cutting.",
+          "Answer your enquiries and arrange fittings or commissions.",
           "Meet legal and tax obligations.",
         ],
       },
@@ -189,7 +205,7 @@ export const policies: Policy[] = [
       {
         heading: "How long we keep it",
         paragraphs: [
-          "Order records, including name and address, are kept for as long as required for tax and accounting purposes, typically 8 years. Sign-in codes expire after 10 minutes and are deleted within 24 hours. Account sessions expire after 30 days of inactivity. If you ask us to delete your account we remove it, along with saved addresses, bag and wishlist, while retaining order records as required by law.",
+          "Order records, including name and address, are kept for as long as required for tax and accounting purposes, typically 8 years. Sign-in codes expire after 10 minutes and are deleted within 24 hours. Account sessions expire after 30 days of inactivity. Saved measurements stay in your account until you delete them, which you can do at any time under My Account; a made-to-measure order keeps its own copy of the measurements as part of the order record. If you ask us to delete your account we remove it, along with saved addresses, saved measurements, bag and wishlist, while retaining order records as required by law.",
         ],
       },
       {
@@ -206,7 +222,9 @@ export const policies: Policy[] = [
       },
       {
         heading: "Children",
-        paragraphs: ["The site is not directed at children under 18 and we do not knowingly collect their information."],
+        paragraphs: [
+          "The site is not directed at children under 18 and children should not create accounts or place orders. For kidswear, a parent or guardian may save a child's measurements in their own account; they confirm that they are the child's parent or guardian and consent to the measurements being used only to make the child's clothes. They can delete them at any time.",
+        ],
       },
       {
         heading: "Changes",

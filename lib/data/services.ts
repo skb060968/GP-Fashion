@@ -19,10 +19,10 @@ export const services = [
     description:
       "Any piece from the current collection, cut to your measurements. The design stays the same; the fit becomes yours.",
     features: [
-      "Measurements taken at the studio or guided online",
-      "Length, sleeve and proportion adjustments",
-      "A single fitting before final finishing",
-      "Lead time shared at the time of order",
+      "Save your measurements in your account and choose Made to measure on any dress",
+      "Same price as standard sizes",
+      "Measurements confirmed with you before cutting",
+      "Ready in 4 to 6 weeks",
     ],
   },
   {

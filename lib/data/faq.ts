@@ -9,7 +9,7 @@ export const faq = [
   {
     question: "How long does delivery take?",
     answer:
-      "Ready-to-wear pieces are dispatched within 3 to 5 working days of payment verification and usually arrive within a week across India. Made-to-measure and bespoke orders have their own lead time, which we share before you confirm.",
+      "Ready-to-wear pieces in standard sizes are dispatched within 3 to 5 working days of payment verification and usually arrive within a week across India. Made-to-measure pieces are dispatched within 4 to 6 weeks of your measurements being confirmed. Bespoke commissions have their own lead time, which we share before you confirm.",
   },
   {
     question: "Do you ship outside India?",
@@ -19,12 +19,12 @@ export const faq = [
   {
     question: "Which size should I choose?",
     answer:
-      "Each product page lists the sizes available. If you are between sizes or unsure, send us your measurements through the contact form and we will recommend one. Most pieces can also be made to measure.",
+      "Each product page lists the sizes available, with a size guide. If you are between sizes or unsure, choose Made to measure instead and we will cut the piece to your own measurements.",
   },
   {
     question: "Can a piece be made to my measurements?",
     answer:
-      "Yes. Any piece in the current collection can be cut to your measurements for a small additional charge. Measurements can be taken at the studio or guided over a video call.",
+      "Yes. Every dress can be made to measure at the same price as a standard size. Save your body measurements under My Account → Measurements (for yourself or family members), then choose Made to measure on the product page. We call or WhatsApp you to confirm the measurements before cutting, and the piece is ready in 4 to 6 weeks.",
   },
   {
     question: "Do you take bespoke commissions?",
@@ -39,7 +39,7 @@ export const faq = [
   {
     question: "What is your return and exchange policy?",
     answer:
-      "Unworn ready-to-wear pieces with tags intact can be exchanged for another size or piece within 7 days of delivery. Made-to-measure and bespoke garments are not returnable, but we will adjust the fit if something is not right.",
+      "Unworn ready-to-wear pieces in standard sizes with tags intact can be exchanged for another size or piece within 7 days of delivery. Made-to-measure and bespoke garments cannot be returned or exchanged. We do not offer alterations on any order.",
   },
   {
     question: "How should I care for my garment?",
