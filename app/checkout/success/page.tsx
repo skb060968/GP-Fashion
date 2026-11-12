@@ -11,6 +11,7 @@ import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
 import { useUser } from "@/context/UserContext"
+import { MTM_LEAD_TIME, isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
 
 type Order = {
   orderCode: string
@@ -30,7 +31,7 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string; measurements?: unknown }[]
 }
 
 function SuccessContent() {
@@ -139,8 +140,11 @@ function SuccessContent() {
                         <div className="min-w-0 flex-1 font-jost">
                           <p className="truncate text-sm font-semibold">{item.name}</p>
                           <p className="mt-0.5 text-xs text-black/60">
-                            Size {item.size}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
+                            {itemSizeLabel(item)}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                           </p>
+                          {isSnapshot(item.measurements) && (
+                            <p className="mt-0.5 text-xs text-black/50">We will contact you to confirm the measurements before cutting. Ready in {MTM_LEAD_TIME}.</p>
+                          )}
                         </div>
                         <p className="font-jost text-sm tabular-nums">{formatRupees(item.price * item.quantity)}</p>
                       </li>

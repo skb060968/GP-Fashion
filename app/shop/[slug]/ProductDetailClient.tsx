@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -13,19 +13,32 @@ import SizeGuide from "@/components/SizeGuide"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
 import FadeIn from "@/components/FadeIn"
 import { whatsappHref } from "@/lib/whatsapp"
+import { useUser } from "@/context/UserContext"
+import MeasurementForm from "@/components/account/MeasurementForm"
+import type { ProfileDTO } from "@/lib/measurements/profiles"
+import { KINDS_FOR_CATEGORY, KIND_LABEL, MTM_LEAD_TIME, MTM_SIZE, fieldLabel, fieldsFor, formatInches } from "@/lib/measurements/fields"
 
 const MAX_QTY = 10
 
-const DETAILS = [
-  "Dispatched within 3 to 5 working days of payment confirmation",
-  "Made to measure available on request",
+function profileSummary(p: ProfileDTO) {
+  const main = fieldsFor(p.kind)
+    .filter((f) => f.required && f.key !== "height" && typeof p.values[f.key] === "number")
+    .map((f) => `${fieldLabel(f, p.kind)} ${formatInches(p.values[f.key])}`)
+  return `${KIND_LABEL[p.kind]} · ${main.join(" · ")}`
+}
+
+const DETAILS_STANDARD = [
+  "Standard sizes are dispatched within 3 to 5 working days of payment confirmation",
   "Designed and made in Delhi",
   "Dry clean only",
 ]
 
+type FitMode = "standard" | "mtm"
+
 export default function ProductDetailClient({ product }: { product: Product }) {
   const router = useRouter()
   const { addToCart } = useCart()
+  const { user, ready } = useUser()
 
   const [index, setIndex] = useState(0)
   const [size, setSize] = useState<string | null>(product.sizes.length === 1 ? product.sizes[0] : null)
@@ -33,6 +46,36 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [qty, setQty] = useState(1)
   const [sizeError, setSizeError] = useState(false)
   const [added, setAdded] = useState(false)
+
+  const mtmKinds = KINDS_FOR_CATEGORY[product.category]
+  const mtmAvailable = mtmKinds.length > 0
+  const [mode, setMode] = useState<FitMode>("standard")
+  const [profiles, setProfiles] = useState<ProfileDTO[] | null>(null)
+  const [profilesError, setProfilesError] = useState("")
+  const [profileId, setProfileId] = useState<string | null>(null)
+  const [addingProfile, setAddingProfile] = useState(false)
+
+  const loadProfiles = useCallback(() => {
+    setProfilesError("")
+    fetch("/api/account/measurements", { credentials: "same-origin" })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok) throw new Error(d.error || "Could not load your measurements")
+        const list = (d.profiles as ProfileDTO[]).filter((p) => mtmKinds.includes(p.kind))
+        setProfiles(list)
+        setProfileId((cur) => (cur && list.some((p) => p.id === cur) ? cur : list.length === 1 ? list[0].id : null))
+      })
+      .catch((e) => setProfilesError(e.message))
+  }, [mtmKinds])
+
+  useEffect(() => {
+    if (mode === "mtm" && user && profiles === null) loadProfiles()
+  }, [mode, user, profiles, loadProfiles])
+
+  const chosenProfile = profiles?.find((p) => p.id === profileId) ?? null
+  const DETAILS = mtmAvailable
+    ? [DETAILS_STANDARD[0], `Made to measure at the same price, ready in ${MTM_LEAD_TIME}`, ...DETAILS_STANDARD.slice(1)]
+    : DETAILS_STANDARD
 
   const activeColor = product.colors.find((c) => c.slug === colorSlug) ?? null
   const selectColor = (slug: string) => {
@@ -71,7 +114,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   }
 
   const add = (thenGo?: "bag") => {
-    if (!size) {
+    const isMtm = mode === "mtm"
+    if (isMtm ? !chosenProfile : !size) {
       setSizeError(true)
       document.getElementById("size-picker")?.scrollIntoView({ behavior: "smooth", block: "center" })
       return
@@ -81,9 +125,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       name: product.name,
       price: product.price,
       coverThumbnail: activeColor ? activeColor.coverThumbnail : product.coverThumbnail,
-      size,
+      size: isMtm ? MTM_SIZE : size!,
       quantity: qty,
       color: activeColor ? activeColor.name : undefined,
+      ...(isMtm && chosenProfile ? { profileId: chosenProfile.id, profileName: chosenProfile.name } : {}),
     })
     if (thenGo === "bag") {
       router.push("/bag")
@@ -251,6 +296,116 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </div>
                 )}
 
+                {mtmAvailable && (
+                  <div className="mt-8">
+                    <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Fit</span>
+                    <div role="radiogroup" aria-label="Fit" className="mt-3 grid grid-cols-2 gap-2">
+                      {([
+                        ["standard", "Standard size", "Ships in 3 to 5 days"],
+                        ["mtm", "Made to measure", `Same price · ${MTM_LEAD_TIME}`],
+                      ] as const).map(([m, title, sub]) => {
+                        const on = mode === m
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            onClick={() => {
+                              setMode(m)
+                              setSizeError(false)
+                            }}
+                            className={`rounded-lg border px-4 py-3 text-left font-jost transition-colors focus-visible:ring-black ${on ? "border-black bg-black/[0.03]" : "border-black/15 hover:border-black"}`}
+                          >
+                            <span className="block text-sm font-semibold">{title}</span>
+                            <span className="mt-0.5 block text-xs text-black/55">{sub}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {mode === "mtm" ? (
+                  <div id="size-picker" className="mt-6">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Measurements</span>
+                      {sizeError && <span role="alert" className="font-jost text-xs text-red-600">Please choose whose measurements to use</span>}
+                    </div>
+
+                    {!ready ? (
+                      <div className="mt-3 h-16 animate-pulse rounded-lg bg-stone-100" />
+                    ) : !user ? (
+                      <p className="mt-3 rounded-lg border border-black/10 p-4 font-jost text-sm text-black/70">
+                        <Link href={`/login?next=/shop/${product.slug}`} className="font-semibold text-black underline underline-offset-4">Sign in</Link>{" "}
+                        to save your measurements and order made to measure.
+                      </p>
+                    ) : profilesError ? (
+                      <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 font-jost text-sm text-red-800">{profilesError}</p>
+                    ) : profiles === null ? (
+                      <div className="mt-3 h-16 animate-pulse rounded-lg bg-stone-100" />
+                    ) : addingProfile ? (
+                      <div className="mt-3">
+                        <MeasurementForm
+                          allowedKinds={mtmKinds}
+                          onCancel={() => setAddingProfile(false)}
+                          onSaved={(p) => {
+                            setAddingProfile(false)
+                            setProfiles((list) => [...(list ?? []), p])
+                            setProfileId(p.id)
+                            setSizeError(false)
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-3 space-y-2">
+                        {profiles.length > 0 && (
+                          <div role="radiogroup" aria-label="Measurements" className="space-y-2">
+                            {profiles.map((p) => {
+                              const on = p.id === profileId
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={on}
+                                  onClick={() => {
+                                    setProfileId(p.id)
+                                    setSizeError(false)
+                                  }}
+                                  className={`flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-3 text-left font-jost transition-colors focus-visible:ring-black ${
+                                    on ? "border-black bg-black/[0.03]" : sizeError ? "border-red-400" : "border-black/15 hover:border-black"
+                                  }`}
+                                >
+                                  <span className="min-w-0">
+                                    <span className="block text-sm font-semibold">{p.name}</span>
+                                    <span className="mt-0.5 block truncate text-xs text-black/55">{profileSummary(p)}</span>
+                                  </span>
+                                  {on && <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden />}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 font-jost text-xs">
+                          <button type="button" onClick={() => setAddingProfile(true)} className="underline underline-offset-4 hover:text-black">
+                            {profiles.length ? "Add new measurements" : "Add your measurements"}
+                          </button>
+                          {profiles.length > 0 && (
+                            <Link href="/account/measurements" className="text-black/60 underline underline-offset-4 hover:text-black">
+                              Edit saved measurements
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="mt-4 font-jost text-xs leading-relaxed text-black/55">
+                      Same price as standard sizes. Ready in {MTM_LEAD_TIME}. We confirm your measurements with you before cutting.
+                      Made-to-measure pieces cannot be returned, exchanged or altered.
+                    </p>
+                  </div>
+                ) : (
                 <div id="size-picker" className="mt-8">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Size</span>
@@ -280,6 +435,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     })}
                   </div>
                 </div>
+                )}
 
                 <div className="mt-6">
                   <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Quantity</span>

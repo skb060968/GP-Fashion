@@ -9,6 +9,7 @@ import { paymentLabel, statusLabel, TRACKING_STEPS, trackingProgress } from "@/l
 import EmptyState from "@/components/EmptyState"
 import FadeIn from "@/components/FadeIn"
 import ReturnTimeline from "@/components/ReturnTimeline"
+import { mtmLabel } from "@/lib/measurements/fields"
 
 type Order = {
   orderCode: string
@@ -17,7 +18,18 @@ type Order = {
   paymentMethod: string
   createdAt: string
   history: { status: string }[]
-  items: { id: string; name: string; size: string; color?: string | null; quantity: number; price: number; coverThumbnail: string; slug: string }[]
+  items: {
+    id: string
+    name: string
+    size: string
+    color?: string | null
+    quantity: number
+    price: number
+    coverThumbnail: string
+    slug: string
+    madeToMeasureFor: string | null
+    measurementsConfirmed: boolean
+  }[]
 }
 
 const fmtDate = (iso: string) =>
@@ -113,8 +125,13 @@ export default function OrdersClient() {
                           {it.name}
                         </Link>
                         <p className="text-xs text-black/55">
-                          Size {it.size}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity}
+                          {it.madeToMeasureFor ? mtmLabel(it.madeToMeasureFor) : `Size ${it.size}`}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity}
                         </p>
+                        {it.madeToMeasureFor && ["UNDER_VERIFICATION", "VERIFIED"].includes(o.status) && (
+                          <p className="text-xs text-black/50">
+                            {it.measurementsConfirmed ? "Measurements confirmed" : "Measurements being confirmed. We will contact you before cutting."}
+                          </p>
+                        )}
                       </div>
                       <p className="font-jost text-sm tabular-nums">{formatRupees(it.price * it.quantity)}</p>
                     </li>

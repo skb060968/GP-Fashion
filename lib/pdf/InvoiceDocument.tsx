@@ -6,6 +6,7 @@ import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/
 import { formatDateDDMMYYYY } from "@/lib/date"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
 import { contact } from "@/lib/data/contact"
+import { isSnapshot } from "@/lib/measurements/fields"
 
 export type InvoiceOrder = {
   orderCode: string
@@ -25,7 +26,7 @@ export type InvoiceOrder = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; measurements?: unknown }[]
 }
 
 const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts")
@@ -219,7 +220,7 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
                 <Text style={s.strong}>{item.name}</Text>
                 {item.color ? <Text style={s.muted}>{item.color}</Text> : null}
               </View>
-              <Text style={[s.cSize, s.muted]}>{item.size}</Text>
+              <Text style={[s.cSize, s.muted]}>{isSnapshot(item.measurements) ? "Made to measure" : item.size}</Text>
               <Text style={[s.cPrice, s.muted]}>{rupees(item.price)}</Text>
               <Text style={[s.cQty, s.muted]}>{item.quantity}</Text>
               <Text style={s.cTotal}>{rupees(item.price * item.quantity)}</Text>

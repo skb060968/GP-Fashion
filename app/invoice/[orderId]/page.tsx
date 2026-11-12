@@ -9,6 +9,7 @@ import { formatRupees } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
 import { content } from "@/lib/data"
+import { isSnapshot } from "@/lib/measurements/fields"
 
 type Order = {
   orderCode: string
@@ -28,7 +29,7 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number }[]
+  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; measurements?: unknown }[]
 }
 
 export default function InvoicePage() {
@@ -200,7 +201,7 @@ function InvoiceContent() {
                       {item.name}
                       {item.color && <span className="block font-normal text-black/50">{item.color}</span>}
                     </td>
-                    <td className="py-3 pr-4 text-black/70">{item.size}</td>
+                    <td className="py-3 pr-4 text-black/70">{isSnapshot(item.measurements) ? "Made to measure" : item.size}</td>
                     <td className="py-3 pr-4 text-right tabular-nums text-black/70">{formatRupees(item.price)}</td>
                     <td className="py-3 pr-4 text-right tabular-nums text-black/70">{item.quantity}</td>
                     <td className="py-3 text-right tabular-nums">{formatRupees(item.price * item.quantity)}</td>

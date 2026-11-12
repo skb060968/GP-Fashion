@@ -5,6 +5,10 @@ import {
   buildOrderEmailData,
   InvalidTransitionError,
   MissingTransitionNoteError,
+  MeasurementsNotConfirmedError,
+  MeasurementUpdateError,
+  updateItemMeasurements,
+  confirmItemMeasurements,
 } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth";
@@ -60,6 +64,21 @@ export async function PATCH(
       return NextResponse.json(updated);
     }
 
+    if (parsed.data.action === "measurements" || parsed.data.action === "confirm-measurements") {
+      try {
+        const data = parsed.data;
+        const updated =
+          data.action === "measurements"
+            ? await updateItemMeasurements(orderId, data.itemId, data.values, data.notes)
+            : await confirmItemMeasurements(orderId, data.itemId, data.note);
+        if (!updated) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+        return NextResponse.json(updated);
+      } catch (err) {
+        if (err instanceof MeasurementUpdateError) return NextResponse.json({ error: err.message }, { status: err.status });
+        throw err;
+      }
+    }
+
     const { status, note, notifyCustomer = true } = parsed.data;
 
     let updatedOrder;
@@ -71,6 +90,9 @@ export async function PATCH(
       }
       if (err instanceof MissingTransitionNoteError) {
         return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      if (err instanceof MeasurementsNotConfirmedError) {
+        return NextResponse.json({ error: err.message }, { status: 409 });
       }
       throw err;
     }

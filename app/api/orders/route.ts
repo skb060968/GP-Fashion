@@ -1,6 +1,13 @@
 import { NextResponse, after, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { OrderStatus, PaymentMethod } from "@prisma/client";
+import { OrderStatus, PaymentMethod, Prisma } from "@prisma/client";
+import {
+  KINDS_FOR_CATEGORY,
+  MTM_SIZE,
+  type MeasurementSnapshot,
+  type MeasurementValues,
+  type PersonKind,
+} from "@/lib/measurements/fields";
 import { sendOrderPlacedEmails } from "@/lib/emails/sendOrderPlaced";
 import { createOrderSchema, formatZodErrors } from "@/lib/validation/schemas";
 import { getUserFromRequest } from "@/lib/security/userSession";
@@ -60,12 +67,50 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items: submittedItems, address, amount: submittedSubtotal, paymentMethod, couponCode } = result.data;
+    const { items: submittedItems, address, amount: submittedSubtotal, paymentMethod, couponCode, acceptMadeToMeasure } = result.data;
+
+    const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
+
+    const profileIds = [...new Set(submittedItems.map((i) => i.profileId).filter((id): id is string => !!id))];
+    if (profileIds.length > 0) {
+      if (!sessionUser) {
+        return NextResponse.json({ error: "Please sign in to order made to measure." }, { status: 401 });
+      }
+      if (!acceptMadeToMeasure) {
+        return NextResponse.json({ error: "Please accept the made-to-measure terms before placing your order." }, { status: 400 });
+      }
+    }
+    const profiles = profileIds.length
+      ? await prisma.measurementProfile.findMany({ where: { id: { in: profileIds }, userId: sessionUser!.id } })
+      : [];
+    const profileById = new Map(profiles.map((p) => [p.id, p]));
 
     const items = [];
     for (const submitted of submittedItems) {
       const product = getProduct(submitted.slug);
-      if (!product || !product.sizes.includes(submitted.size)) {
+      if (!product) {
+        return NextResponse.json({ error: "A product or selected size is no longer available" }, { status: 400 });
+      }
+
+      let measurements: MeasurementSnapshot | null = null;
+      if (submitted.profileId) {
+        const profile = profileById.get(submitted.profileId);
+        if (!profile) {
+          return NextResponse.json({ error: "Saved measurements in your bag were deleted. Remove the item and add it again." }, { status: 400 });
+        }
+        const kind = profile.kind as PersonKind;
+        if (submitted.size !== MTM_SIZE || !KINDS_FOR_CATEGORY[product.category].includes(kind)) {
+          return NextResponse.json({ error: `Those measurements can't be used for ${product.name}.` }, { status: 400 });
+        }
+        measurements = {
+          profileId: profile.id,
+          name: profile.name,
+          kind,
+          values: profile.values as MeasurementValues,
+          notes: profile.notes,
+          savedAt: profile.updatedAt.toISOString(),
+        };
+      } else if (!product.sizes.includes(submitted.size)) {
         return NextResponse.json({ error: "A product or selected size is no longer available" }, { status: 400 });
       }
 
@@ -90,6 +135,7 @@ export async function POST(req: Request) {
         price: product.price,
         quantity: submitted.quantity,
         coverThumbnail,
+        measurements,
       });
     }
 
@@ -116,8 +162,6 @@ export async function POST(req: Request) {
 
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
-
-    const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
 
     const order = await prisma.order.create({
       include: { address: true, items: true },
@@ -152,6 +196,7 @@ export async function POST(req: Request) {
             price: item.price,
             quantity: item.quantity ?? 1,
             coverThumbnail: item.coverThumbnail,
+            ...(item.measurements ? { measurements: item.measurements as unknown as Prisma.InputJsonValue } : {}),
           })),
         },
 

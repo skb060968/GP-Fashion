@@ -12,13 +12,18 @@ export type CartItem = {
   size: string
   quantity: number
   color?: string
+  profileId?: string
+  profileName?: string
 }
+
+export type CartLine = Pick<CartItem, "slug" | "size" | "color" | "profileId">
 
 type CartContextType = {
   cart: CartItem[]
   addToCart: (item: CartItem) => void
-  removeFromCart: (slug: string, size: string, color?: string) => void
-  updateQuantity: (slug: string, size: string, qty: number, color?: string) => void
+  removeFromCart: (line: CartLine) => void
+  updateQuantity: (line: CartLine, qty: number) => void
+  removeProfile: (profileId: string) => void
   clearCart: () => void
 }
 
@@ -26,9 +31,9 @@ const STORAGE_KEY = "cart"
 const MAX_QTY = 10
 const CartContext = createContext<CartContextType | null>(null)
 
-const key = (i: Pick<CartItem, "slug" | "size" | "color">) => `${i.slug}|${i.size}|${i.color ?? ""}`
-const sameLine = (a: Pick<CartItem, "slug" | "size" | "color">, b: Pick<CartItem, "slug" | "size" | "color">) =>
-  a.slug === b.slug && a.size === b.size && (a.color ?? "") === (b.color ?? "")
+export const cartLineKey = (i: CartLine) => `${i.slug}|${i.size}|${i.color ?? ""}|${i.profileId ?? ""}`
+const key = cartLineKey
+const sameLine = (a: CartLine, b: CartLine) => key(a) === key(b)
 
 const mergeCarts = (server: CartItem[], local: CartItem[]) => {
   const map = new Map<string, CartItem>()
@@ -86,17 +91,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const removeFromCart = (slug: string, size: string, color?: string) =>
-    setCart((prev) => prev.filter((i) => !sameLine(i, { slug, size, color })))
+  const removeFromCart = (line: CartLine) => setCart((prev) => prev.filter((i) => !sameLine(i, line)))
 
-  const updateQuantity = (slug: string, size: string, qty: number, color?: string) => {
+  const updateQuantity = (line: CartLine, qty: number) => {
     const q = Math.max(1, Math.min(MAX_QTY, Math.floor(qty) || 1))
-    setCart((prev) => prev.map((i) => (sameLine(i, { slug, size, color }) ? { ...i, quantity: q } : i)))
+    setCart((prev) => prev.map((i) => (sameLine(i, line) ? { ...i, quantity: q } : i)))
   }
+
+  const removeProfile = (profileId: string) => setCart((prev) => prev.filter((i) => i.profileId !== profileId))
 
   const clearCart = () => setCart([])
 
-  return <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>{children}</CartContext.Provider>
+  return (
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, removeProfile, clearCart }}>{children}</CartContext.Provider>
+  )
 }
 
 export const useCart = () => {

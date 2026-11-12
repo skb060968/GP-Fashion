@@ -23,5 +23,6 @@ export type OrderEmailData = {
     price: number;
     quantity: number;
     coverThumbnail: string;
+    madeToMeasureFor?: string | null;
   }[];
 };

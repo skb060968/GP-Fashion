@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
+import { PERSON_KINDS } from "@/lib/measurements/fields";
 
 export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
 
@@ -11,6 +12,8 @@ export const orderItemSchema = z.object({
   price: z.number().int().positive(),
   quantity: z.number().int().min(1).max(10),
   coverThumbnail: z.string().min(1),
+  profileId: z.string().min(1).max(40).optional(),
+  profileName: z.string().max(40).optional(),
 });
 
 export const addressSchema = z.object({
@@ -29,12 +32,21 @@ export const userAddressSchema = addressSchema.omit({ email: true }).extend({
   isDefault: z.boolean().optional(),
 });
 
+export const measurementProfileSchema = z.object({
+  name: z.string().trim().min(1, "Give this profile a name").max(40, "Name is too long"),
+  kind: z.enum(PERSON_KINDS, { message: "Choose who the measurements are for" }),
+  values: z.record(z.string(), z.number()),
+  notes: z.string().trim().max(500, "Notes are too long").optional().or(z.literal("")),
+  guardianConsent: z.boolean().optional(),
+});
+
 export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
   amount: z.number().int().positive(),
   paymentMethod: z.enum(["UPI_MANUAL", "COD", "RAZORPAY"]),
   couponCode: z.string().optional(),
+  acceptMadeToMeasure: z.boolean().optional(),
 });
 
 export const updateStatusSchema = z.object({
@@ -48,9 +60,22 @@ export const updateNotesSchema = z.object({
   notes: z.string().max(5000),
 });
 
+export const updateItemMeasurementsSchema = z.object({
+  itemId: z.string().min(1).max(40),
+  values: z.record(z.string(), z.number()),
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
+export const confirmItemMeasurementsSchema = z.object({
+  itemId: z.string().min(1).max(40),
+  note: z.string().trim().max(300).optional().or(z.literal("")),
+});
+
 export const adminOrderPatchSchema = z.union([
   updateStatusSchema.extend({ action: z.literal("status") }),
   updateNotesSchema.extend({ action: z.literal("notes") }),
+  updateItemMeasurementsSchema.extend({ action: z.literal("measurements") }),
+  confirmItemMeasurementsSchema.extend({ action: z.literal("confirm-measurements") }),
 ]);
 
 export const couponSchema = z.object({

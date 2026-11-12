@@ -13,6 +13,8 @@ import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Card, Skeleton, btn, input } from "@/components/admin/ui"
 import StatusChangeDialog from "@/components/admin/StatusChangeDialog"
 import { adminFetch } from "@/lib/admin/fetch"
+import MeasurementsPanel from "@/components/admin/MeasurementsPanel"
+import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
 
 type Order = {
   orderCode: string
@@ -36,7 +38,19 @@ type Order = {
     state: string
     pincode: string
   } | null
-  items: { id: string; name: string; slug: string; size: string; color: string | null; price: number; quantity: number; coverThumbnail: string }[]
+  items: {
+    id: string
+    name: string
+    slug: string
+    size: string
+    color: string | null
+    price: number
+    quantity: number
+    coverThumbnail: string
+    measurements: unknown
+    measurementsConfirmedAt: string | null
+    measurementsConfirmNote: string | null
+  }[]
   history: { id: string; status: string; changedAt: string; note: string | null }[]
 }
 
@@ -150,6 +164,8 @@ export default function AdminOrderDetailClient() {
   const addressText = a ? [a.fullName, a.addressLine1, a.addressLine2, `${a.city}, ${a.state} ${a.pincode}`, a.phone].filter(Boolean).join("\n") : ""
   const waNumber = a ? `91${a.phone.replace(/\D/g, "").slice(-10)}` : ""
   const history = [...order.history].sort((x, y) => new Date(y.changedAt).getTime() - new Date(x.changedAt).getTime())
+  const unconfirmedMtm = order.items.filter((i) => isSnapshot(i.measurements) && !i.measurementsConfirmedAt).length
+  const blockedByMeasurements = (t: Transition) => t.to === "PROCESSING" && unconfirmedMtm > 0
 
   return (
     <>
@@ -192,11 +208,23 @@ export default function AdminOrderDetailClient() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {transitions.map((t) => (
-                  <button key={t.to} type="button" onClick={() => setPending(t)} className={intentClass[t.intent]}>
+                  <button
+                    key={t.to}
+                    type="button"
+                    onClick={() => setPending(t)}
+                    disabled={blockedByMeasurements(t)}
+                    title={blockedByMeasurements(t) ? "Confirm the made-to-measure measurements first" : undefined}
+                    className={`${intentClass[t.intent]} disabled:cursor-not-allowed disabled:opacity-40`}
+                  >
                     {t.label}
                   </button>
                 ))}
               </div>
+            )}
+            {unconfirmedMtm > 0 && ["UNDER_VERIFICATION", "VERIFIED"].includes(order.status) && (
+              <p className="mt-4 rounded-md bg-amber-50 p-3 font-jost text-sm text-amber-900">
+                Confirm the measurements for {unconfirmedMtm} made-to-measure {unconfirmedMtm === 1 ? "item" : "items"} with the customer before cutting. Processing can start once they are confirmed.
+              </p>
             )}
             {order.status === "UNDER_VERIFICATION" && order.paymentMethod === "UPI_MANUAL" && (
               <p className="mt-4 rounded-md bg-amber-50 p-3 font-jost text-sm text-amber-900">
@@ -208,19 +236,39 @@ export default function AdminOrderDetailClient() {
           <Card title={`Items (${order.items.reduce((n, i) => n + i.quantity, 0)})`} padded={false}>
             <ul className="divide-y divide-black/5">
               {order.items.map((it) => (
-                <li key={it.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="relative aspect-[3/4] w-12 shrink-0 overflow-hidden rounded bg-stone-100">
-                    <Image src={it.coverThumbnail} alt="" fill sizes="3rem" className="object-cover" />
+                <li key={it.id} className="px-5 py-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative aspect-[3/4] w-12 shrink-0 overflow-hidden rounded bg-stone-100">
+                      <Image src={it.coverThumbnail} alt="" fill sizes="3rem" className="object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1 font-jost">
+                      <Link href={`/shop/${it.slug}`} target="_blank" className="text-sm font-semibold hover:underline">
+                        {it.name}
+                      </Link>
+                      <p className="text-xs text-black/55">
+                        {itemSizeLabel(it)}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity} · {formatRupees(it.price)} each
+                      </p>
+                    </div>
+                    <p className="font-jost text-sm font-semibold tabular-nums">{formatRupees(it.price * it.quantity)}</p>
                   </div>
-                  <div className="min-w-0 flex-1 font-jost">
-                    <Link href={`/shop/${it.slug}`} target="_blank" className="text-sm font-semibold hover:underline">
-                      {it.name}
-                    </Link>
-                    <p className="text-xs text-black/55">
-                      Size {it.size}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity} · {formatRupees(it.price)} each
-                    </p>
-                  </div>
-                  <p className="font-jost text-sm font-semibold tabular-nums">{formatRupees(it.price * it.quantity)}</p>
+                  {isSnapshot(it.measurements) && (
+                    <MeasurementsPanel<Order>
+                      orderCode={order.orderCode}
+                      status={order.status}
+                      itemId={it.id}
+                      itemName={it.name}
+                      snapshot={it.measurements}
+                      confirmedAt={it.measurementsConfirmedAt}
+                      confirmNote={it.measurementsConfirmNote}
+                      customerFirstName={a?.fullName.split(" ")[0] ?? ""}
+                      waNumber={waNumber}
+                      onUpdated={(updated, message) => {
+                        setOrder(updated)
+                        setFlash({ tone: "success", text: message })
+                      }}
+                      onError={(message) => setFlash({ tone: "error", text: message })}
+                    />
+                  )}
                 </li>
               ))}
             </ul>

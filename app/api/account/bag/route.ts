@@ -11,16 +11,25 @@ const itemSchema = z.object({
   coverThumbnail: z.string().min(1).max(500),
   quantity: z.number().int().min(1).max(10),
   color: z.string().max(50).optional(),
+  profileId: z.string().min(1).max(40).optional(),
+  profileName: z.string().max(40).optional(),
 })
 const bodySchema = z.object({ items: z.array(itemSchema).max(100) })
 
-const select = { slug: true, size: true, name: true, price: true, coverThumbnail: true, quantity: true, color: true } as const
+const select = { slug: true, size: true, name: true, price: true, coverThumbnail: true, quantity: true, color: true, profileId: true, profileName: true } as const
 
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 })
   const items = await prisma.bagItem.findMany({ where: { userId: user.id }, orderBy: { updatedAt: "asc" }, select })
-  return NextResponse.json({ items: items.map((i) => ({ ...i, color: i.color ?? undefined })) })
+  return NextResponse.json({
+    items: items.map((i) => ({
+      ...i,
+      color: i.color ?? undefined,
+      profileId: i.profileId ?? undefined,
+      profileName: i.profileName ?? undefined,
+    })),
+  })
 }
 
 export async function PUT(req: NextRequest) {
@@ -32,7 +41,7 @@ export async function PUT(req: NextRequest) {
 
   const map = new Map<string, z.infer<typeof itemSchema>>()
   for (const i of parsed.data.items) {
-    const k = `${i.slug}|${i.size}|${i.color ?? ""}`
+    const k = `${i.slug}|${i.size}|${i.color ?? ""}|${i.profileId ?? ""}`
     const prev = map.get(k)
     map.set(k, prev ? { ...prev, quantity: Math.min(10, prev.quantity + i.quantity) } : i)
   }
@@ -41,7 +50,17 @@ export async function PUT(req: NextRequest) {
   await prisma.$transaction([
     prisma.bagItem.deleteMany({ where: { userId: user.id } }),
     ...(items.length
-      ? [prisma.bagItem.createMany({ data: items.map((i) => ({ ...i, color: i.color ?? null, userId: user.id })) })]
+      ? [
+          prisma.bagItem.createMany({
+            data: items.map((i) => ({
+              ...i,
+              color: i.color ?? null,
+              profileId: i.profileId ?? null,
+              profileName: i.profileId ? (i.profileName ?? null) : null,
+              userId: user.id,
+            })),
+          }),
+        ]
       : []),
   ])
   return NextResponse.json({ ok: true, count: items.length })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getUserFromRequest } from "@/lib/security/userSession"
+import { isSnapshot } from "@/lib/measurements/fields"
 
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
@@ -19,9 +20,31 @@ export async function GET(req: NextRequest) {
       paymentMethod: true,
       createdAt: true,
       history: { select: { status: true }, orderBy: { changedAt: "asc" } },
-      items: { select: { id: true, name: true, size: true, color: true, quantity: true, price: true, coverThumbnail: true, slug: true } },
+      items: {
+        select: {
+          id: true,
+          name: true,
+          size: true,
+          color: true,
+          quantity: true,
+          price: true,
+          coverThumbnail: true,
+          slug: true,
+          measurements: true,
+          measurementsConfirmedAt: true,
+        },
+      },
     },
   })
 
-  return NextResponse.json({ orders })
+  return NextResponse.json({
+    orders: orders.map((o) => ({
+      ...o,
+      items: o.items.map(({ measurements, measurementsConfirmedAt, ...it }) => ({
+        ...it,
+        madeToMeasureFor: isSnapshot(measurements) ? measurements.name : null,
+        measurementsConfirmed: !!measurementsConfirmedAt,
+      })),
+    })),
+  })
 }

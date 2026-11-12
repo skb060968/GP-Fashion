@@ -9,6 +9,7 @@ import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import Field from "@/components/checkout/Field"
 import ReturnTimeline from "@/components/ReturnTimeline"
+import { mtmLabel } from "@/lib/measurements/fields"
 
 interface OrderItem {
   id: string
@@ -17,6 +18,8 @@ interface OrderItem {
   color?: string | null
   price: number
   quantity: number
+  madeToMeasureFor?: string | null
+  measurementsConfirmed?: boolean
 }
 
 interface OrderData {
@@ -199,8 +202,13 @@ export default function TrackOrderClient() {
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{item.name}</p>
                         <p className="mt-0.5 text-xs text-black/60">
-                          Size {item.size}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
+                          {item.madeToMeasureFor ? mtmLabel(item.madeToMeasureFor) : `Size ${item.size}`}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                         </p>
+                        {item.madeToMeasureFor && ["UNDER_VERIFICATION", "VERIFIED"].includes(order.status) && (
+                          <p className="mt-0.5 text-xs text-black/50">
+                            {item.measurementsConfirmed ? "Measurements confirmed" : "Measurements being confirmed. We will contact you before cutting."}
+                          </p>
+                        )}
                       </div>
                       <p className="tabular-nums">{formatRupees(item.price * item.quantity)}</p>
                     </li>

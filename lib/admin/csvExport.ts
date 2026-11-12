@@ -1,6 +1,7 @@
 
 
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
+import { isSnapshot } from "@/lib/measurements/fields";
 
 export interface CsvOrderItem {
   name: string;
@@ -8,6 +9,7 @@ export interface CsvOrderItem {
   color?: string | null;
   quantity: number;
   price?: number;
+  measurements?: unknown;
 }
 
 export interface CsvOrder {
@@ -58,7 +60,12 @@ export function escapeCsvField(value: string): string {
 }
 
 export function formatItems(items: CsvOrderItem[]): string {
-  return items.map((item) => `${item.name} (${item.size}${item.color ? `, ${item.color}` : ""} x${item.quantity})`).join("; ");
+  return items
+    .map((item) => {
+      const size = isSnapshot(item.measurements) ? `Made to measure: ${item.measurements.name}` : item.size;
+      return `${item.name} (${size}${item.color ? `, ${item.color}` : ""} x${item.quantity})`;
+    })
+    .join("; ");
 }
 
 export function formatCsvMoney(paise: number): string {

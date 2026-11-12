@@ -12,6 +12,7 @@ import OrderSummary from "@/components/checkout/OrderSummary"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import { ADDRESS_STORAGE_KEY, type CheckoutAddress as Address } from "@/lib/checkout"
+import { MTM_LEAD_TIME } from "@/lib/measurements/fields"
 
 type PaymentMethod = "UPI_MANUAL" | "RAZORPAY"
 
@@ -43,6 +44,9 @@ export default function PaymentPage() {
 
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
   const total = Math.max(0, subtotal - (coupon?.discount ?? 0))
+  const hasMadeToMeasure = cart.some((i) => i.profileId)
+  const [mtmAccepted, setMtmAccepted] = useState(false)
+  const canPlace = confirmed && (!hasMadeToMeasure || mtmAccepted)
 
   useEffect(() => {
     try {
@@ -95,7 +99,7 @@ export default function PaymentPage() {
   }
 
   const placeOrder = async () => {
-    if (!address || cart.length === 0 || !confirmed || placing) return
+    if (!address || cart.length === 0 || !canPlace || placing) return
     setOrderError("")
     setReviewBag(false)
     setPlacing(true)
@@ -111,6 +115,7 @@ export default function PaymentPage() {
             amount: subtotal,
             paymentMethod: "UPI_MANUAL",
             ...(coupon ? { couponCode: coupon.code } : {}),
+            ...(hasMadeToMeasure ? { acceptMadeToMeasure: mtmAccepted } : {}),
           }),
         })
         if (res.ok || res.status < 500) break
@@ -280,6 +285,33 @@ export default function PaymentPage() {
                 </div>
               </FadeIn>
 
+              {hasMadeToMeasure && (
+                <FadeIn delay={100}>
+                  <div className="rounded-lg border border-black/10 p-6 sm:p-8">
+                    <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">Made to measure</h2>
+                    <ul className="mt-4 list-disc space-y-1.5 pl-5 font-jost text-sm leading-relaxed text-black/75">
+                      <li>We will call or WhatsApp you to confirm your measurements before cutting.</li>
+                      <li>Made-to-measure pieces are ready in {MTM_LEAD_TIME} after your measurements are confirmed.</li>
+                      <li>They are made for you, so they cannot be returned, exchanged or altered.</li>
+                    </ul>
+                    <label className="mt-6 flex cursor-pointer items-start gap-3 border-t border-black/10 pt-6">
+                      <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={mtmAccepted}
+                          onChange={(e) => setMtmAccepted(e.target.checked)}
+                          className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-black/30 transition-colors checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                        />
+                        <Check className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden />
+                      </span>
+                      <span className="font-jost text-sm leading-relaxed text-black/80">
+                        I understand that made-to-measure pieces are made for me from my saved measurements and cannot be returned, exchanged or altered.
+                      </span>
+                    </label>
+                  </div>
+                </FadeIn>
+              )}
+
               {orderError && (
                 <div
                   role="alert"
@@ -302,15 +334,21 @@ export default function PaymentPage() {
                     <button
                       type="button"
                       onClick={placeOrder}
-                      disabled={!confirmed || placing}
+                      disabled={!canPlace || placing}
                       className="btn-solid-dark w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white"
                     >
                       {placing ? "Placing order…" : "Place order"}
                     </button>
-                    {!confirmed && (
+                    {!confirmed ? (
                       <p className="mt-3 text-center font-jost text-xs text-black/50">
                         Confirm your UPI payment above to continue.
                       </p>
+                    ) : (
+                      !canPlace && (
+                        <p className="mt-3 text-center font-jost text-xs text-black/50">
+                          Accept the made-to-measure terms above to continue.
+                        </p>
+                      )
                     )}
                   </>
                 }

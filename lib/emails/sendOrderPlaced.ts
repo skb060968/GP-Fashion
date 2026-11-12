@@ -2,6 +2,7 @@
 
 import type { Address, Order, OrderItem } from "@prisma/client"
 import { sendMail } from "@/lib/mailer"
+import { isSnapshot } from "@/lib/measurements/fields"
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
 import { orderPlacedEmailAdmin, orderPlacedEmailCustomer } from "./orderPlaced"
 
@@ -34,6 +35,7 @@ export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | nu
       price: i.price,
       quantity: i.quantity,
       coverThumbnail: i.coverThumbnail ?? "",
+      madeToMeasureFor: isSnapshot(i.measurements) ? i.measurements.name : null,
     })),
   }
 }

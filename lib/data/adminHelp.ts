@@ -329,6 +329,34 @@ export const adminHelpTopics: HelpTopic[] = [
     ],
   },
   {
+    id: "made-to-measure",
+    title: "Made-to-measure orders",
+    summary: "Confirm customer measurements before cutting, correct them on the order, and load them into Measurements.",
+    keywords: ["made to measure", "mtm", "measurements", "custom size", "confirm", "cutting", "profile"],
+    sections: [
+      {
+        title: "How customers order",
+        blocks: [
+          { type: "text", text: "Signed-in customers save body measurement profiles under My Account → Measurements (height, bust or chest, waist and hip are required; the rest are optional). On any menswear, womenswear or kidswear product they choose Made to measure and pick a profile. The price is the same as a standard size. The order item keeps its own copy of the measurements, so later profile edits do not change a placed order." },
+        ],
+      },
+      {
+        title: "Before cutting",
+        blocks: [
+          { type: "steps", items: [
+            "Open the order. Each made-to-measure item shows the measurements and a Not confirmed badge.",
+            "Use Send on WhatsApp to send the numbers to the customer, or call them.",
+            "If the customer corrects a value, use Edit. This changes the order's copy only, never the customer's saved profile, and clears any earlier confirmation.",
+            "When the customer agrees, use Confirm and note how it was confirmed.",
+            "Start processing is blocked until every made-to-measure item in the order is confirmed.",
+            "Use Open in Measurements to load the item into the Measurements tool, choose the dress, and press Submit.",
+          ] },
+          { type: "note", tone: "info", text: "Made-to-measure pieces are dispatched within 4 to 6 weeks of confirmation. They cannot be returned or exchanged, and no order is altered." },
+        ],
+      },
+    ],
+  },
+  {
     id: "returns-exchanges",
     title: "Returns, exchanges, and refunds",
     summary: "Follow the allowed status path and record external refund or replacement details.",

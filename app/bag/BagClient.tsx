@@ -3,8 +3,9 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Minus, Plus, ShoppingBag, X } from "lucide-react"
-import { useCart } from "@/context/CartContext"
+import { cartLineKey, useCart } from "@/context/CartContext"
 import { formatRupees } from "@/lib/money"
+import { MTM_LEAD_TIME, itemSizeLabel } from "@/lib/measurements/fields"
 import FadeIn from "@/components/FadeIn"
 import PageHeading from "@/components/PageHeading"
 import EmptyState from "@/components/EmptyState"
@@ -37,7 +38,7 @@ export default function BagClient() {
 
               <ul className="divide-y divide-black/10 lg:col-span-8">
                 {cart.map((item, index) => (
-                  <li key={`${item.slug}-${item.size}-${item.color ?? ""}`} className="py-8 first:pt-0">
+                  <li key={cartLineKey(item)} className="py-8 first:pt-0">
                     <FadeIn delay={index * 60}>
                       <div className="flex gap-5 sm:gap-8">
                         <Link
@@ -62,13 +63,18 @@ export default function BagClient() {
                                 </Link>
                               </h2>
                               <p className="mt-1.5 font-jost text-sm text-black/60">
-                                Size {item.size}
+                                {itemSizeLabel(item)}
                                 {item.color && <> · {item.color}</>}
                               </p>
+                              {item.profileId && (
+                                <p className="mt-1 font-jost text-xs text-black/50">
+                                  Ready in {MTM_LEAD_TIME}. We confirm your measurements before cutting.
+                                </p>
+                              )}
                             </div>
                             <button
                               type="button"
-                              onClick={() => removeFromCart(item.slug, item.size, item.color)}
+                              onClick={() => removeFromCart(item)}
                               aria-label={`Remove ${item.name} from bag`}
                               className="-mr-2 -mt-2 rounded p-2 text-black/50 transition-colors hover:text-black focus-visible:ring-black"
                             >
@@ -81,7 +87,7 @@ export default function BagClient() {
                             <div className="inline-flex items-center border border-black/20">
                               <button
                                 type="button"
-                                onClick={() => updateQuantity(item.slug, item.size, item.quantity - 1, item.color)}
+                                onClick={() => updateQuantity(item, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
                                 aria-label="Decrease quantity"
                                 className="flex h-10 w-10 items-center justify-center transition-colors hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent focus-visible:ring-black"
@@ -96,7 +102,7 @@ export default function BagClient() {
                               </span>
                               <button
                                 type="button"
-                                onClick={() => updateQuantity(item.slug, item.size, item.quantity + 1, item.color)}
+                                onClick={() => updateQuantity(item, item.quantity + 1)}
                                 aria-label="Increase quantity"
                                 className="flex h-10 w-10 items-center justify-center transition-colors hover:bg-black/5 focus-visible:ring-black"
                               >

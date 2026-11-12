@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { createRateLimiter } from "@/lib/security/rateLimiter"
 import { orderAccessToken } from "@/lib/security/orderAccess"
+import { isSnapshot } from "@/lib/measurements/fields"
 
 const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 20 })
 
@@ -52,6 +53,8 @@ export async function POST(req: NextRequest) {
         color: item.color,
         price: item.price,
         quantity: item.quantity,
+        madeToMeasureFor: isSnapshot(item.measurements) ? item.measurements.name : null,
+        measurementsConfirmed: !!item.measurementsConfirmedAt,
       })),
     })
   } catch (error) {
