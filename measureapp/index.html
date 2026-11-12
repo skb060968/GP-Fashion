@@ -165,6 +165,11 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   .print-value { font-weight: 600; font-variant-numeric: tabular-nums; }
 }
 
+/* Measurements loaded from a website order */
+.prefill-note { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; margin: 8px 0 12px; }
+.prefill-note .block { display: block; margin-top: 4px; }
+.prefill-note .warn { color: var(--error); font-weight: 600; }
+
 </style>
   <meta name="robots" content="noindex, nofollow">
   <style>.app-header { display: none !important; }</style>
@@ -199,6 +204,8 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
             <input id="customer" type="text" maxlength="60" autocomplete="off">
           </label>
         </div>
+
+        <p id="prefill-note" class="prefill-note" hidden></p>
 
         <label class="check-line"><input id="use-custom" type="checkbox"> Use the customer's own body measurements</label>
 
@@ -1132,6 +1139,11 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   function bodyForShopSize(id) {
     const s = shopSizes.find((x) => x.id === id);
     if (!s) throw new Error(`Unknown size ${id}`);
+    return bodyForShopMeasurements(s);
+  }
+
+  /** The same grading as the shop sizes, for any bust, waist, hip and shoulder (a customer's own). */
+  function bodyForShopMeasurements(s) {
     const g = gradeByBust(s.bust);
     for (const k of BY_HIP) g[k] = gradeKeyByHip(s.hip, k);
     const b = { ...g, bust: s.bust, waist: s.waist, hip: s.hip };
@@ -1161,6 +1173,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   MA.armstrong.women = {
     shopSizes,
     bodyForShopSize,
+    bodyForShopMeasurements,
     book: 'Armstrong, Patternmaking for Fashion Design, 5th ed. (2013)',
     sizes,
     defaultSize: '10',
@@ -2365,7 +2378,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   });
 
   MA.armstrong = MA.armstrong || {};
-  MA.armstrong.kids = { sizes, isSmall, measurements, bodyForSize, sleeveChart, sizeList, defaultSize: '6' };
+  MA.armstrong.kids = { sizes, isSmall, measurements, bodyForSize, sleeveChart, sizeList, heights: height, defaultSize: '6' };
 })(globalThis.MA = globalThis.MA || {});
 
 </script>
@@ -16119,6 +16132,183 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
 
 </script>
   <script>
+/*
+ * Body measurements a customer saved on the website (full rounds and widths, inches)
+ * turned into the chart measurements the drafts use.
+ *
+ * 1. Start from the book chart graded to the customer's main measurements:
+ *    women: the shop-size grading for their bust, waist, hip and shoulder;
+ *    men: the chart interpolated by chest between sizes (as the book does for in-between chests);
+ *    children: the chart size for their height, with chest, waist and hip replaced.
+ *    Half measurements (arcs) follow the full ones they belong to.
+ * 2. Every measurement the customer gave replaces the graded one.
+ * Anything the customer did not give stays graded from the chart.
+ */
+(function (MA) {
+  const W = MA.armstrong.women, M = MA.armstrong.men, K = MA.armstrong.kids;
+  const { parse } = MA.units;
+  const r16 = (v) => Math.round(v * 16) / 16;
+  const half = (v) => v / 2;
+  const same = (v) => v;
+
+  // website key -> [chart key, conversion]
+  const COMMON = {
+    acrossBack: ['acrossBack', half],
+    acrossFront: ['acrossChest', half],
+    frontWaistLength: ['centerLengthF', same],
+    backWaistLength: ['centerLengthB', same],
+    shoulderToWaistFront: ['fullLengthF', same],
+    shoulderToWaistBack: ['fullLengthB', same],
+    sleeveLength: ['sleeveLength', same],
+    knee: ['knee', same],
+    calf: ['calf', same],
+    ankle: ['ankle', same],
+    seatedRise: ['crotchDepth', same],
+    crotchLength: ['crotchLength', same],
+    waistToKnee: ['waistToKnee', same],
+    waistToAnkle: ['waistToAnkle', same],
+    waistToFloor: ['waistToFloor', same],
+  };
+  const MAP = {
+    women: {
+      ...COMMON,
+      abdomen: ['abdomen', same],
+      bustPointToPoint: ['bustSpan', half],
+      shoulderToBustPoint: ['bustDepth', same],
+      upperArm: ['biceps', (v) => v + 2],   // the sleeve chart's biceps is the upper arm plus 2″ ease
+      upperThigh: ['upperThigh', same],
+      waistToHip: ['sideHipDepth', same],
+    },
+    men: {
+      ...COMMON,
+      hand: ['cuff', (v) => v + 0.5],       // shirt cuff = hand entry + 1/2″
+      upperThigh: ['thigh', same],
+      waistToHip: ['seatDepth', same],
+    },
+    kids: {
+      ...COMMON,
+      hand: ['handEntry', same],
+      upperThigh: ['upperThigh', same],
+      waistToHip: ['waistToHip', same],
+    },
+  };
+
+  const LABELS = {
+    height: 'Height', chest: 'Chest', waist: 'Waist', hip: 'Hip', neck: 'Neck', shoulder: 'Shoulder width',
+    acrossBack: 'Across back', acrossFront: 'Across front', bustPointToPoint: 'Bust point to point',
+    shoulderToBustPoint: 'Shoulder to bust point', frontWaistLength: 'Front waist length', backWaistLength: 'Back waist length',
+    shoulderToWaistFront: 'Shoulder to waist, front', shoulderToWaistBack: 'Shoulder to waist, back', sleeveLength: 'Sleeve length',
+    upperArm: 'Upper arm', wrist: 'Wrist', hand: 'Hand', abdomen: 'Abdomen', upperThigh: 'Upper thigh', knee: 'Knee', calf: 'Calf',
+    ankle: 'Ankle', seatedRise: 'Seated rise', crotchLength: 'Crotch length', waistToHip: 'Waist to hip', waistToKnee: 'Waist to knee',
+    waistToAnkle: 'Waist to ankle', waistToFloor: 'Waist to floor',
+  };
+
+  /** Linear between the two nearest rows, extended past the ends with the end step. */
+  function interpolate(rows, x, at) {
+    let i = 0;
+    while (i < rows.length - 2 && x > at(rows[i + 1])) i++;
+    const t = (x - at(rows[i])) / (at(rows[i + 1]) - at(rows[i]));
+    const out = {};
+    for (const k of Object.keys(rows[0])) out[k] = rows[i][k] + t * (rows[i + 1][k] - rows[i][k]);
+    return out;
+  }
+
+  /** Moves the shoulder tip to a new across-shoulder (back, half) and keeps its height. */
+  function setShoulder(b, back) {
+    const d = b.acrossShoulderB - back;
+    const slope = (s, a0, a1) => Math.sqrt(Math.max(0, s * s - a0 * a0 + a1 * a1));
+    if (b.shoulderSlopeB != null) b.shoulderSlopeB = slope(b.shoulderSlopeB, b.acrossShoulderB, back);
+    if (b.shoulderSlopeF != null) b.shoulderSlopeF = slope(b.shoulderSlopeF, b.acrossShoulderF, b.acrossShoulderF - d);
+    b.acrossShoulderB = back;
+    b.acrossShoulderF -= d;
+    if (b.shoulderLength != null) b.shoulderLength -= d;
+  }
+
+  const scale = (b, keys, k) => keys.forEach((key) => { if (b[key] != null) b[key] *= k; });
+
+  function nearest(list, value, at) {
+    return list.reduce((best, s) => (Math.abs(at(s) - value) < Math.abs(at(best) - value) ? s : best), list[0]);
+  }
+
+  const heightRange = (text) => text.split('–').map((t) => parse(t));
+
+  function kidsSizeForHeight(height) {
+    const ranges = K.heights.map(heightRange);
+    const inside = ranges.findIndex(([lo, hi]) => height >= lo && height <= hi);
+    if (inside >= 0) return K.sizes[inside];
+    const dist = ranges.map(([lo, hi]) => (height < lo ? lo - height : height - hi));
+    return K.sizes[dist.indexOf(Math.min(...dist))];
+  }
+
+  function fromCustomer(category, values) {
+    const v = {};
+    for (const [k, x] of Object.entries(values || {})) {
+      if (typeof x === 'number' && Number.isFinite(x) && x > 0 && x <= 120) v[k] = x;
+    }
+    for (const k of ['chest', 'waist', 'hip']) if (v[k] == null) throw new Error(`The customer's ${LABELS[k].toLowerCase()} is missing.`);
+    const warnings = [];
+    let body, size;
+    const given = new Set();
+
+    if (category === 'women') {
+      const shop = W.shopSizes;
+      const shoulder = v.shoulder != null ? v.shoulder
+        : interpolate(shop.map((s) => ({ bust: s.bust, shoulder: s.shoulder })), v.chest, (s) => s.bust).shoulder;
+      body = W.bodyForShopMeasurements({ bust: v.chest, waist: v.waist, hip: v.hip, shoulder });
+      size = nearest(shop, v.chest, (s) => s.bust).id;
+      ['bust', 'waist', 'hip'].forEach((k) => given.add(k));
+      if (v.shoulder != null) ['acrossShoulderB'].forEach((k) => given.add(k));
+      if (v.abdomen != null) {
+        const k = v.abdomen / body.abdomen;
+        scale(body, ['abdomenArcF', 'abdomenArcB'], k);
+      }
+    } else if (category === 'men') {
+      const rows = M.sizes.map((s) => M.bodyForSize(s.id));
+      body = interpolate(rows, v.chest, (b) => b.chest);
+      size = nearest(M.sizes.map((s, i) => ({ id: s.id, chest: rows[i].chest })), v.chest, (s) => s.chest).id;
+      scale(body, ['waistArcF', 'waistArcB'], v.waist / body.waist);
+      Object.assign(body, { chest: v.chest, waist: v.waist, hip: v.hip });
+      ['chest', 'waist', 'hip'].forEach((k) => given.add(k));
+      if (v.shoulder != null) { setShoulder(body, v.shoulder / 2); given.add('acrossShoulderB'); }
+    } else if (category === 'girls' || category === 'boys') {
+      if (v.height == null) throw new Error("The child's height is missing.");
+      size = kidsSizeForHeight(v.height);
+      body = K.bodyForSize(size);
+      const [lo] = heightRange(K.heights[0]);
+      const [, hi] = heightRange(K.heights[K.heights.length - 1]);
+      if (v.height < lo) warnings.push(`Height ${MA.units.fmt(v.height)} is below the book's smallest size (3); size 3 is used as the base.`);
+      if (v.height > hi) warnings.push(`Height ${MA.units.fmt(v.height)} is above the book's largest size (14); size 14 is used as the base.`);
+      scale(body, ['chestArc', 'backArc'], v.chest / body.chest);
+      scale(body, ['waistArcF', 'waistArcB'], v.waist / body.waist);
+      scale(body, ['hipArcF', 'hipArcB'], v.hip / body.hip);
+      Object.assign(body, { chest: v.chest, waist: v.waist, hip: v.hip });
+      ['chest', 'waist', 'hip'].forEach((k) => given.add(k));
+      if (v.shoulder != null) { setShoulder(body, v.shoulder / 2); given.add('acrossShoulderB'); }
+    } else {
+      throw new Error(`Unknown category ${category}`);
+    }
+
+    const map = MAP[category === 'women' ? 'women' : category === 'men' ? 'men' : 'kids'];
+    const unused = [];
+    for (const [k, x] of Object.entries(v)) {
+      if (['chest', 'waist', 'hip', 'shoulder'].includes(k)) continue;
+      const m = map[k];
+      if (m && m[0] in body) {
+        body[m[0]] = m[1](x);
+        given.add(m[0]);
+      } else if (!(category !== 'women' && category !== 'men' && k === 'height')) {
+        unused.push({ key: k, label: LABELS[k] || k, value: x });
+      }
+    }
+    for (const k of Object.keys(body)) body[k] = r16(body[k]);
+    return { size, body, given: [...given], unused, warnings };
+  }
+
+  MA.customer = { fromCustomer, kidsSizeForHeight, MAP, LABELS };
+})(globalThis.MA = globalThis.MA || {});
+
+</script>
+  <script>
 (function (MA) {
   const { fmt, parse } = MA.units;
   const CATS = MA.categories;
@@ -16200,10 +16390,14 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     return Object.keys(c.chart.measurements).filter((k) => used.has(k));
   }
 
+  // Measurements loaded from a website order (see MA.customer); cleared when the category or size is changed by hand.
+  let prefill = null;
+  const prefillBody = () => (prefill && prefill.category === catEl.value ? prefill.body : null);
+
   function fillCustomFields(reset) {
     const c = cat();
     const keys = requiredKeys(c, garmentEl.value);
-    const sizeBody = c.bodyForSize(sizeEl.value);
+    const sizeBody = prefillBody() || c.bodyForSize(sizeEl.value);
     const current = {};
     if (!reset) customFields.querySelectorAll('input').forEach((i) => { current[i.name] = i.value; });
     customFields.replaceChildren(...keys.map((k) => {
@@ -16241,7 +16435,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
 
   function readInputs() {
     const c = cat();
-    const body = c.bodyForSize(sizeEl.value);
+    const body = mode() === 'custom' && prefillBody() ? { ...prefillBody() } : c.bodyForSize(sizeEl.value);
     if (mode() === 'custom') {
       const bad = [];
       customFields.querySelectorAll('input').forEach((i) => {
@@ -16715,9 +16909,58 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     go('menu');
   });
 
+  // ------------------------------------------------------------ measurements from a website order
+  const prefillNote = $('prefill-note');
+  function clearPrefill() {
+    prefill = null;
+    prefillNote.hidden = true;
+    prefillNote.replaceChildren();
+  }
+
+  function loadCustomer(p) {
+    if (!p || !CATS[p.category]) throw new Error('Unknown category.');
+    const r = MA.customer.fromCustomer(p.category, p.values);
+    catEl.value = p.category;
+    prefill = null;
+    fillCategory();
+    sizeEl.value = r.size;
+    updateSizeNote();
+    prefill = { category: p.category, body: r.body };
+    $('use-custom').checked = true;
+    customSection.hidden = false;
+    fillCustomFields(true);
+    if (typeof p.customer === 'string') $('customer').value = p.customer.slice(0, 60);
+    const c = cat();
+    const given = r.given.map((k) => c.chart.measurements[k]).filter(Boolean).map((m) => m.label);
+    prefillNote.replaceChildren(
+      h('strong', null, `Loaded from the website${p.source ? `: ${p.source}` : ''}.`), ' ',
+      `The customer gave: ${given.join(', ')}. Every other measurement is graded from the book's chart for these measurements (starting size ${r.size}).`,
+      r.unused.length ? h('span', { class: 'block' }, `Not used by the drafts: ${r.unused.map((u) => `${u.label} ${fmt(u.value)}`).join(' · ')}.`) : null,
+      p.notes ? h('span', { class: 'block' }, `Fit notes: ${p.notes}`) : null,
+      p.category === 'women' ? h('span', { class: 'block' }, 'Bust cup: B (standard). Change it below if needed.') : null,
+      ...r.warnings.map((w) => h('span', { class: 'block warn' }, w)),
+    );
+    prefillNote.hidden = false;
+    show('home');
+  }
+
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || e.source !== window.parent || window.parent === window) return;
+    const d = e.data;
+    if (!d || d.type !== 'measureapp:prefill') return;
+    let reply;
+    try {
+      loadCustomer(d.payload);
+      reply = { type: 'measureapp:prefilled', ok: true };
+    } catch (err) {
+      reply = { type: 'measureapp:prefilled', ok: false, error: err.message };
+    }
+    window.parent.postMessage(reply, location.origin);
+  });
+
   $('use-custom').addEventListener('change', updateMode);
-  catEl.addEventListener('change', fillCategory);
-  sizeEl.addEventListener('change', () => { updateSizeNote(); if (mode() === 'custom') fillCustomFields(true); });
+  catEl.addEventListener('change', () => { clearPrefill(); fillCategory(); });
+  sizeEl.addEventListener('change', () => { clearPrefill(); updateSizeNote(); if (mode() === 'custom') fillCustomFields(true); });
   garmentEl.addEventListener('change', () => { updateGarmentOptions(); if (mode() === 'custom') fillCustomFields(false); });
   $('trouser-length').addEventListener('change', () => {
     $('trouser-length-custom').hidden = $('trouser-length').value !== 'custom';
@@ -16732,7 +16975,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     try { history.replaceState(null, '', '#home'); } catch (e) { location.hash = 'home'; }
   }
 
-  MA.app = { getContext: () => ctx, go, current: () => current, buildPrint };
+  MA.app = { getContext: () => ctx, go, current: () => current, buildPrint, loadCustomer };
 })(globalThis.MA);
 
 </script>

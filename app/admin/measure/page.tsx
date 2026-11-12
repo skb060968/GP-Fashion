@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
 import MeasureClient from "./MeasureClient"
 
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminMeasurePage() {
-  return <MeasureClient />
+  return (
+    <Suspense fallback={null}>
+      <MeasureClient />
+    </Suspense>
+  )
 }
