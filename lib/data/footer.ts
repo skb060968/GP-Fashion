@@ -24,7 +24,6 @@ export const footer = {
     { label: "Ready-to-Wear", href: "/services#ready-to-wear" },
     { label: "Made to Measure", href: "/services#made-to-measure" },
     { label: "Bespoke Commissions", href: "/services#bespoke" },
-    { label: "Alterations & Aftercare", href: "/services#alterations-aftercare" },
     { label: "Private Appointments", href: "/services#appointments" },
     { label: "Collaborations & Stockists", href: "/services#collaborations" },
   ],

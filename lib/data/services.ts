@@ -38,18 +38,6 @@ export const services = [
     ],
   },
   {
-    title: "Alterations & Aftercare",
-    slug: "alterations-aftercare",
-    description:
-      "Clothes should last. We adjust, repair and refresh PIYUSH BHOLLA pieces so they keep their shape and keep being worn.",
-    features: [
-      "Fit adjustments on purchased pieces",
-      "Repairs to seams, closures and embroidery",
-      "Fabric-specific care guidance",
-      "Pressing and preparation before an occasion",
-    ],
-  },
-  {
     title: "Private Appointments",
     slug: "appointments",
     description:

@@ -41,7 +41,7 @@ export function getAllPageMetadata(): PageMetadata[] {
     }),
     page("/collections", `Collections | ${BRAND}`, "Every release from PIYUSH BHOLLA LABEL, newest first."),
     page("/shop", `All Pieces | ${BRAND}`, "Search every piece from Piyush Bholla by name, size and price."),
-    page("/services", `Services | ${BRAND}`, "Ready-to-wear, made to measure, bespoke commissions, alterations and private appointments in Delhi."),
+    page("/services", `Services | ${BRAND}`, "Ready-to-wear, made to measure, bespoke commissions and private appointments in Delhi."),
     page("/contact", `Contact | ${BRAND}`, "Contact the studio about orders, sizing, fittings, bespoke commissions and collaborations."),
     page("/track-order", `Track Order | ${BRAND}`, "Check the status of your order with your order number and mobile number."),
     ...policies.map((policy) => page(`/policies/${policy.slug}`, `${policy.title} | ${BRAND}`, policy.description)),

@@ -4,7 +4,6 @@ import {
   Shirt,
   Ruler,
   PenTool,
-  Scissors,
   CalendarDays,
   Handshake,
   Sparkles,
@@ -16,7 +15,7 @@ import FadeIn from "@/components/FadeIn"
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 const DESCRIPTION =
-  "Ready-to-wear, made to measure, bespoke commissions, alterations and private appointments at the PIYUSH BHOLLA LABEL studio in Delhi."
+  "Ready-to-wear, made to measure, bespoke commissions and private appointments at the PIYUSH BHOLLA LABEL studio in Delhi."
 
 export const metadata: Metadata = {
   title: "Services | Piyush Bholla",
@@ -33,7 +32,6 @@ const iconMap: Record<string, LucideIcon> = {
   "ready-to-wear": Shirt,
   "made-to-measure": Ruler,
   bespoke: PenTool,
-  "alterations-aftercare": Scissors,
   appointments: CalendarDays,
   collaborations: Handshake,
 }
