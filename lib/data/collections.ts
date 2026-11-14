@@ -10,12 +10,12 @@ export interface Collection {
 
 export const collections: Collection[] = [
   {
-    "slug": "summer-2027",
-    "name": "Summer 2027",
+    "slug": "into-the-night",
+    "name": "Into The Night",
     "season": "2027",
-    "releaseDate": "2026-10-26",
-    "description": "The label's first release.",
+    "releaseDate": "2026-11-25",
+    "description": "Inspired by the energy of the night, it’s about dressing without rules, owning your presence and showing up exactly as you   are. For the nights that call for a little more attitude, a little more confidence, and absolutely no holding back. Because the best thing you can wear is your own identity.",
     "order": 10,
-    "coverImage": "/images/shop/collections/summer-2027.webp"
+    "coverImage": "/images/shop/collections/into-the-night.webp"
   }
 ]

@@ -1,0 +1,19 @@
+{
+  "name": "Born After Dark Shirt",
+  "category": "menswear",
+  "classification": "shirts",
+  "collection": "into-the-night",
+  "priceInr": 9990,
+  "sizes": ["S", "M", "L", "XL"],
+  "description": "",
+  "bestseller": false,
+  "order": 10,
+  "colors": [
+    { "slug": "white", "name": "White", "hex": "#FFFFFF" },
+    { "slug": "black", "name": "Black", "hex": "#000000" }, 
+    { "slug": "wine", "name": "Wine", "hex": "#722F37" },
+    { "slug": "beige", "name": "Beige", "hex": "#F5F5DC" }
+	],
+  "defaultColor": "black"
+
+}

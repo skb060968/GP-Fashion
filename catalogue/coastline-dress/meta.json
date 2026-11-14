@@ -1,0 +1,13 @@
+{
+  "name": "Coastline Dress",
+  "category": "womenswear",
+  "classification": "dresses-gowns",
+  "collection": "into-the-night",
+  "priceInr": 9990,
+  "sizes": ["S", "M", "L", "XL"],
+  "description": "",
+  "bestseller": false,
+  "order": 10,
+  "colors": [],
+  "defaultColor": ""
+}   

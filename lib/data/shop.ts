@@ -101,6 +101,10 @@ export const classifications: Classification[] = [
     "title": "Playwear"
   },
   {
+    "slug": "shirts",
+    "title": "Shirts"
+  },
+  {
     "slug": "dresses-gowns",
     "title": "Dresses & Gowns"
   },
@@ -148,14 +152,14 @@ export const classifications: Classification[] = [
 
 export const products: Product[] = [
   {
-    "slug": "t-shirt",
-    "name": "T-Shirt",
+    "slug": "born-after-dark-shirt",
+    "name": "Born After Dark Shirt",
     "category": "menswear",
-    "classification": "outerwear",
-    "collection": "summer-2027",
-    "releaseDate": "2026-10-26",
-    "description": "Pure cotton T-Shirts to keep you cool.",
-    "price": 599000,
+    "classification": "shirts",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
     "sizes": [
       "S",
       "M",
@@ -165,42 +169,290 @@ export const products: Product[] = [
     "bestseller": false,
     "order": 10,
     "images": [
-      "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp"
+      "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
+      "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-1.webp",
+      "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-2.webp",
+      "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-3.webp"
     ],
-    "coverImage": "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp",
-    "coverThumbnail": "/images/shop/thumbnails/t-shirt/magenta/t-shirt-magenta-cover.webp",
+    "coverImage": "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
     "colors": [
       {
-        "slug": "magenta",
-        "name": "Magenta",
-        "hex": "#ad5b79",
+        "slug": "white",
+        "name": "White",
+        "hex": "#ffffff",
         "images": [
-          "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp"
+          "/images/shop/items/born-after-dark-shirt/white/born-after-dark-shirt-white-cover.webp",
+          "/images/shop/items/born-after-dark-shirt/white/born-after-dark-shirt-white-1.webp",
+          "/images/shop/items/born-after-dark-shirt/white/born-after-dark-shirt-white-2.webp"
         ],
-        "coverImage": "/images/shop/items/t-shirt/magenta/t-shirt-magenta-cover.webp",
-        "coverThumbnail": "/images/shop/thumbnails/t-shirt/magenta/t-shirt-magenta-cover.webp"
+        "coverImage": "/images/shop/items/born-after-dark-shirt/white/born-after-dark-shirt-white-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/born-after-dark-shirt/white/born-after-dark-shirt-white-cover.webp"
       },
       {
-        "slug": "sand-brown",
-        "name": "Sand Brown",
-        "hex": "#a18a74",
+        "slug": "black",
+        "name": "Black",
+        "hex": "#000000",
         "images": [
-          "/images/shop/items/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp"
+          "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
+          "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-1.webp",
+          "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-2.webp",
+          "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-3.webp"
         ],
-        "coverImage": "/images/shop/items/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp",
-        "coverThumbnail": "/images/shop/thumbnails/t-shirt/sand-brown/t-shirt-sand-brown-cover.webp"
+        "coverImage": "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp"
       },
       {
-        "slug": "red",
-        "name": "Red",
-        "hex": "#ff0000",
+        "slug": "wine",
+        "name": "Wine",
+        "hex": "#722f37",
         "images": [
-          "/images/shop/items/t-shirt/red/t-shirt-red-cover.webp"
+          "/images/shop/items/born-after-dark-shirt/wine/born-after-dark-shirt-wine-cover.webp",
+          "/images/shop/items/born-after-dark-shirt/wine/born-after-dark-shirt-wine-1.webp",
+          "/images/shop/items/born-after-dark-shirt/wine/born-after-dark-shirt-wine-2.webp",
+          "/images/shop/items/born-after-dark-shirt/wine/born-after-dark-shirt-wine-3.webp"
         ],
-        "coverImage": "/images/shop/items/t-shirt/red/t-shirt-red-cover.webp",
-        "coverThumbnail": "/images/shop/thumbnails/t-shirt/red/t-shirt-red-cover.webp"
+        "coverImage": "/images/shop/items/born-after-dark-shirt/wine/born-after-dark-shirt-wine-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/born-after-dark-shirt/wine/born-after-dark-shirt-wine-cover.webp"
+      },
+      {
+        "slug": "beige",
+        "name": "Beige",
+        "hex": "#f5f5dc",
+        "images": [
+          "/images/shop/items/born-after-dark-shirt/beige/born-after-dark-shirt-beige-cover.webp",
+          "/images/shop/items/born-after-dark-shirt/beige/born-after-dark-shirt-beige-1.webp",
+          "/images/shop/items/born-after-dark-shirt/beige/born-after-dark-shirt-beige-2.webp",
+          "/images/shop/items/born-after-dark-shirt/beige/born-after-dark-shirt-beige-3.webp"
+        ],
+        "coverImage": "/images/shop/items/born-after-dark-shirt/beige/born-after-dark-shirt-beige-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/born-after-dark-shirt/beige/born-after-dark-shirt-beige-cover.webp"
       }
     ],
-    "defaultColor": "magenta"
+    "defaultColor": "black"
+  },
+  {
+    "slug": "coastline-jacket",
+    "name": "Coastline Jacket",
+    "category": "menswear",
+    "classification": "outerwear",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/coastline-jacket/coastline-jacket-cover.webp",
+      "/images/shop/items/coastline-jacket/coastline-jacket-1.webp",
+      "/images/shop/items/coastline-jacket/coastline-jacket-2.webp",
+      "/images/shop/items/coastline-jacket/coastline-jacket-3.webp",
+      "/images/shop/items/coastline-jacket/coastline-jacket-4.webp"
+    ],
+    "coverImage": "/images/shop/items/coastline-jacket/coastline-jacket-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/coastline-jacket/coastline-jacket-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "dark-romance-shirt",
+    "name": "Dark Romance Shirt",
+    "category": "menswear",
+    "classification": "shirts",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/dark-romance-shirt/dark-romance-shirt-cover.webp",
+      "/images/shop/items/dark-romance-shirt/dark-romance-shirt-1.webp",
+      "/images/shop/items/dark-romance-shirt/dark-romance-shirt-2.webp",
+      "/images/shop/items/dark-romance-shirt/dark-romance-shirt-3.webp"
+    ],
+    "coverImage": "/images/shop/items/dark-romance-shirt/dark-romance-shirt-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/dark-romance-shirt/dark-romance-shirt-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "golden-haze-shirt",
+    "name": "Golden Haze Shirt",
+    "category": "menswear",
+    "classification": "shirts",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/golden-haze-shirt/golden-haze-shirt-cover.webp",
+      "/images/shop/items/golden-haze-shirt/golden-haze-shirt-1.webp",
+      "/images/shop/items/golden-haze-shirt/golden-haze-shirt-2.webp",
+      "/images/shop/items/golden-haze-shirt/golden-haze-shirt-3.webp",
+      "/images/shop/items/golden-haze-shirt/golden-haze-shirt-4.webp"
+    ],
+    "coverImage": "/images/shop/items/golden-haze-shirt/golden-haze-shirt-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/golden-haze-shirt/golden-haze-shirt-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "rib-knit-henley",
+    "name": "Rib Knit Henley",
+    "category": "menswear",
+    "classification": "shirts",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/rib-knit-henley/rib-knit-henley-cover.webp",
+      "/images/shop/items/rib-knit-henley/rib-knit-henley-1.webp",
+      "/images/shop/items/rib-knit-henley/rib-knit-henley-2.webp",
+      "/images/shop/items/rib-knit-henley/rib-knit-henley-3.webp",
+      "/images/shop/items/rib-knit-henley/rib-knit-henley-4.webp"
+    ],
+    "coverImage": "/images/shop/items/rib-knit-henley/rib-knit-henley-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/rib-knit-henley/rib-knit-henley-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "thousand-stars-jacket",
+    "name": "Thousand Stars Jacket",
+    "category": "menswear",
+    "classification": "outerwear",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-cover.webp",
+      "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-1.webp",
+      "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-2.webp"
+    ],
+    "coverImage": "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/thousand-stars-jacket/thousand-stars-jacket-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "coastline-dress",
+    "name": "Coastline Dress",
+    "category": "womenswear",
+    "classification": "dresses-gowns",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/coastline-dress/coastline-dress-cover.webp",
+      "/images/shop/items/coastline-dress/coastline-dress-1.webp",
+      "/images/shop/items/coastline-dress/coastline-dress-2.webp",
+      "/images/shop/items/coastline-dress/coastline-dress-3.webp"
+    ],
+    "coverImage": "/images/shop/items/coastline-dress/coastline-dress-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/coastline-dress/coastline-dress-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "midnight-halter-gown",
+    "name": "Midnight Halter Gown",
+    "category": "womenswear",
+    "classification": "dresses-gowns",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/midnight-halter-gown/midnight-halter-gown-cover.webp",
+      "/images/shop/items/midnight-halter-gown/midnight-halter-gown-1.webp",
+      "/images/shop/items/midnight-halter-gown/midnight-halter-gown-2.webp"
+    ],
+    "coverImage": "/images/shop/items/midnight-halter-gown/midnight-halter-gown-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/midnight-halter-gown/midnight-halter-gown-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
+    "slug": "pink-petal-gown",
+    "name": "Pink Petal Gown",
+    "category": "womenswear",
+    "classification": "dresses-gowns",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "",
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "images": [
+      "/images/shop/items/pink-petal-gown/pink-petal-gown-cover.webp",
+      "/images/shop/items/pink-petal-gown/pink-petal-gown-1.webp",
+      "/images/shop/items/pink-petal-gown/pink-petal-gown-2.webp"
+    ],
+    "coverImage": "/images/shop/items/pink-petal-gown/pink-petal-gown-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/pink-petal-gown/pink-petal-gown-cover.webp",
+    "colors": [],
+    "defaultColor": null
   }
 ]

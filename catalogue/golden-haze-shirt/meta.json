@@ -1,0 +1,13 @@
+{
+  "name": "Golden Haze Shirt",
+  "category": "menswear",
+  "classification": "shirts",
+  "collection": "into-the-night",
+  "priceInr": 9990,
+  "sizes": ["S", "M", "L", "XL"],
+  "description": "",
+  "bestseller": false,
+  "order": 10,
+  "colors": [],
+  "defaultColor": ""
+}

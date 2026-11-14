@@ -235,7 +235,7 @@ export default function PaymentPage() {
                   <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[auto_1fr]">
                     <div className="mx-auto w-56 shrink-0 overflow-hidden rounded-lg border border-black/10 bg-white p-2 sm:w-60">
                       <Image
-                        src="/payments/upi.jpg"
+                        src="/payments/upi.jpeg"
                         alt="UPI QR code for Piyush Bholla"
                         width={300}
                         height={300}
