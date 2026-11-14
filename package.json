@@ -10,6 +10,7 @@
     "reset-db": "prisma migrate reset",
     "test": "vitest --run",
     "convert-webp": "node scripts/convert-to-webp.js",
+    "compress-videos": "node scripts/compress-videos.js",
     "catalogue": "node scripts/build-catalogue.js",
     "comments:remove": "node scripts/remove-code-comments.js",
     "comments:check": "node scripts/remove-code-comments.js --check",
