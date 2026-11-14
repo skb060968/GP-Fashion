@@ -6,6 +6,7 @@ const sharp = require("sharp")
 
 const ROOT = path.join(__dirname, "..")
 const SKIP_FOLDERS = ["shop", "brand", "payments"]
+const KEEP_FILES = [path.join(ROOT, "public", "images", "hero", "poster.jpg")]
 const INPUT_EXT = [".jpg", ".jpeg", ".png"]
 const QUALITY = 85
 
@@ -25,6 +26,8 @@ function collect(dir, out = []) {
         continue
       }
       collect(full, out)
+    } else if (KEEP_FILES.some((k) => k.toLowerCase() === full.toLowerCase())) {
+      console.log(`keep   ${path.relative(ROOT, full)}  (share preview image)`)
     } else if (INPUT_EXT.includes(path.extname(entry.name).toLowerCase())) {
       out.push(full)
     }
