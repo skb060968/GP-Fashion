@@ -36,7 +36,7 @@ export default function Hero() {
   return (
     <section
       aria-label="Introduction"
-      className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-black"
+      className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-black portrait:mt-[var(--nav-h)] portrait:aspect-video portrait:h-auto portrait:min-h-0"
     >
       <video
         ref={videoRef}
@@ -47,7 +47,7 @@ export default function Hero() {
         preload="auto"
         poster="/images/hero/poster.webp"
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="absolute inset-0 h-full w-full object-cover object-center portrait:object-contain"
       >
         <source src="/videos/hero.mp4" type="video/mp4" />
       </video>
@@ -56,7 +56,7 @@ export default function Hero() {
         type="button"
         onClick={toggleMute}
         aria-label={muted ? "Unmute video" : "Mute video"}
-        className="absolute bottom-6 left-6 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        className="absolute bottom-6 left-6 flex h-10 w-10 portrait:bottom-3 portrait:left-3 portrait:h-9 portrait:w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         {muted ? (
           <VolumeX className="h-5 w-5" strokeWidth={1.75} aria-hidden />
