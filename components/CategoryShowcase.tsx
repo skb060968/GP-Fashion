@@ -53,7 +53,7 @@ export default function CategoryShowcase({
       </div>
 
       <FadeIn delay={120} className="mt-10 sm:mt-12 lg:mt-16">
-        <div className="relative aspect-video w-full overflow-hidden bg-stone-100 lg:aspect-auto lg:h-[85vh]">
+        <div className="relative aspect-video w-full overflow-hidden bg-stone-100 lg:aspect-auto lg:h-[85vh] lg:portrait:aspect-video lg:portrait:h-auto">
           <Image
             src={image}
             alt={imageAlt}

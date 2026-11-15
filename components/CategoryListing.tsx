@@ -40,7 +40,7 @@ export default function CategoryListing({
   return (
     <div className="bg-white text-black">
       {banner && (
-        <div className="relative aspect-[21/9] w-full overflow-hidden bg-stone-100 sm:aspect-[3/1]">
+        <div className="relative aspect-video w-full overflow-hidden bg-stone-100">
           <Image src={banner.src} alt={banner.alt ?? ""} fill priority sizes="100vw" quality={85} className="object-cover object-center" />
         </div>
       )}
