@@ -1,0 +1,14 @@
+{
+  "name": "Dark Romance Dress",
+  "category": "womenswear",
+  "classification": "dresses-gowns",
+  "collection": "into-the-night",
+  "priceInr": 9990,
+  "sizes": ["S", "M", "L", "XL"],
+  "description": "Ornate Statement dress in Champagne and Black, Intricately Embellished with Baroque-Inspired Motifs\nComponents: Dress\nSurface:  Intricate Thread Embroidery, Sequin and Bead Embellishments\nFabric:  Imported Organza and Satin Crepe ",
+  "bestseller": false,
+  "order": 10,
+  "colors": [],
+  "defaultColor": "",
+  "pattern": { "garment": "princess", "options": { "d-length": "knee", "d-neck": "scoop", "d-sleeve": "none" } }
+}

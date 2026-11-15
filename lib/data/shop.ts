@@ -471,6 +471,45 @@ export const products: Product[] = [
     "defaultColor": null
   },
   {
+    "slug": "dark-romance-dress",
+    "name": "Dark Romance Dress",
+    "category": "womenswear",
+    "classification": "dresses-gowns",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "Ornate Statement dress in Champagne and Black, Intricately Embellished with Baroque-Inspired Motifs\nComponents: Dress\nSurface:  Intricate Thread Embroidery, Sequin and Bead Embellishments\nFabric:  Imported Organza and Satin Crepe",
+    "care": null,
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "pattern": {
+      "app": "women",
+      "garment": "princess",
+      "name": "Princess-line dress",
+      "options": {
+        "d-length": "knee",
+        "d-neck": "scoop",
+        "d-sleeve": "none"
+      }
+    },
+    "images": [
+      "/images/shop/items/dark-romance-dress/dark-romance-dress-cover.webp",
+      "/images/shop/items/dark-romance-dress/dark-romance-dress-1.webp",
+      "/images/shop/items/dark-romance-dress/dark-romance-dress-2.webp",
+      "/images/shop/items/dark-romance-dress/dark-romance-dress-3.webp"
+    ],
+    "coverImage": "/images/shop/items/dark-romance-dress/dark-romance-dress-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/dark-romance-dress/dark-romance-dress-cover.webp",
+    "colors": [],
+    "defaultColor": null
+  },
+  {
     "slug": "midnight-halter-gown",
     "name": "Midnight Halter Gown",
     "category": "womenswear",
