@@ -15,6 +15,7 @@ interface StickyBuyBarProps {
 export default function StickyBuyBar({ name, price, added, onAdd, targetRef }: StickyBuyBarProps) {
   const [offscreen, setOffscreen] = useState(false)
   const [wide, setWide] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const el = targetRef.current
@@ -25,14 +26,21 @@ export default function StickyBuyBar({ name, price, added, onAdd, targetRef }: S
   }, [targetRef])
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)")
+    const mq = window.matchMedia("(orientation: landscape) and (min-width: 1024px)")
     const update = () => setWide(mq.matches)
     update()
     mq.addEventListener("change", update)
     return () => mq.removeEventListener("change", update)
   }, [])
 
-  const show = offscreen && !wide
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 40)
+    update()
+    window.addEventListener("scroll", update, { passive: true })
+    return () => window.removeEventListener("scroll", update)
+  }, [])
+
+  const show = offscreen && scrolled && !wide
 
   useEffect(() => {
     const html = document.documentElement
@@ -47,7 +55,7 @@ export default function StickyBuyBar({ name, price, added, onAdd, targetRef }: S
     <div
       inert={!show}
       aria-hidden={!show}
-      className={`fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out motion-reduce:transition-none lg:hidden print:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out motion-reduce:transition-none [@media(orientation:landscape)_and_(min-width:1024px)]:hidden print:hidden ${
         show ? "translate-y-0" : "pointer-events-none translate-y-full"
       }`}
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}

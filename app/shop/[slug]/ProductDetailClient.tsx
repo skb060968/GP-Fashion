@@ -206,140 +206,133 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     sizes: product.sizes,
   }
 
+  const breadcrumb = (className: string, withCurrent: boolean) => (
+    <nav aria-label="Breadcrumb" className={`font-jost text-xs uppercase tracking-[0.15em] text-black/60 ${className}`}>
+      <ol className={`flex items-center gap-2 ${withCurrent ? "flex-wrap" : "overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}`}>
+        <li><Link href="/" className="hover:text-black">Home</Link></li>
+        {crumbs.map((c) => (
+          <li key={c.href} className="contents">
+            <span aria-hidden>/</span>
+            <Link href={c.href} className="hover:text-black">{c.label}</Link>
+          </li>
+        ))}
+        {withCurrent && (
+          <>
+            <li aria-hidden>/</li>
+            <li className="text-black" aria-current="page">{product.name}</li>
+          </>
+        )}
+      </ol>
+    </nav>
+  )
+
   const roundButton =
     "flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11"
 
   return (
-    <div className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-black lg:pb-0">
-      <section className={`pt-6 sm:pt-10 lg:pt-12 ${related.length > 0 ? "pb-16 lg:pb-24" : "pb-20 lg:pb-32"}`}>
+    <div className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-black [@media(orientation:landscape)_and_(min-width:1024px)]:pb-0">
+      <section className={`pt-4 sm:pt-6 ${related.length > 0 ? "pb-16 lg:pb-24" : "pb-20 lg:pb-32"}`}>
         <div className="container-max">
 
-          <nav aria-label="Breadcrumb" className="mb-6 font-jost text-xs uppercase tracking-[0.15em] text-black/60 lg:mb-10">
-            <ol className="flex flex-wrap items-center gap-2">
-              <li><Link href="/" className="hover:text-black">Home</Link></li>
-              {crumbs.map((c) => (
-                <li key={c.href} className="contents">
-                  <span aria-hidden>/</span>
-                  <Link href={c.href} className="hover:text-black">{c.label}</Link>
-                </li>
-              ))}
-              <li aria-hidden>/</li>
-              <li className="text-black" aria-current="page">{product.name}</li>
-            </ol>
-          </nav>
+          {breadcrumb("mb-4 twocol:hidden", false)}
 
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 gap-8 twocol:grid-cols-12 lg:gap-16">
 
-            <div className="lg:col-span-7">
-              <div className="flex flex-col gap-3 lg:hidden">
-                <div
-                  className="group relative aspect-[3/4] overflow-hidden bg-stone-100 focus-visible:ring-black"
-                  role={hasMany ? "region" : undefined}
-                  aria-roledescription={hasMany ? "carousel" : undefined}
-                  aria-label={hasMany ? `${product.name} images` : undefined}
-                  tabIndex={hasMany ? 0 : undefined}
-                  onKeyDown={hasMany ? onGalleryKey : undefined}
-                  onTouchStart={hasMany ? onTouchStart : undefined}
-                  onTouchEnd={hasMany ? onTouchEnd : undefined}
-                >
-                  <div className="absolute inset-0 cursor-zoom-in" onClick={onMainImageClick}>
-                    <Image
-                      key={active}
-                      src={active}
-                      alt={hasMany ? `${product.name}, image ${index + 1} of ${gallery.length}` : product.name}
-                      fill
-                      priority
-                      sizes="100vw"
-                      className="object-cover"
-                    />
-                  </div>
-                  <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />
-
-                  <button
-                    type="button"
-                    onClick={() => setLightbox(index)}
-                    aria-label="Zoom image"
-                    className={`absolute bottom-3 right-3 ${roundButton}`}
+            <div className="pdp-gallery twocol:sticky twocol:top-[calc(var(--nav-h)+1rem)] twocol:col-span-5 twocol:self-start lg:col-span-7">
+              <div className="mx-auto flex max-w-[calc(var(--pdp-img-h)*0.75)] flex-col gap-3 twocol:mx-0 twocol:max-w-none twocol:flex-row-reverse twocol:justify-center">
+                <div className="min-w-0 twocol:w-[min(calc(100%-4.25rem),calc(var(--pdp-img-h)*0.75))] lg:w-[min(calc(100%-5.75rem),calc(var(--pdp-img-h)*0.75))]">
+                  <div
+                    className="group relative aspect-[3/4] w-full max-w-[calc(var(--pdp-img-h)*0.75)] overflow-hidden bg-stone-100 focus-visible:ring-black"
+                    role={hasMany ? "region" : undefined}
+                    aria-roledescription={hasMany ? "carousel" : undefined}
+                    aria-label={hasMany ? `${product.name} images` : undefined}
+                    tabIndex={hasMany ? 0 : undefined}
+                    onKeyDown={hasMany ? onGalleryKey : undefined}
+                    onTouchStart={hasMany ? onTouchStart : undefined}
+                    onTouchEnd={hasMany ? onTouchEnd : undefined}
                   >
-                    <Maximize2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                  </button>
+                    <div className="absolute inset-0 cursor-zoom-in" onClick={onMainImageClick}>
+                      <Image
+                        key={active}
+                        src={active}
+                        alt={hasMany ? `${product.name}, image ${index + 1} of ${gallery.length}` : product.name}
+                        fill
+                        priority
+                        sizes="(orientation: landscape) 45vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />
 
-                  {hasMany && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => step(-1)}
-                        aria-label="Previous image"
-                        className={`absolute left-3 top-1/2 -translate-y-1/2 ${roundButton}`}
-                      >
-                        <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => step(1)}
-                        aria-label="Next image"
-                        className={`absolute right-3 top-1/2 -translate-y-1/2 ${roundButton}`}
-                      >
-                        <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                      </button>
-                      <span
-                        aria-live="polite"
-                        className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 font-jost text-[11px] font-medium tabular-nums text-white"
-                      >
-                        {index + 1} / {gallery.length}
-                      </span>
-                    </>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setLightbox(index)}
+                      aria-label="Zoom image"
+                      className={`absolute bottom-3 right-3 ${roundButton}`}
+                    >
+                      <Maximize2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                    </button>
+
+                    {hasMany && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => step(-1)}
+                          aria-label="Previous image"
+                          className={`absolute left-3 top-1/2 -translate-y-1/2 ${roundButton}`}
+                        >
+                          <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => step(1)}
+                          aria-label="Next image"
+                          className={`absolute right-3 top-1/2 -translate-y-1/2 ${roundButton}`}
+                        >
+                          <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                        </button>
+                        <span
+                          aria-live="polite"
+                          className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 font-jost text-[11px] font-medium tabular-nums text-white"
+                        >
+                          {index + 1} / {gallery.length}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {hasMany && (
-                  <ul className="flex gap-2 overflow-x-auto" aria-label="Product images">
-                    {gallery.map((src, i) => {
-                      const isActive = i === index
-                      return (
-                        <li key={src} className="shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setIndex(i)}
-                            aria-pressed={isActive}
-                            aria-label={`View image ${i + 1}`}
-                            className={`relative aspect-[3/4] w-16 overflow-hidden bg-stone-100 transition-opacity ${isActive ? "ring-1 ring-black" : "opacity-70 hover:opacity-100"}`}
-                          >
-                            <Image src={src} alt="" fill sizes="4.5rem" className="object-cover" />
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
+                  <div className="relative shrink-0 twocol:w-14 twocol:self-stretch lg:w-20">
+                    <ul
+                      className="flex gap-2 overflow-x-auto [scrollbar-width:none] twocol:absolute twocol:inset-0 twocol:flex-col twocol:overflow-y-auto twocol:overflow-x-hidden [&::-webkit-scrollbar]:hidden"
+                      aria-label="Product images"
+                    >
+                      {gallery.map((src, i) => {
+                        const isActive = i === index
+                        return (
+                          <li key={src} className="shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setIndex(i)}
+                              aria-pressed={isActive}
+                              aria-label={`View image ${i + 1}`}
+                              className={`relative block aspect-[3/4] w-14 overflow-hidden bg-stone-100 transition-opacity focus-visible:ring-black twocol:w-full ${isActive ? "ring-1 ring-inset ring-black" : "opacity-70 hover:opacity-100"}`}
+                            >
+                              <Image src={src} alt="" fill sizes="5rem" className="object-cover" />
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
                 )}
               </div>
-
-              <ul className={`hidden gap-3 lg:grid ${hasMany ? "lg:grid-cols-2" : "lg:grid-cols-1"}`} aria-label={`${product.name} images`}>
-                {gallery.map((src, i) => (
-                  <li key={src} className="relative aspect-[3/4] bg-stone-100">
-                    <button
-                      type="button"
-                      onClick={() => setLightbox(i)}
-                      aria-label={hasMany ? `Zoom image ${i + 1} of ${gallery.length}` : "Zoom image"}
-                      className="absolute inset-0 cursor-zoom-in overflow-hidden focus-visible:ring-black"
-                    >
-                      <Image
-                        src={src}
-                        alt={hasMany ? `${product.name}, image ${i + 1} of ${gallery.length}` : product.name}
-                        fill
-                        priority={i < 2}
-                        sizes={hasMany ? "30vw" : "55vw"}
-                        className="object-cover"
-                      />
-                    </button>
-                    {i === 0 && <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />}
-                  </li>
-                ))}
-              </ul>
             </div>
 
-            <FadeIn delay={100} className="lg:col-span-5">
-              <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
+            <FadeIn delay={100} className="twocol:col-span-7 lg:col-span-5">
+              <div>
+                {breadcrumb("mb-6 hidden twocol:block", true)}
                 {isNew && (
                   <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/70">New in</p>
                 )}
