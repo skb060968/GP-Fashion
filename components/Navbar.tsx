@@ -286,7 +286,7 @@ export default function Navbar() {
         <Link
           href="/"
           aria-label="Piyush Bholla, home"
-          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-[var(--nav-gap)] rounded px-2 focus-visible:ring-black landscape:flex-row"
+          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-[var(--nav-gap)] rounded px-2 focus-visible:ring-black"
         >
           <Image
             src="/images/brand/logo-mark.png"
@@ -297,11 +297,8 @@ export default function Navbar() {
             className="h-[var(--nav-mark)] w-auto transition-transform duration-300 ease-out group-hover:scale-105"
           />
 
-          <span className="text-center font-cinzel text-[length:var(--nav-word)] font-bold uppercase leading-tight tracking-[0.04em] text-black sm:whitespace-nowrap landscape:text-left">
-            Piyush
-            <br className="sm:hidden" />
-            <span className="hidden sm:inline">&nbsp;</span>
-            Bholla
+          <span className="whitespace-nowrap text-center font-cinzel text-[length:var(--nav-word)] font-bold uppercase leading-none tracking-[0.04em] text-black">
+            Piyush Bholla
           </span>
         </Link>
 
