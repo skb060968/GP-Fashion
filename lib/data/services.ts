@@ -5,10 +5,11 @@ export const services = [
     title: "Ready-to-Wear",
     slug: "ready-to-wear",
     description:
-      "Seasonal ready-to-wear, designed in Delhi and made in limited runs. Every piece in the shop is finished, sized and ready to ship.",
+      "Seasonal ready-to-wear, designed in Delhi and made in limited runs. Every piece in the shop comes in standard sizes and is dispatched within 4 weeks.",
     features: [
       "Limited-run collections across the label's categories",
       "Standard sizing with detailed measurements on each piece",
+      "Dispatched within 4 weeks of payment confirmation",
       "Secure UPI payment with order tracking",
       "Delivery across India; international on request",
     ],

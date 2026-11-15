@@ -9,7 +9,7 @@ export const faq = [
   {
     question: "How long does delivery take?",
     answer:
-      "Ready-to-wear pieces in standard sizes are dispatched within 3 to 5 working days of payment verification and usually arrive within a week across India. Made-to-measure pieces are dispatched within 4 to 6 weeks of your measurements being confirmed. Bespoke commissions have their own lead time, which we share before you confirm.",
+      "Ready-to-wear pieces in standard sizes are dispatched within 4 weeks of payment verification, and most parcels then arrive within 2 to 7 working days across India. Made-to-measure pieces are dispatched within 4 to 6 weeks of your measurements being confirmed. Bespoke commissions have their own lead time, which we share before you confirm.",
   },
   {
     question: "Do you ship outside India?",

@@ -25,12 +25,12 @@ export const policies: Policy[] = [
     slug: "shipping-returns",
     title: "Shipping & Returns",
     description: "Dispatch times, delivery, exchanges and made-to-measure orders at PIYUSH BHOLLA LABEL.",
-    updated: "2026-11-06",
+    updated: "2026-11-15",
     sections: [
       {
         heading: "Dispatch",
         paragraphs: [
-          "Ready-to-wear pieces in standard sizes are dispatched within 3 to 5 working days of your payment being verified. You will receive an email at each step: when the order is placed, when payment is confirmed, and when the parcel is handed to the courier.",
+          "Ready-to-wear pieces in standard sizes are dispatched within 4 weeks of your payment being verified. You will receive an email at each step: when the order is placed, when payment is confirmed, and when the parcel is handed to the courier.",
           "Made-to-measure pieces are dispatched within 4 to 6 weeks of your payment being verified and your measurements being confirmed.",
           "Bespoke commissions have their own lead time, which we agree with you before you confirm. As a guide, allow 6 to 10 weeks for most commissions and longer for heavily embroidered work.",
         ],

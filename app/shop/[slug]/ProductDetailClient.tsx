@@ -28,7 +28,7 @@ function profileSummary(p: ProfileDTO) {
 }
 
 const DETAILS_STANDARD = [
-  "Standard sizes are dispatched within 3 to 5 working days of payment confirmation",
+  "Standard sizes are dispatched within 4 weeks of payment confirmation",
   "Designed and made in Delhi",
   "Dry clean only",
 ]
@@ -301,7 +301,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                     <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Fit</span>
                     <div role="radiogroup" aria-label="Fit" className="mt-3 grid grid-cols-2 gap-2">
                       {([
-                        ["standard", "Standard size", "Ships in 3 to 5 days"],
+                        ["standard", "Standard size", "Ships within 4 weeks"],
                         ["mtm", "Made to measure", `Same price · ${MTM_LEAD_TIME}`],
                       ] as const).map(([m, title, sub]) => {
                         const on = mode === m
