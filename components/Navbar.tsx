@@ -42,7 +42,9 @@ const iconLinks = [
   { label: "Account", href: "/account", Icon: User },
 ]
 
-const ICON_CLASS = "h-7 w-7 sm:h-9 sm:w-9 lg:h-11 lg:w-11 2xl:h-16 2xl:w-16"
+const searchLink = iconLinks[0]
+
+const ICON_CLASS = "h-[var(--nav-icon)] w-[var(--nav-icon)]"
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -182,6 +184,7 @@ export default function Navbar() {
         className="relative flex h-[var(--nav-h)] w-full items-center justify-between px-3 sm:px-6 lg:px-10 2xl:px-14"
       >
 
+        <div className="flex h-full items-center">
         <div
           ref={menuRef}
           className="flex h-full items-center"
@@ -201,14 +204,14 @@ export default function Navbar() {
             ) : (
               <Menu className={ICON_CLASS} strokeWidth={2} aria-hidden />
             )}
-            <span className="hidden font-jost text-base font-semibold uppercase tracking-[0.18em] sm:inline lg:text-xl 2xl:text-2xl">
+            <span className="hidden font-jost text-[length:var(--nav-label)] font-semibold uppercase tracking-[0.18em] sm:inline">
               Menu
             </span>
           </button>
 
           <div
             id="primary-menu"
-            className={`absolute left-3 top-full w-52 origin-top-left border border-t-0 border-black/10 bg-white py-1 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-2 lg:left-10 lg:w-80 2xl:left-14 ${
+            className={`absolute left-3 top-full max-h-[calc(100svh-var(--nav-h))] w-52 origin-top-left overflow-y-auto overscroll-contain border border-t-0 border-black/10 bg-white py-1 shadow-2xl transition-all duration-200 ease-out sm:left-6 sm:w-64 sm:py-2 lg:left-10 lg:w-80 2xl:left-14 ${
               menuOpen
                 ? "visible translate-y-0 opacity-100"
                 : "invisible -translate-y-1 opacity-0"
@@ -271,11 +274,19 @@ export default function Navbar() {
             })}
           </div>
         </div>
+        <Link
+          href={searchLink.href}
+          aria-label={searchLink.label}
+          className="relative rounded p-1.5 text-black transition-colors hover:text-black/60 focus-visible:ring-black sm:hidden"
+        >
+          <searchLink.Icon className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
+        </Link>
+        </div>
 
         <Link
           href="/"
           aria-label="Piyush Bholla, home"
-          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded px-2 focus-visible:ring-black"
+          className="group absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-[var(--nav-gap)] rounded px-2 focus-visible:ring-black landscape:flex-row"
         >
           <Image
             src="/images/brand/logo-mark.png"
@@ -283,10 +294,10 @@ export default function Navbar() {
             width={213}
             height={320}
             priority
-            className="h-12 w-auto transition-transform duration-300 ease-out group-hover:scale-105 sm:h-20 lg:h-24 2xl:h-32"
+            className="h-[var(--nav-mark)] w-auto transition-transform duration-300 ease-out group-hover:scale-105"
           />
 
-          <span className="mt-1 text-center font-cinzel text-base font-bold uppercase leading-tight tracking-[0.04em] text-black sm:mt-2 sm:whitespace-nowrap sm:text-2xl lg:mt-3 lg:text-3xl 2xl:text-4xl">
+          <span className="text-center font-cinzel text-[length:var(--nav-word)] font-bold uppercase leading-tight tracking-[0.04em] text-black sm:whitespace-nowrap landscape:text-left">
             Piyush
             <br className="sm:hidden" />
             <span className="hidden sm:inline">&nbsp;</span>
@@ -298,13 +309,14 @@ export default function Navbar() {
           {iconLinks.map(({ label, href, Icon }) => {
             const isBag = label === "Bag"
             const isAccount = label === "Account"
+            const isSearch = label === "Search"
             const ariaLabel = isBag && bagCount > 0 ? `${label}, ${bagCount} items` : isAccount ? (user ? `Account, ${user.email}` : "Sign in") : label
             return (
               <Link
                 key={label}
                 href={isAccount && !user ? "/login" : href}
                 aria-label={ariaLabel}
-                className="relative rounded p-1.5 text-black transition-colors hover:text-black/60 focus-visible:ring-black sm:p-2"
+                className={`relative rounded p-1.5 text-black transition-colors hover:text-black/60 focus-visible:ring-black sm:p-2 ${isSearch ? "hidden sm:block" : ""}`}
               >
                 <Icon className={ICON_CLASS} strokeWidth={1.25} aria-hidden />
                 {isAccount && user && (

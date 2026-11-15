@@ -26,16 +26,33 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 :root {
-  --nav-h: 7rem;
+  --nav-h: clamp(4.5rem, 12vh, 8.5rem);
+  --nav-mark: calc(var(--nav-h) * 0.36);
+  --nav-word: calc(var(--nav-h) * 0.18);
+  --nav-gap: calc(var(--nav-h) * 0.03);
+  --nav-icon: clamp(1.75rem, calc(var(--nav-h) * 0.34), 2.75rem);
+  --nav-label: clamp(0.875rem, calc(var(--nav-h) * 0.15), 1.5rem);
+}
+@supports (height: 1svh) {
+  :root { --nav-h: clamp(4.5rem, 12svh, 8.5rem); }
 }
 @media (min-width: 640px) {
-  :root { --nav-h: 10rem; }
+  :root {
+    --nav-mark: calc(var(--nav-h) * 0.5);
+    --nav-word: calc(var(--nav-h) * 0.19);
+    --nav-gap: calc(var(--nav-h) * 0.05);
+  }
 }
-@media (min-width: 1024px) {
-  :root { --nav-h: 11rem; }
-}
-@media (min-width: 1536px) {
-  :root { --nav-h: 14rem; }
+@media (orientation: landscape) {
+  :root {
+    --nav-h: clamp(3rem, 12vh, 8rem);
+    --nav-mark: calc(var(--nav-h) * 0.62);
+    --nav-word: calc(var(--nav-h) * 0.28);
+    --nav-gap: calc(var(--nav-h) * 0.12);
+  }
+  @supports (height: 1svh) {
+    :root { --nav-h: clamp(3rem, 12svh, 8rem); }
+  }
 }
 
 [id] {
