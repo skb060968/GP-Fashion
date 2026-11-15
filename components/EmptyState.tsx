@@ -2,15 +2,14 @@ import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 import FadeIn from "@/components/FadeIn"
 
-interface EmptyStateProps {
+type EmptyStateProps = {
   icon: LucideIcon
   title: string
   description: string
   ctaLabel: string
-  ctaHref: string
-}
+} & ({ ctaHref: string; onCtaClick?: never } | { onCtaClick: () => void; ctaHref?: never })
 
-export default function EmptyState({ icon: Icon, title, description, ctaLabel, ctaHref }: EmptyStateProps) {
+export default function EmptyState({ icon: Icon, title, description, ctaLabel, ctaHref, onCtaClick }: EmptyStateProps) {
   return (
     <FadeIn className="mx-auto flex max-w-md flex-col items-center py-16 text-center sm:py-24">
       <span className="flex h-20 w-20 items-center justify-center rounded-full border border-black/15">
@@ -22,9 +21,15 @@ export default function EmptyState({ icon: Icon, title, description, ctaLabel, c
       <p className="mt-4 font-jost text-base leading-relaxed text-black/65 sm:text-lg">
         {description}
       </p>
-      <Link href={ctaHref} className="btn-outline-dark mt-10">
-        {ctaLabel}
-      </Link>
+      {onCtaClick ? (
+        <button type="button" onClick={onCtaClick} className="btn-outline-dark mt-10">
+          {ctaLabel}
+        </button>
+      ) : (
+        <Link href={ctaHref} className="btn-outline-dark mt-10">
+          {ctaLabel}
+        </Link>
+      )}
     </FadeIn>
   )
 }

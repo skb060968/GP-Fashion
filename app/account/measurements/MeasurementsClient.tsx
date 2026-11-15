@@ -75,13 +75,8 @@ export default function MeasurementsClient() {
             title="No saved measurements"
             description="Add measurements once and use them for any made-to-measure order."
             ctaLabel="Add measurements"
-            ctaHref="#"
+            onCtaClick={() => setEditing("new")}
           />
-          <div className="-mt-20 flex justify-center pb-10">
-            <button type="button" onClick={() => setEditing("new")} className="btn-outline-dark">
-              Add measurements
-            </button>
-          </div>
         </div>
       ) : (
         editing === null && (
