@@ -396,7 +396,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
                 <option value="none">Sleeveless</option>
               </select>
             </label>
-            <label data-for="strapless">Front
+            <label data-for="strapless,straplessgown">Front
               <select id="sp-front">
                 <option value="seamed" selected>Contoured between the busts (seamed at center front)</option>
                 <option value="bridged">Bridged (center front on the fold)</option>
@@ -408,7 +408,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
                 <option value="busk">Busk at center front</option>
               </select>
             </label>
-            <label data-for="strapless,bustier,corselet,waspie">Undersupport
+            <label data-for="strapless,bustier,corselet,waspie,straplessgown">Undersupport
               <select id="sp-support">
                 <option value="light" selected>Light: lining and boning</option>
                 <option value="heavy">Heavy: canvas foundation, bust padding, lining and boning</option>
@@ -469,6 +469,12 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
               <select id="bd-sleeve">
                 <option value="legmutton" selected>Leg-of-mutton sleeve</option>
                 <option value="none">Sleeveless (bias-bound armholes)</option>
+              </select>
+            </label>
+            <label data-for="haltergown,straplessgown">Skirt
+              <select id="gw-skirt">
+                <option value="trumpet" selected>Trumpet: 12 gores, flared from the knee</option>
+                <option value="column">Column: 12 gores, straight from the hip, back slit</option>
               </select>
             </label>
             <label data-for="wjacket">Jacket length
@@ -603,11 +609,11 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
               <input id="skirt-length" type="text" inputmode="decimal" placeholder="waist to knee">
               <span class="hint">Empty = waist to knee.</span>
             </label>
-            <label data-for="dress,bodice,skirt,aline,flared,gored6,dirndl,circle,halfcircle,culotte,blouse,wshirt,sareeblouse,kurti,lehenga,sheath,shift,princess,empire,strapless,bustier,corselet,waspie,kshift,kprincess,kempire,ktent,kjumper,kshirt,koversized,kjacket,kcoat,ktrouser,kjean,kskirt,kflared,kgathered,kyoked">Side seam allowance
+            <label data-for="dress,bodice,skirt,aline,flared,gored6,dirndl,circle,halfcircle,culotte,blouse,wshirt,sareeblouse,kurti,lehenga,sheath,shift,princess,empire,strapless,bustier,corselet,waspie,haltergown,straplessgown,kshift,kprincess,kempire,ktent,kjumper,kshirt,koversized,kjacket,kcoat,ktrouser,kjean,kskirt,kflared,kgathered,kyoked">Side seam allowance
               <select id="sa-side"><option value="0.5">1/2″</option><option value="0.75">3/4″</option><option value="1">1″</option></select>
               <span class="hint">3/4″ or 1″ leaves room for alteration.</span>
             </label>
-            <label data-for="dress,bodice,skirt,aline,flared,gored6,dirndl,circle,halfcircle,culotte,sheath,shift,princess,empire,strapless,bustier">Center back seam allowance
+            <label data-for="dress,bodice,skirt,aline,flared,gored6,dirndl,circle,halfcircle,culotte,sheath,shift,princess,empire,strapless,bustier,haltergown,straplessgown">Center back seam allowance
               <select id="sa-center"><option value="0.5">1/2″</option><option value="0.75">3/4″ (zipper)</option><option value="1">1″ (zipper)</option></select>
             </label>
             <label>Hem allowance
@@ -1824,6 +1830,58 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
 </script>
   <script>
 /*
+ * Cutting and sewing for the halter gown and the strapless gown (bodice joined to a 12-gore
+ * skirt at the waist).
+ * Sources (not shown in the app): Armstrong p.205 (halter), pp.482–488 (strapless undersupport,
+ * boning, ease control at the top, waist stay), pp.296 and 303 (gore seams, notches, zipper seam,
+ * hem).
+ * MA.instructions.womenGowns.get(garment, f) → { cutting, sewing }
+ */
+(function (MA) {
+  function get(garment, f) {
+    f = f || {};
+    const halter = garment === 'haltergown';
+    const column = f.gwSkirt ? f.gwSkirt === 'column' : !halter;
+    const heavy = !halter && f.spSupport === 'heavy';
+    const bridged = f.spFront === 'bridged';
+    const cutting = [
+      { text: 'Pre-shrink the fabric and the lining. Velvet, sequins and other pile or one-way fabrics: tick "One-way fabric" and cut every piece the same way up, in a single layer, right side down.' },
+      { text: halter
+        ? 'Bodice: the halter front on the fold (with its ties) and 2 low-cut backs (a pair). Cut the same pieces again in lining.'
+        : `Bodice: ${bridged ? '1 center front panel on the fold' : '2 center front panels (seamed at center front)'}, 2 side front panels and 2 backs (pairs). Lining: the same panels, 3/4″ higher at the top.` + (heavy ? ' Foundation: the panels again in canvas or drill; bust padding in batting.' : '') },
+      { text: 'Skirt: 10 gores and 2 center back gores (a pair), all with the grainline down the center of the gore. Cut the same gores in lining.' },
+      { text: `Seam allowances: 1/2″ on the gore seams and the waist; 3/4″ on the center back zipper seam, jogging back to 1/2″ below the zipper${column ? '; 1″ on the back slit' : ''}; ${halter ? '1/4″ on the neckline, ties and armholes' : '1/2″ at the top'}.` },
+      { text: 'Mark the notches at the hip line' + (column ? '' : ' and the flare break') + ' on every gore, the zipper end on the center back gores' + (halter ? ', and the dart and its point on the halter front.' : ', and the waist line on every bodice panel.') },
+      ...(!halter ? [{ text: 'Cut the boning: one piece per seam, 1″ shorter than the seam so it ends 1/2″ from the top and the waist.' }] : []),
+    ];
+    const sewing = [
+      ...(halter ? [
+        { text: 'Stitch the waist dart of the halter front, tapering to the point; press toward center front. Stitch the darts in the front lining the same way.' },
+        { text: 'Stitch the side seams of the bodice and of the bodice lining. Stay-stitch the V-neckline and the armholes so the bias does not stretch.' },
+        { text: 'Lay the lining on the bodice, right sides together. Stitch the back top edge, the armholes, round the ties and down the V-neckline, leaving the waist open. Trim to 1/8″, clip the curves, turn through the waist and press. Under-stitch where you can.' },
+        { text: 'Tack the bodice and lining together at the waist. Tie the halter at the back of the neck.' },
+      ] : [
+        { text: 'Make up the strapless bodice: princess seams and side seams, boning in each seam, lining' + (heavy ? ' and foundation' : '') + ' joined at the top with the twill ease control, as for the strapless bodice. Leave the waist open.' },
+      ]),
+      { text: 'Skirt: stitch the gores together in order, matching the hip' + (column ? '' : ' and flare-break') + ' notches; leave the center back open above the zipper notch' + (column ? ' and below the slit notch' : '') + '. Press the seams open. Make up the skirt lining the same way.' },
+      { text: 'Join the skirt to the bodice at the waist, matching center front, the side seams and center back; press the seam up.' },
+      { text: 'Set the invisible zipper at center back, from the top of the back to the zipper notch in the skirt. Slip-stitch the bodice lining over the waist seam and round the zipper tape. Sew a hook and eye above the zipper.' },
+      ...(!halter ? [{ text: 'Waist stay: cut 3/4″ grosgrain to the waist less 1″, fold the ends and sew on hooks and eyes. Tack it to the waist seam allowance at each seam; it fastens under the zipper.' }] : []),
+      ...(column ? [{ text: 'Back slit: press the 1″ allowances back, stitch across the top of the slit and catch the allowances by hand; finish the lining slit to match.' }] : []),
+      { text: column
+        ? 'Hang the gown overnight. Mark the hem level from the floor with the customer in her shoes; turn up 1″ and slip-stitch. Hem the lining 1″ shorter.'
+        : 'Hang the gown overnight so the flares can drop. Mark the hem level from the floor with the customer in her shoes; finish with a narrow 1/2″ hem (horsehair braid in the hem gives the flare body). Hem the lining 1″ shorter.' },
+      { text: 'Fit on the customer: the bodice must fit close; pin out looseness at the side seams or center back and correct the patterns. The gores can be taken in or let out along every seam by the same small amount.' },
+    ];
+    return { cutting, sewing };
+  }
+  MA.instructions = MA.instructions || {};
+  MA.instructions.womenGowns = { get };
+})(globalThis.MA = globalThis.MA || {});
+
+</script>
+  <script>
+/*
  * Cutting and sewing for men's pants (trouser, slacks, jeans).
  * Sources (not shown in the app): Armstrong pp.614–620, 677–678, 683–689.
  */
@@ -2202,6 +2260,55 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   }
   MA.instructions = MA.instructions || {};
   MA.instructions.menSuit = { get };
+})(globalThis.MA = globalThis.MA || {});
+
+</script>
+  <script>
+/*
+ * Cutting and sewing for the knit henley and the bomber jacket.
+ * Sources (not shown in the app): Armstrong pp.735–741 (knit tops: overlock seams, placket
+ * stitched from the fold and turned, knit collar), p.739 (ribbing: joining seam, stretching on the
+ * form, fit problems), jacket construction pp.589–590.
+ */
+(function (MA) {
+  MA.instructions = MA.instructions || {};
+  MA.instructions.menCasual = {
+    henley: {
+      cutting: [
+        { text: 'Let the knit relax overnight off the roll. Lay it flat without stretching, the ribs running straight along the grainlines.' },
+        { text: 'Cut the back and the front on the fold, and the 2 sleeves. Cut the placket opening out of the front on the drawn line.' },
+        { text: 'Cut the collar on the fold at center back so the ribs run across it (the stretch goes round the neck), and 2 plackets on the fold. Interface the plackets with a light fusible knit interfacing.' },
+        { text: 'Seam allowances: 3/8″ for the overlock (1/2″ if sewn on a single-needle machine); 1/4″ on the neckline, placket and collar; 1″ hems.' },
+      ],
+      sewing: [
+        { text: 'Join the shoulders with the overlock, stitching a strip of stay tape into the seam so it does not stretch.' },
+        { text: 'Plackets: fold each placket right sides together along its fold, stitch across the top end and turn. Set the zipper between the two plackets, the top stop 1/4″ below the neckline.' },
+        { text: 'Stitch the plackets to the edges of the opening, right sides together, with 1/4″ seams; clip into the corners at B and stitch the lower ends of the plackets across the end of the opening.' },
+        { text: 'Collar: fold along the collar edge and baste the neck edges together. Pin it to the neckline from the placket fold at one side to the other, matching the shoulder notches and center back; stitch, overlock, and cover the seam with tape across the back neck.' },
+        { text: 'Set the sleeves flat, easing the cap into the armhole, then overlock the underarm and side seams in one.' },
+        { text: 'Turn up the 1″ hems on the body and the sleeves and stitch with a twin needle or coverstitch so they still stretch.' },
+        { text: 'Try on: the top must go on easily over the head with the zip open. If the collar stands away from the neck, stretch it a little more as it is sewn.' },
+      ],
+    },
+    bomber: {
+      cutting: [
+        { text: 'Sequin, velvet or other one-way fabric: cut in a single layer, all pieces the same way up. Remove the sequins from the seam allowances before stitching.' },
+        { text: 'Fabric: 2 fronts (a pair), the back on the fold, 2 sleeves and 2 collars on the fold. Interface a 1″ strip along each front edge and one collar.' },
+        { text: 'Lining: 2 fronts, the back on the fold and 2 sleeves.' },
+        { text: 'Rib knit: the waistband and 2 cuffs (seams included), with the stretch along their length. Leave the waistband long; it is trimmed at the fitting.' },
+        { text: 'Seam allowances: 1/2″ on the body and sleeve seams and the front edges; 1/4″ on the neckline and collar; 3/8″ where the rib bands join.' },
+      ],
+      sewing: [
+        { text: 'Stitch the shoulders and the side seams of the jacket; set in the sleeves, easing the cap; stitch the underarm seams. Sew the shoulder pads to the shoulder seam allowances.' },
+        { text: 'Cuffs: seam each cuff into a ring, fold it in half lengthwise and stitch it to the sleeve end, gathering the sleeve to fit while stretching the cuff.' },
+        { text: 'Waistband: fold in half lengthwise. Pin it to the body hem from one front edge to the other, stretching it evenly; try it on (or on the form), stretch more or less until it hugs without puckering, trim the excess at the front ends and stitch.' },
+        { text: 'Collar: stitch the outer collar to the neckline from center front to center front, matching the shoulder notches.' },
+        { text: 'Set the separating zipper along the front edges, the top stop at the top of the collar and the bottom at the bottom of the waistband.' },
+        { text: 'Make up the lining (shoulders, sides, sleeves). Stitch it to the front edges over the zipper tape and to the collar facing round the neck; sew the collar facing to the collar along its top edge. Turn and press.' },
+        { text: 'Slip-stitch the lining to the waistband and cuff seams by hand, leaving a little ease in its length.' },
+      ],
+    },
+  };
 })(globalThis.MA = globalThis.MA || {});
 
 </script>
@@ -2723,6 +2830,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     batting: ['Batting (bust padding)', 'm'],
     btnKids: ['Buttons (back opening)', 'pc'],
     elastic: ['Elastic 1″ wide', 'm'],
+    rib: ['Rib knit (waistband and cuffs)', 'm'],
   };
   const it = (key, qty, nameOverride) => ({ key, name: nameOverride || ITEM[key][0], qty, unit: ITEM[key][1] });
   const zipInv = (len) => ({ key: `zipInv${len}`, name: `${len}″ invisible zipper`, qty: 1, unit: 'pc' });
@@ -2757,6 +2865,10 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       case 'nehru': return [it('btnNehru', m.buttons || 7), it('fusing', 0.75), it('collarCanvas', 0.25), it('thread', 2)];
       case 'bandhgala': case 'sherwani': case 'achkan':
         return [it('btnIndian', m.buttons || 7), it('btnSleeve', 8), it('fusing', g === 'bandhgala' ? 1 : 1.5), it('collarCanvas', 0.25), it('heads', 1), it('thread', 3)];
+      case 'henley': return [{ key: `zipPlacket${m.zipper || 6}`, name: `${m.zipper || 6}″ zipper (placket)`, qty: 1, unit: 'pc' }, it('fusing', 0.25, 'Fusible knit interfacing (plackets)'), it('tape', 1, 'Stay tape (shoulders and back neck)'), it('thread', 4, 'Overlock thread')];
+      case 'bomber': return [
+        { key: `zipSep${m.zipper || 20}`, name: `${m.zipper || 20}″ separating zipper`, qty: 1, unit: 'pc' },
+        it('rib', toM((m.ribLength || 70) + 4)), it('pads', 1, 'Shoulder pads (thin, 1/2″)'), it('fusing', 0.5), it('thread', 2)];
       case 'kurta': return [it('btnKurta', 3), it('fusing', 0.25), it('thread', 1)];
       case 'pathani': return [it('btnKurta', 3 + (has('cuff') ? 2 : 0)), it('fusing', 0.5), it('thread', 1)];
       case 'pajama': case 'aligarhi': case 'salwar': return [it('nada', 1), it('thread', 1)];
@@ -2800,6 +2912,16 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
         if (stay) items.push(it('grosgrain', toM((m.waist || body.waist + 1) + 2)));
         if (heavy) items.push(it('supportCanvas', 0.75), ...(g !== 'waspie' ? [it('batting', 0.25)] : []));
         items.push(it('thread', 2));
+        return items;
+      }
+      case 'haltergown': case 'straplessgown': {
+        const items = [zipInv(m.zipper || 13), it('hookEye', g === 'straplessgown' ? 3 : 1, g === 'straplessgown' ? 'Hooks and eyes (zipper top and waist stay)' : null)];
+        if (g === 'straplessgown') {
+          items.push(it('boning', toM((m.boning || 60) + 6)), it('tape', toM((m.top || 30) + 4)), it('grosgrain', toM((m.bodiceWaist || body.waist + 1) + 2)));
+          if (r.support === 'heavy') items.push(it('supportCanvas', 0.75), it('batting', 0.25));
+        } else items.push(it('tape', toM((m.backTop || 14) + 4), 'Twill tape (1/4″, back top edge)'));
+        if (r.skirt === 'trumpet') items.push(it('braid', toM(m.hem || 0)));
+        items.push(it('thread', 3));
         return items;
       }
       case 'slipdress':
@@ -9836,6 +9958,344 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
 </script>
   <script>
 /*
+ * Women's floor-length gowns: the V-neck halter gown and the strapless gown, both with a
+ * 12-gore skirt joined at the waist.
+ *
+ * Sources (not shown in the app): Armstrong, Patternmaking for Fashion Design (5th ed.) —
+ *   V-neck halter p.205 (front traced with contour guidelines 2, 4 for a modified fit, and 5;
+ *     neck A on the shoulder joined to guideline 5 at center front, B 1 1/2″ from A, an 8″ tie
+ *     squared 1″ and joined to B, an inward-curved armhole from B to 1/2″ below the armhole on
+ *     the side seam guide; guidelines 2 and 5 slashed to the bust point and closed; the back is
+ *     low-cut); contour guidelines pp.190–193 (guideline 4 semi-fit 3/16″ at the bust circle and
+ *     1/16″ near the bust point, guideline 5 3/8″ each side, side ease 1/2″);
+ *   strapless princess bodice pp.475–476 and its back (6″ at center back, side the height of the
+ *     front side seam, back dart closed), undersupport pp.482–488 (women-strapless.js);
+ *   12-gore panel p.300 (waist + 1″ and hip + 2″ divided by 12 and halved, squared out at A and
+ *     at the center front hip depth C, abdomen D one-third of A to C and 1/8″ less than the hip,
+ *     sides blended to the waist with a slightly outward curve); flare p.301 (A–C the flare break,
+ *     C–D equal to C–B, flare added equally on each side of the panel); zipper seam p.303 (3/4″
+ *     allowance to the length of the zipper, jogging back to 1/2″ below it; hem about 1/2″ on a
+ *     flared hem); 1/2″ seams and 1″ hem p.296.
+ * Choices (marked 'choice'): gown length waist to floor; trumpet flare break at the knee and 5″
+ *   of flare each side of every gore (the flare of the book's example); column skirt straight from
+ *   the hip with a walking slit at center back from the knee (1″ allowance); seams at center front
+ *   and center back of the skirt; invisible zipper from the top of the back to 7″ below the waist;
+ *   the halter armhole drawn from B square to the side seam; the halter dart point 5/8″ from the
+ *   bust point (as the basic front, p.47); bodice and skirt lined.
+ *
+ * Coordinates: bodice as the basic bodice (front center front x = 0, side to −x; back center back
+ * x = 0, side to +x; y down). Skirt gore: center line x = 0, waist y = 0, y down.
+ */
+(function (MA) {
+  const G = MA.geom;
+  const { v, add, sub, mul, dist, unit, lerp } = G;
+  const { fmt } = MA.units;
+  const L = MA.drafts.womenIndian.lib;
+  const S = MA.drafts.womenStrapless.lib;
+  const WSP = MA.drafts.womenStrapless;
+  const { rotAbout, piece, stepper, herm, dartPoint } = L;
+
+  const GARMENTS = {
+    haltergown: { name: 'Halter gown (V-neck halter, gored skirt)' },
+    straplessgown: { name: 'Strapless gown (gored skirt)' },
+  };
+  const GORES = 12, ZIP_BELOW = 7, SEAM = 1 / 2;
+
+  const angOf = (p, c) => Math.atan2(p.y - c.y, p.x - c.x);
+  const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+  const mx = (p) => v(-p.x, p.y);
+  function through(pts, startDir, endDir, n = 16) {
+    const out = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const chord = dist(pts[i], pts[i + 1]);
+      const t0 = i === 0 ? mul(startDir, chord) : mul(sub(pts[i + 1], pts[i - 1]), 0.5);
+      const t1 = i === pts.length - 2 ? mul(endDir, chord) : mul(sub(pts[i + 2], pts[i]), 0.5);
+      const seg = herm(pts[i], t0, pts[i + 1], t1, n);
+      out.push(...(i ? seg.slice(1) : seg));
+    }
+    return out;
+  }
+  function splitAtLen(pts, s) {
+    let acc = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const d = dist(pts[i - 1], pts[i]);
+      if (acc + d >= s) { const p = lerp(pts[i - 1], pts[i], d ? (s - acc) / d : 0); return [[...pts.slice(0, i), p], [p, ...pts.slice(i)]]; }
+      acc += d;
+    }
+    return [pts.slice(), [pts[pts.length - 1]]];
+  }
+  /** Splits a polyline running down (y increasing) at level y. */
+  function splitAtY(pts, y) {
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      if ((y - a.y) * (y - b.y) <= 0 && a.y !== b.y) {
+        const p = lerp(a, b, (y - a.y) / (b.y - a.y));
+        return [[...pts.slice(0, i), p], [p, ...pts.slice(i)]];
+      }
+    }
+    throw new Error('Line does not reach that level');
+  }
+  /** Arc length along a polyline to its point nearest q. */
+  function lenTo(pts, q) {
+    let best = Infinity, at = 0, acc = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i], d = dist(a, b);
+      const t = d ? Math.max(0, Math.min(1, G.dot(sub(q, a), sub(b, a)) / (d * d))) : 0;
+      const e = dist(q, lerp(a, b, t));
+      if (e < best) { best = e; at = acc + t * d; }
+      acc += d;
+    }
+    return at;
+  }
+  /** Replaces the curve d either side of arc length s with a smooth curve (blending a join). */
+  function blendAt(pts, s, d) {
+    const total = G.polyLength(pts);
+    const s0 = Math.max(0, s - d), s1 = Math.min(total, s + d);
+    const [before, rest] = splitAtLen(pts, s0);
+    const [, after] = splitAtLen(rest, s1 - s0);
+    const p0 = before[before.length - 1], p1 = after[0];
+    const t0 = unit(sub(p0, before[Math.max(0, before.length - 2)])), t1 = unit(sub(after[Math.min(1, after.length - 1)], p1));
+    const c = dist(p0, p1);
+    return [...before, ...herm(p0, mul(t0, c), p1, mul(t1, c), 12).slice(1, -1), ...after];
+  }
+  const clean = (pts) => pts.filter((p, i) => i === 0 || dist(p, pts[i - 1]) > 1e-6);
+  /** Copy of a piece in another fabric: outline, grainline and notches only. */
+  function copyIn(p, id, name, fabric, text) {
+    return {
+      ...p, id, name, fabric, side: undefined, steps: [], points: {}, labels: [], dims: [], punches: [],
+      edges: p.edges.map((e) => ({ ...e, pts: e.pts.slice() })),
+      marks: p.marks.filter((m) => m.type === 'grain' || m.label), notches: p.notches.slice(), cut: { ...p.cut, text },
+    };
+  }
+
+  // ------------------------------------------------------------ V-neck halter front (p.205)
+  function halterFront(b, o, B0, sf) {
+    const { fb, P } = B0;
+    const K = P.K, r = b.bustRadius;
+    sf.add('Halter front', 'Front traced with contour guidelines 2, 4 (modified fit) and 5 and the side seam guide', null, 205);
+    const Oe = v(P.O.x + 1 / 2, P.O.y);
+    sf.add('Side ease', 'Side seam 1/2″ in at the underarm, to nothing at the waist', 1 / 2, 193);
+    const sTop = G.toward(Oe, P.P, sf.add('Armhole at the side', '1/2″ below the armhole on the side seam guide', 1 / 2, 205));
+    const A = P.I;
+    sf.add('A', 'Neck point A on the shoulder; V-neckline from A to center front at guideline 5 (bust level)', null, 205);
+    const Bp = G.toward(A, P.G, sf.add('A to B', '1 1/2″ from A along the shoulder', 1.5, 205));
+    const tie = sf.add('Tie', '8″ line up from A parallel with center front, squared out 1″ and connected to B', 8, 205);
+    const T1 = v(A.x, A.y - tie), T2 = v(A.x - 1, A.y - tie);
+    sf.add('Guideline 5', 'Squared from center front to the bust point; 3/8″ each side of it at center front (3/4″ in all)', 3 / 4, 192);
+    const up5 = v(0, K.y - 3 / 8), lo5 = v(0, K.y + 3 / 8);
+
+    // armhole: inward curve from B, square to the side seam at its end
+    const nS = S.sideNormal(Oe, P.P, -1);
+    const c = dist(Bp, sTop);
+    const arm0 = herm(Bp, mul(unit(v(-0.35, 1)), c), sTop, mul(nS, c * 0.9), 64);
+    sf.add('Armhole', 'Inward-curved line from B to the side seam', G.polyLength(arm0), 205, 'curve');
+    // guideline 2: bust point toward the shoulder tip, 5/8″ where the armhole crosses it
+    const g2 = add(P.G, mul(unit(sub(P.G, K)), 4));
+    let X = null;
+    for (let i = 1; i < arm0.length && !X; i++) X = G.segCross(arm0[i - 1], arm0[i], K, g2);
+    if (!X) throw new Error('The halter armhole does not cross guideline 2');
+    const sX = lenTo(arm0, X);
+    sf.add('Guideline 2', 'From the bust point toward the shoulder tip; 5/8″ where the halter armhole crosses it', 5 / 8, 205);
+    const [armU0, rest] = splitAtLen(arm0, sX - 5 / 16);
+    const [, armS0] = splitAtLen(rest, 5 / 8);
+    const Xu = armU0[armU0.length - 1], Xs = armS0[0];
+
+    // close guideline 5 (the upper part turns on the bust point), then guideline 2 (the side part)
+    sf.add('Close guidelines 2 and 5', 'Slash to, not through, the bust point; overlap, tape and blend. The excess goes into the waist dart', null, 205);
+    const phi5 = wrap(angOf(lo5, K) - angOf(up5, K));
+    const r5 = (p) => rotAbout(p, K, phi5);
+    const XuR = r5(Xu);
+    const psi = wrap(angOf(XuR, K) - angOf(Xs, K));
+    const rS = (p) => rotAbout(p, K, psi);
+    let armhole = clean([...armU0.map(r5), ...armS0.map(rS)]);
+    armhole = blendAt(armhole, G.polyLength(armU0), 1.5);
+
+    // waist dart with guideline 4 (semi-fit): 3/16″ each leg at the bust circle, 1/16″ near the bust point
+    sf.add('Guideline 4', 'Modified fit: 3/16″ out from each dart leg at the bust circle (radius (9)), 1/16″ near the bust point', 3 / 16, 191);
+    const d1 = Math.min(1.5, r - 1 / 2);
+    const cF = S.contour(K, P.F, P.R, r, 3 / 16), cR = rS(S.contour(K, P.R, P.F, r, 3 / 16));
+    const c1F = S.contour(K, P.F, P.R, d1, 1 / 16), c1R = rS(S.contour(K, P.R, P.F, d1, 1 / 16));
+    const Rr = rS(P.R), Pr = rS(P.P);
+    const apex = dartPoint(K, P.F, Rr, 5 / 8);   // as the basic front (p.47)
+    const front = piece('front', 'Halter front', { count: 1, onFold: true, text: 'Cut 1 on fold' }, [
+      { name: 'Center front (fold)', pts: [P.B, lo5], sa: 0, fold: true },
+      { name: 'Neckline', pts: [lo5, r5(A)], sa: 1 / 4 },
+      { name: 'Halter tie', pts: [r5(A), r5(T1), r5(T2), r5(Bp)], sa: 1 / 4 },
+      { name: 'Armhole', pts: armhole, sa: 1 / 4 },
+      { name: 'Side seam', pts: [rS(sTop), Pr], sa: o.sa.side },
+      { name: 'Waist', pts: [Pr, Rr], sa: SEAM },
+      { name: 'Waist (across dart)', pts: [Rr, P.F], sa: SEAM },
+      { name: 'Waist', pts: [P.F, P.B], sa: SEAM },
+    ], {
+      marks: [{ type: 'dart', pts: [P.F, cF, c1F, apex, c1R, cR, Rr] }],
+      punches: [apex], notches: [r5(A)],
+      points: { A: r5(A), B: r5(Bp) },
+    });
+    front.side = 'F';
+    front.steps = [...fb.steps, ...sf.steps];
+    S.grainIn(front);
+    return {
+      front, sideLen: dist(sTop, P.P), tieLen: tie, armLen: G.polyLength(armhole),
+      neckLen: dist(lo5, r5(A)), vDepth: lo5.y - A.y, waistF: dist(Pr, Rr) + dist(P.F, P.B),
+    };
+  }
+
+  // ------------------------------------------------------------ 12-gore skirt (pp.300–303)
+  function goreSkirt(b, o, sk, zipBelow) {
+    const trumpet = o.skirt !== 'column';
+    sk.add('Skirt', `12-gore panel${trumpet ? ' with flare' : ''}, joined to the bodice at the waist; seams at center front and center back`, GORES, 300);
+    const len = sk.add('Skirt: A to B', 'Gown length from the waist: waist to floor (27)', b.waistToFloor, 300, 'choice');
+    const yC = sk.add('Skirt: A to C', 'Center front hip depth (25)', b.hipDepthCF, 300);
+    const yD = sk.add('Skirt: A to D', 'One-third of A to C', yC / 3, 300, 'derived');
+    const ww = sk.add('Skirt: waist', 'Waist + 1″ ease, divided by 12 and halved; squared out each side of A', (b.waist + 1) / 24, 300, 'derived');
+    const hw = sk.add('Skirt: hip', 'Hip + 2″ ease, divided by 12 and halved; squared out each side of C', (b.hip + 2) / 24, 300, 'derived');
+    const aw = sk.add('Skirt: abdomen', '1/8″ less than the hip measurement, at D', hw - 1 / 8, 300);
+    sk.add('Skirt: gore lines', 'Lines connecting the outline, blended to the waist with a slightly outward curve', null, 300);
+    if (yC + 2 > len) throw new Error('The gown length is shorter than the hip depth');
+    const W = v(ww, 0), D = v(aw, yD), C = v(hw, yC);
+    const upper = through([W, D, C], unit(sub(D, W)), v(0, 1));
+    let side, hemPts, yBr = null, flare = 0;
+    if (trumpet) {
+      yBr = sk.add('Flare break', 'A to C, the flare break: at the knee (waist to knee (27))', b.waistToKnee, 301, 'choice');
+      if (yBr < yC + 2 || yBr > len - 6) throw new Error('The flare break does not fit between the hip and the hem');
+      flare = sk.add('Flare', '5″ out from each side of the gore at the hem; C to D equals C to B (the flare line as long as the gore side below the break); hem blended', 5, 301, 'choice');
+      const Lf = len - yBr, s = flare / Lf, cs = Math.sqrt(1 - s * s);
+      const dir = v(s, cs), Cb = v(hw, yBr), Dh = add(Cb, mul(dir, Lf));
+      const bl = Math.min(2, (yBr - yC) / 2, Lf / 4);
+      const blend = herm(v(hw, yBr - bl), v(0, bl * 1.5), add(Cb, mul(dir, bl)), mul(dir, bl * 1.5), 12);
+      side = clean([...upper, ...blend, Dh]);
+      const k = Dh.x * 0.6;
+      hemPts = herm(Dh, mul(v(-cs, s), k), v(0, len), v(-k, 0), 20);
+    } else {
+      side = [...upper, v(hw, len)];
+      hemPts = [v(hw, len), v(0, len)];
+    }
+    const hemSA = trumpet ? 1 / 2 : o.hem;
+    sk.add('Skirt: seams', `1/2″ gore seams and waist; hem ${fmt(hemSA)}${trumpet ? ' (narrow on the flared hem)' : ''}`, hemSA, trumpet ? 303 : 296);
+    const hemFull = [...hemPts, ...[...hemPts].reverse().map(mx).slice(1)];
+    const marksFor = () => [{ type: 'guide', pts: [mx(C), C], label: 'HIP LINE' }, ...(yBr ? [{ type: 'guide', pts: [v(-hw, yBr), v(hw, yBr)], label: 'FLARE BREAK' }] : [])];
+    const notchesFor = () => [C, mx(C), ...(yBr ? [v(hw, yBr), v(-hw, yBr)] : [])];
+    const pts = { A: v(0, 0), D: v(0, yD), C: v(0, yC), B: v(0, len) };
+    const gore = piece('gore', 'Skirt gore', { count: GORES - 2, onFold: false, text: `Cut ${GORES - 2}` }, [
+      { name: 'Waist', pts: [mx(W), W], sa: SEAM },
+      { name: 'Gore seam', pts: side, sa: SEAM },
+      { name: 'Hem', pts: hemFull, sa: hemSA },
+      { name: 'Gore seam', pts: [...side].reverse().map(mx), sa: SEAM },
+    ], { marks: marksFor(), notches: notchesFor(), points: { ...pts } });
+    L.grain(gore, 0);
+    // center back gores: zipper seam (p.303) and, on the column skirt, the walking slit
+    sk.add('Zipper seam', `Center back: 3/4″ allowance for the length of the zipper (${fmt(zipBelow)} below the waist), jogging back to 1/2″ below it`, 3 / 4, 303);
+    const yJog = zipBelow + 1 / 2;
+    const [cbTop, cbLow] = splitAtY(side, yJog);
+    const cbEdges = [];
+    let slitY = null;
+    if (!trumpet) {
+      slitY = sk.add('Back slit', 'Walking slit at center back from the knee (waist to knee (27)) to the hem, 1″ allowance each side', b.waistToKnee, null, 'choice');
+      const [mid, slit] = splitAtY(cbLow, slitY);
+      cbEdges.push({ name: 'Back slit', pts: [...slit].reverse().map(mx), sa: 1 }, { name: 'Center back seam', pts: [...mid].reverse().map(mx), sa: SEAM });
+    } else cbEdges.push({ name: 'Center back seam', pts: [...cbLow].reverse().map(mx), sa: SEAM });
+    cbEdges.push({ name: 'Center back (zipper)', pts: [...cbTop].reverse().map(mx), sa: 3 / 4 });
+    const cbGore = piece('cbGore', 'Center back gore', { count: 2, onFold: false, text: 'Cut 2 (a pair); the zipper side is center back' }, [
+      { name: 'Waist', pts: [mx(W), W], sa: SEAM },
+      { name: 'Gore seam', pts: side, sa: SEAM },
+      { name: 'Hem', pts: hemFull, sa: hemSA },
+      ...cbEdges,
+    ], { marks: marksFor(), notches: [...notchesFor(), mx(cbTop[cbTop.length - 1]), ...(slitY ? [v(-hw, slitY)] : [])], points: { ...pts } });
+    L.grain(cbGore, 0);
+    const gores = [gore, cbGore];
+    gores.forEach((p) => { p.side = 'S'; });
+    const hemLen = G.polyLength(hemFull) * GORES;
+    return { gores, len, yC, yBr, flare, hemLen, waist: 2 * ww * GORES, hip: 2 * hw * GORES, trumpet, slit: slitY != null ? len - slitY : null };
+  }
+
+  // ------------------------------------------------------------ the gowns
+  function draft(b, options) {
+    const g = options.garment;
+    if (!GARMENTS[g]) throw new Error(`Unknown gown ${g}`);
+    const warnings = [];
+    const o = {
+      cupId: options.cupId, sa: { side: 1 / 2, center: 1 / 2, ...options.sa },
+      skirt: options.skirt || (g === 'straplessgown' ? 'column' : 'trumpet'),
+      front: options.front || 'seamed', support: options.support || 'light',
+      hem: options.hem == null ? 1 : options.hem,
+    };
+    const B0 = L.basic(b, o);
+    const sf = stepper(), sk = stepper();
+    const SP = WSP.draft(b, { garment: 'strapless', cupId: o.cupId, sa: o.sa, front: g === 'straplessgown' ? o.front : 'seamed', support: g === 'straplessgown' ? o.support : 'light' });
+    const pieces = [];
+    let bodiceWaist, cbTop, measured = {};
+    if (g === 'haltergown') {
+      const H = halterFront(b, o, B0, sf);
+      const back = SP.pieces.find((p) => p.id === 'back');
+      back.name = 'Back (low-cut)';
+      const backSide = S.edgeLen(back, /^Side seam/);
+      if (Math.abs(backSide - H.sideLen) > 1 / 8) warnings.push(`The front and back side seams differ by ${fmt(Math.abs(backSide - H.sideLen))}; walk them and true the top of the back.`);
+      cbTop = S.edgeLen(back, /^Center back/);
+      const backWaist = S.edgeLen(back, /^Waist/);
+      bodiceWaist = 2 * (H.waistF + backWaist);
+      sf.add('Lining', 'Front and back copied in lining; the halter, tie and back edges are bagged (stitched and turned)', null, null, 'choice');
+      pieces.push(H.front, back,
+        copyIn(H.front, 'frontLining', 'Halter front lining', 'lining', 'Cut 1 on fold in lining'),
+        copyIn(back, 'backLining', 'Back lining', 'lining', 'Cut 2 (a pair) in lining'));
+      measured = { tie: H.tieLen, vDepth: H.vDepth, armhole: H.armLen, backTop: 2 * S.edgeLen(back, /^Top edge/), sideSeam: H.sideLen };
+      warnings.push('The halter front follows the contour guidelines: make it in muslin first and check the V-neckline lies flat between the busts and the armhole does not gape. Pin out any gaping into the waist dart.');
+    } else {
+      for (const p of SP.pieces) pieces.push(p);
+      cbTop = SP.measured.cb;
+      bodiceWaist = SP.measured.waist;
+      measured = { ...SP.measured };
+      for (const w of SP.warnings) if (!/^Waist length/.test(w)) warnings.push(w);
+    }
+    const zip = Math.round(cbTop + ZIP_BELOW);
+    const zipBelow = zip - cbTop;
+    sk.add('Zipper', `${zip}″ invisible zipper at center back, from the top of the back to ${fmt(zipBelow)} below the waist`, zip, null, 'choice');
+    const SK = goreSkirt(b, o, sk, zipBelow);
+    sk.add('Skirt lining', 'The gores again in lining, hemmed 1″ shorter than the skirt', null, null, 'choice');
+    SK.gores[0].steps = sk.steps;
+    pieces.push(...SK.gores,
+      copyIn(SK.gores[0], 'goreLining', 'Skirt gore lining', 'lining', `Cut ${GORES - 2} in lining`),
+      copyIn(SK.gores[1], 'cbGoreLining', 'Center back gore lining', 'lining', 'Cut 2 (a pair) in lining'));
+    if (Math.abs(bodiceWaist - SK.waist) > 3 / 8) warnings.push(`The bodice waist (${fmt(bodiceWaist)}) and the skirt waist (${fmt(SK.waist)}) differ by ${fmt(Math.abs(bodiceWaist - SK.waist))}; ease the longer one in or true the gores at the waist.`);
+    if (SK.trumpet) warnings.push('Hang the skirt overnight before hemming so the flares can drop, then mark the hem level from the floor with the customer in her shoes.');
+    else warnings.push('A column skirt to the floor needs the walking slit: check the stride with the customer and lengthen the slit if needed.');
+    Object.assign(measured, {
+      bodiceWaist, waist: SK.waist, hip: SK.hip, hem: SK.hemLen, skirtLength: SK.len, flareBreak: SK.yBr, flare: SK.flare || null,
+      lengthCB: cbTop + SK.len, zipper: zip, slit: SK.slit,
+    });
+    return { pieces, warnings, measured, opt: {}, style: g, skirt: SK.trumpet ? 'trumpet' : 'column', front: o.front, support: o.support };
+  }
+
+  function finishedMeasurements(body, result) {
+    const m = result.measured;
+    const out = [];
+    const add_ = (label, value, kind = 'derived') => { if (value != null && Number.isFinite(value)) out.push({ label, value, kind }); };
+    add_('Bust', m.bust);
+    add_('Under the bust', m.underBust);
+    add_('Waist (bodice)', m.bodiceWaist);
+    add_('Waist (skirt)', m.waist, 'book');
+    add_('Hip', m.hip, 'book');
+    add_('Hem (all round)', m.hem, 'curve');
+    add_('Skirt length (waist to hem)', m.skirtLength, 'choice');
+    add_('Length (center back, top to hem)', m.lengthCB);
+    add_('Flare break (below the waist)', m.flareBreak, 'choice');
+    add_('Back slit', m.slit, 'choice');
+    add_('Top edge (full round)', m.top, 'curve');
+    add_('Back top edge (full round)', m.backTop, 'curve');
+    add_('V-neck depth (from the neck point)', m.vDepth);
+    add_('Halter tie (each)', m.tie, 'book');
+    add_('Armhole (each)', m.armhole, 'curve');
+    add_('Boning (total length)', m.boning);
+    add_('Zipper (center back)', m.zipper, 'choice');
+    return out;
+  }
+
+  MA.drafts = MA.drafts || {};
+  MA.drafts.womenGowns = { draft, finishedMeasurements, GARMENTS };
+})(globalThis.MA = globalThis.MA || {});
+
+</script>
+  <script>
+/*
  * Men's shirts: dress shirt (shirt foundation) and casual shirt.
  * Sources (not shown in the app): Armstrong, Men's Wear —
  *   shirt foundation pp.604–606 (body, yoke, pocket), sleeve, cuff, collar and
@@ -11618,7 +12078,409 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   }
 
   MA.drafts = MA.drafts || {};
-  MA.drafts.menJacket = { draft, finishedMeasurements, GARMENTS };
+  // the one-piece cap is shared with the bomber (men-casual.js)
+  MA.drafts.menJacket = { draft, finishedMeasurements, GARMENTS, lib: { sleeveCap } };
+})(globalThis.MA = globalThis.MA || {});
+
+</script>
+  <script>
+/*
+ * Men's casual wear: the knit henley (polo with a zip placket and knit collar) and the bomber
+ * jacket (rib bands, zip front).
+ *
+ * Sources (not shown in the app): Armstrong, Patternmaking for Fashion Design (5th ed.) —
+ *   shirt foundation pp.604–607 (men-shirt.js: body, armholes, sleeve cap, cuff measurement);
+ *   adapting a woven pattern to a knit p.729 (18–25% stretch: front neckline raised 1/4″, side
+ *     seams 1/4″ in, armhole raised 1/2″, hem 1/4″ up; sleeve biceps raised 1/2″, underarm 1/4″ in,
+ *     hem 1/4″ up; 1/8″ added to every amount for knits stretching more than 25%);
+ *   knit top foundations pp.735–738 (straight side seams when the fabric is a rib knit; sleeve cap
+ *     1/4″ more than each armhole, 1/2″ in all; 3/8″ seams for the overlock; around hand + 1″ at
+ *     the sleeve end, Draft 3);
+ *   knit top with placket p.741 (placket line 3/4″ from the fold, A–B 6″, 1/4″ seams, the placket
+ *     on the fold 1 1/2″ wide and the length of the opening, collar cut from the knit, folded along
+ *     the collar edge; sleeve hem 1″);
+ *   men's jacket foundation pp.581–583 (men-jacket-base.js: one-piece foundation, side seam mark
+ *     X, armholes, 1/2″ shoulder pad allowance; jacket sleeve: cap height, biceps, cap shaping,
+ *     1 3/8″–1 1/2″ cap ease, sleeve length + 1/2″ for the pad); mandarin collar pp.224–225;
+ *   ribbing p.739 (width double the finished width + 3/4″ for 3/8″ seams; length the edge, the
+ *     excess trimmed after stretching on the form); hemband p.696 (a band must pass over what it
+ *     closes round).
+ * Choices (marked 'choice'): the henley built on the men's shirt foundation adapted to the knit
+ *   (the book's knit tops are drafted on the women's torso), with the largest amounts p.729 gives
+ *   (rib knit stretches beyond them); length seat depth + 3″ (as the casual shirt); a zip in the placket, so each
+ *   placket fills half the opening; knit collar 2 1/2″ finished with points 1/2″ beyond the end;
+ *   bomber band and cuffs 2 1/2″ rib (the band inside the short jacket length, p.582), 1″
+ *   blousing above the cuff, sleeve end biceps less 3″ gathered into the cuff, cuff the hand
+ *   entry measurement, separating zipper at center front, full lining.
+ *
+ * Coordinates: shirt pieces as men-shirt.js (waist y = 0, center line x = 0, side +x); bomber as
+ * the jacket foundation (center front x = 0, center back x = chest/2 + 3″, waist y = 0).
+ */
+(function (MA) {
+  const G = MA.geom;
+  const { v, add, sub, mul, dist, unit, lerp } = G;
+  const { fmt } = MA.units;
+  const BASE = MA.drafts.menBase;
+  const { stepper, through, perp, piece, grain, foundation, bandCollar } = BASE;
+  const SH = MA.drafts.menShirt.lib;
+  const JK = MA.drafts.menJacket.lib;
+
+  const GARMENTS = {
+    henley: { name: 'Knit henley (zip placket, knit collar)' },
+    bomber: { name: 'Bomber jacket (rib bands, zip front)' },
+  };
+  const KSA = 3 / 8, RIB_SA = 3 / 8;
+
+  /** Splits a polyline at its first crossing of x. */
+  function splitAtX(pts, x) {
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      if ((x - a.x) * (x - b.x) <= 0 && a.x !== b.x) {
+        const p = lerp(a, b, (x - a.x) / (b.x - a.x));
+        return [[...pts.slice(0, i), p], [p, ...pts.slice(i)]];
+      }
+    }
+    throw new Error('Line does not cross the neckline');
+  }
+  /** Rectangle with the left edge on the fold (x = 0), w wide, h long. */
+  function foldRect(id, name, cut, w, h, sa, extra = {}) {
+    const p = piece(id, name, cut, [
+      { name: 'Fold', pts: [v(0, h), v(0, 0)], sa: 0, fold: true },
+      { name: 'Edge', pts: [v(0, 0), v(w, 0)], sa },
+      { name: 'Edge', pts: [v(w, 0), v(w, h)], sa },
+      { name: 'Edge', pts: [v(w, h), v(0, h)], sa },
+    ], extra);
+    p.dims = [{ a: v(0, 0), b: v(w, 0), text: fmt(w), side: 1 }, { a: v(w, 0), b: v(w, h), text: fmt(h), side: -1 }];
+    return grain(p);
+  }
+  /** Rib band: w across (seams included), h long; the stretch runs along the length. */
+  function ribBand(id, name, text, w, h) {
+    const P = [v(0, 0), v(w, 0), v(w, h), v(0, h)];
+    const p = piece(id, name, { count: 1, onFold: false, text }, P.map((q, i) => ({ name: 'Edge', pts: [q, P[(i + 1) % 4]], sa: 0 })), {
+      fabric: 'rib',
+      marks: [{ type: 'grain', pts: [v(w * 0.2, h / 2), v(w * 0.8, h / 2)] }, { type: 'guide', pts: [v(w / 2, 0), v(w / 2, h)], label: 'FOLD LINE' }],
+      dims: [{ a: v(0, 0), b: v(w, 0), text: fmt(w), side: 1 }, { a: v(w, 0), b: v(w, h), text: fmt(h), side: -1 }],
+    });
+    return p;
+  }
+  function copyIn(p, id, name, fabric, text) {
+    return {
+      ...p, id, name, fabric, steps: [], points: {}, labels: [], dims: [], punches: [],
+      edges: p.edges.map((e) => ({ ...e, pts: e.pts.slice() })),
+      marks: p.marks.filter((m) => m.type === 'grain'), notches: p.notches.slice(), cut: { ...p.cut, text },
+    };
+  }
+
+  // ------------------------------------------------------------ knit henley
+  function henley(b, options) {
+    const s = stepper();
+    const warnings = [];
+    const below = s.add('Length below the waist', 'Seat depth + 3″ (worn outside, as the casual shirt)', b.seatDepth + 3, 611, 'choice');
+    const o = { casual: false, below, armDrop: 0 };
+    // the shirt foundation's own check: lower the underarm until the chart sleeve fits (p.606)
+    const chartCap = SH.sleeveCap(v(0, 0), v(-b.biceps / 2, b.capHeight - 1 / 2), v(b.biceps / 2, b.capHeight - 1 / 2), { back: [5 / 8, 1 / 4, 1 / 8], front: [3 / 4, 1 / 4, 3 / 16] }).len;
+    for (;;) {
+      const arm = G.polyLength(SH.backEdges(SH.body(b, 'back', o)).arm) + G.polyLength(SH.frontEdges(SH.body(b, 'front', o), 0).arm);
+      if (chartCap - arm <= 1 / 2 + 1e-9 || o.armDrop >= 2) break;
+      o.armDrop += 1 / 8;
+    }
+    if (o.armDrop) s.add('Armhole lowered', 'Shirt foundation: underarm lowered so the chart sleeve fits with 3/8″–1/2″ cap ease', o.armDrop, 606, 'derived');
+    const sF = stepper();
+    const Bk = SH.body(b, 'back', o, s), Fr = SH.body(b, 'front', o, sF);
+    for (const st of sF.steps) if (st.ref !== 'Extension') s.steps.push(st);
+    // the woven shirt adapted to the knit (p.729), with the amounts for knits stretching more than 25%
+    s.add('Adapting to knit', 'Woven pattern reduced for the stretch: the 18–25% amounts + 1/8″ for knits stretching more (rib knit)', 1 / 8, 729);
+    const neckUp = s.add('Knit: neckline', 'Front neckline raised 1/4″ + 1/8″ and blended; the back neck is not adjusted', 3 / 8, 729);
+    const inSide = s.add('Knit: side seams', '1/4″ + 1/8″ removed, parallel with the side seam; straight side seams for rib knit (no waist shaping)', 3 / 8, 729);
+    const raise = s.add('Knit: armhole', 'Raised 1/2″ + 1/8″ and blended, front and back', 5 / 8, 729);
+    const hemUp = s.add('Knit: hem', '1/4″ + 1/8″ removed, parallel with the hem', 3 / 8, 729);
+    const yHem = below - hemUp;
+    for (const B of [Bk, Fr]) {
+      const P = B.P;
+      P.diag = add(P.diag, v(0, -raise));
+      const x = B.Gx - inSide;
+      P.G = v(x, P.G.y - raise);
+      P.waistIn = v(x, 0);
+      P.hemSide = v(x, yHem);
+      P.hemC = v(0, yHem);
+      B.hemRise = 0;
+    }
+    Fr.P.M = v(0, Fr.P.M.y - neckUp);
+    const be = SH.backEdges(Bk), fe = SH.frontEdges(Fr, 0);
+    s.add('Seams', '3/8″ seams for the overlock; neckline and placket 1/4″; hem 1″', KSA, 735);
+    const back = piece('back', 'Back', { count: 1, onFold: true, text: 'Cut 1 on fold' }, [
+      { name: 'Center back (fold)', pts: [Bk.P.hemC, Bk.P.E], sa: 0, fold: true },
+      { name: 'Neckline', pts: be.neck, sa: 1 / 4 },
+      { name: 'Shoulder', pts: [Bk.P.L, Bk.P.N], sa: KSA },
+      { name: 'Armhole', pts: be.arm, sa: KSA },
+      { name: 'Side seam', pts: [Bk.P.G, Bk.P.hemSide], sa: KSA },
+      { name: 'Hem', pts: [Bk.P.hemSide, Bk.P.hemC], sa: 1 },
+    ], { points: Object.fromEntries(['A', 'B', 'E', 'F', 'J', 'K', 'L', 'M', 'N'].filter((k) => Bk.P[k]).map((k) => [k, Bk.P[k]])) });
+    grain(back);
+
+    // placket inset (p.741): line 3/4″ from the fold, A at the neckline, B 6″ below
+    const PL = s.add('Placket line', '3/4″ in from the center front fold, from the neckline (A) down to B', 3 / 4, 741);
+    const [, neckOut] = splitAtX(fe.neck, PL);
+    const Ap = neckOut[0];
+    const plLen = s.add('A to B', 'Length of the placket opening', 6, 741);
+    const yB = Ap.y + plLen;
+    s.add('Placket cut-out', '1/4″ seam allowance added; the section cut out', 1 / 4, 741);
+    const front = piece('front', 'Front', { count: 1, onFold: true, text: 'Cut 1 on fold; cut out the placket opening' }, [
+      { name: 'Center front (fold)', pts: [Fr.P.hemC, v(0, yB)], sa: 0, fold: true },
+      { name: 'Placket opening (end)', pts: [v(0, yB), v(PL, yB)], sa: 1 / 4 },
+      { name: 'Placket seam', pts: [v(PL, yB), Ap], sa: 1 / 4 },
+      { name: 'Neckline', pts: neckOut, sa: 1 / 4 },
+      { name: 'Shoulder', pts: [Fr.P.K, Fr.P.L], sa: KSA },
+      { name: 'Armhole', pts: fe.arm, sa: KSA },
+      { name: 'Side seam', pts: [Fr.P.G, Fr.P.hemSide], sa: KSA },
+      { name: 'Hem', pts: [Fr.P.hemSide, Fr.P.hemC], sa: 1 },
+    ], {
+      points: { A: Ap, B: v(PL, yB), ...Object.fromEntries(['H', 'I', 'J', 'K', 'L', 'N', 'O'].filter((k) => Fr.P[k]).map((k) => [k, Fr.P[k]])) },
+      notches: [v(PL, yB)],
+    });
+    grain(front);
+
+    // placket (zip): on the fold, 1 1/2″ wide unfolded, the length of the opening
+    s.add('Placket', 'On the fold, 1 1/2″ wide (3/4″ each side of the fold) and the length of the opening; 1/4″ seams', 3 / 4, 741);
+    s.add('Zip', `${fmt(plLen)} zipper between the plackets; each placket fills half of the opening and the collar starts at the placket fold`, plLen, null, 'choice');
+    const placket = foldRect('placket', 'Placket', { count: 2, onFold: true, text: 'Cut 2 on fold; interface' }, 3 / 4, plLen, 1 / 4);
+
+    // knit collar (p.741): cut from the knit, folded along the collar edge, center back on the fold of the paper
+    const bn = G.polyLength(be.neck), fn = G.polyLength(fe.neck);
+    const Lh = s.add('Collar length', 'Half the neckline: back neck + front neck to center front, measured on the pattern', bn + fn, 741, 'curve');
+    const CW = s.add('Collar width', 'Finished 2 1/2″; cut double and folded along the collar edge; points 1/2″ beyond the collar end at the fold', 2.5, null, 'choice');
+    const e = 1 / 2;
+    const collar = piece('collar', 'Collar (knit)', { count: 1, onFold: true, text: 'Cut 1 on fold (center back); fold along the collar edge' }, [
+      { name: 'Center back (fold)', pts: [v(0, CW), v(0, -CW)], sa: 0, fold: true },
+      { name: 'Collar neck edge', pts: [v(0, -CW), v(Lh, -CW)], sa: 1 / 4 },
+      { name: 'Collar end', pts: [v(Lh, -CW), v(Lh + e, 0), v(Lh, CW)], sa: 1 / 4 },
+      { name: 'Collar neck edge', pts: [v(Lh, CW), v(0, CW)], sa: 1 / 4 },
+    ], {
+      marks: [{ type: 'guide', pts: [v(0, 0), v(Lh + e, 0)], label: 'COLLAR EDGE (FOLD LINE)' }, { type: 'grain', pts: [v(Lh / 2, -CW + 0.4), v(Lh / 2, CW - 0.4)] }],
+      notches: [v(bn, -CW), v(bn, CW)],
+      dims: [{ a: v(0, -CW), b: v(Lh, -CW), text: fmt(Lh), side: 1 }],
+    });
+
+    // knit sleeve on the shirt sleeve
+    const armTotal = G.polyLength(be.arm) + G.polyLength(fe.arm);
+    const capH = s.add('Sleeve: A to C', 'Shirt sleeve cap height less 1/2″; biceps raised 1/2″ + 1/8″ for the knit', b.capHeight - 1 / 2 - 5 / 8, 729);
+    s.add('Sleeve: underarm', 'Underarm seams 1/4″ + 1/8″ in, parallel', 3 / 8, 729);
+    let bic = b.biceps - 3 / 4;
+    const offs = { back: [5 / 8, 1 / 4, 1 / 8], front: [3 / 4, 1 / 4, 3 / 16] };
+    const capOf = (w) => SH.sleeveCap(v(0, 0), v(-w / 2, capH), v(w / 2, capH), offs);
+    let cap = capOf(bic);
+    for (let k = 0; k < 120; k++) {
+      const ease = cap.len - armTotal;
+      if (ease < 7 / 16) bic += 1 / 16; else if (ease > 9 / 16) bic -= 1 / 16; else break;
+      cap = capOf(bic);
+    }
+    const capEase = cap.len - armTotal;
+    s.add('Sleeve cap', 'Cap 1/4″ more than each armhole (1/2″ in all): biceps extended or reduced and the cap blended', capEase, 737, 'derived');
+    const len = s.add('Sleeve: A to B', 'Sleeve length to the wrist (no cuff), less 1/4″ + 1/8″ at the hem for the knit', b.sleeveLength - 3 / 8, 729);
+    const hand = s.add('Sleeve: B to F', 'One-half of the around-hand measurement + 1″ (hand entry, the cuff less 1/2″, + 1″)', (b.cuff + 1 / 2) / 2, 738, 'derived');
+    const Dp = v(-bic / 2, capH), Ep = v(bic / 2, capH), Fw = v(hand, len), Bw = v(-hand, len);
+    const inward = (a, z, dir) => {
+      const m = lerp(a, z, 0.5);
+      return through([a, add(m, v(dir * 3 / 16, 0)), z], unit(sub(z, a)), unit(sub(z, a)));
+    };
+    s.add('Sleeve: underarm line', 'Slightly inward-curved line from the wrist to the biceps; hem 1″', 1, 741);
+    const sleeve = piece('sleeve', 'Sleeve', { count: 2, onFold: false, text: 'Cut 2 (a pair)' }, [
+      { name: 'Sleeve cap (back)', pts: [...cap.cb].reverse(), sa: KSA },
+      { name: 'Sleeve cap (front)', pts: cap.cf, sa: KSA },
+      { name: 'Underarm seam', pts: inward(Ep, Fw, -1), sa: KSA },
+      { name: 'Sleeve hem', pts: [Fw, Bw], sa: 1 },
+      { name: 'Underarm seam', pts: inward(Bw, Dp, 1), sa: KSA },
+    ], {
+      marks: [{ type: 'grain', pts: [v(0, capH + 1), v(0, len - 1)] }, { type: 'guide', pts: [Dp, Ep], label: 'BICEPS LINE' }],
+      notches: [v(0, 0)], points: { A: v(0, 0), C: v(0, capH), B: v(0, len), D: Dp, E: Ep, F: Fw },
+      dims: [{ a: Dp, b: Ep, text: fmt(bic), side: 1 }, { a: Bw, b: Fw, text: fmt(2 * hand), side: -1 }],
+    });
+    if (Math.abs(capEase - 1 / 2) > 1 / 8) warnings.push(`Sleeve cap ease is ${fmt(capEase)}; walk the sleeve into the armhole and adjust the biceps before cutting.`);
+    warnings.push('Rib knit: lay every piece with the ribs running straight down the grainline, and test the stretch of the knit on the customer before cutting. Cut the collar so the ribs run across it (the stretch goes round the neck).');
+
+    back.steps = s.steps;
+    const pieces = [back, front, sleeve, collar, placket];
+    const measured = {
+      lengthBack: b.fullLengthB + yHem, chest: 4 * (Bk.Gx - inSide), hem: 4 * (Bk.Gx - inSide),
+      shoulder: 2 * Bk.P.N.x, armhole: armTotal, sleeve: len, biceps: bic, sleeveEnd: 2 * hand, capEase,
+      collar: 2 * Lh, collarWidth: CW, placket: plLen, zipper: plLen,
+    };
+    if (options.derivedSize) warnings.push('Size S is graded one size below the smallest size of the chart. Check its lengths against the customer.');
+    return { pieces, warnings, measured, opt: {}, style: 'henley' };
+  }
+
+  // ------------------------------------------------------------ bomber jacket
+  function bomber(b, options) {
+    const s = stepper();
+    const warnings = [];
+    const F0 = foundation(b, s);
+    const { P, Bx, chestY } = F0;
+    s.add('Bomber', 'One-piece jacket foundation, front and back separated at the side seam mark X; no darts or panels', null, 582, 'choice');
+    const BAND = s.add('Rib bands', 'Waistband and cuffs 2 1/2″ finished', 2.5, null, 'choice');
+    s.add('Jacket length', 'B to B′: seat depth below the waist (the short jacket length), including the rib waistband', b.seatDepth, 582);
+    const hemY = s.add('Body length', 'The body ends the band width above the finished length; the rib waistband below it', b.seatDepth - BAND, null, 'choice');
+
+    // armholes as the jacket (Figure 3); lowered if the chart sleeve needs more armhole
+    const sh = unit(sub(P.R, P.O1));
+    let downF = perp(sh); if (downF.y < 0) downF = mul(downF, -1);
+    const shB = unit(sub(P.G, P.F1));
+    let upB = perp(shB); if (upB.y > 0) upB = mul(upB, -1);
+    const armholes = (drop) => {
+      const Xd = add(P.X, v(0, drop));
+      const dS = add(add(P.S, mul(unit(v(1, -1)), 1.25)), v(0, drop));
+      const dK = add(add(P.K, mul(unit(v(-1, -1)), 1.75)), v(0, drop));
+      return { Xd, armF: through([P.R, P.T, dS, Xd], downF, v(1, 0)), armB: through([Xd, dK, P.L, P.G], v(1, 0), upB) };
+    };
+    const chartCap = JK.sleeveCap(b.biceps, b.capHeight).len;
+    let drop = 0, AH;
+    for (;;) {
+      AH = armholes(drop);
+      if (chartCap - (G.polyLength(AH.armF) + G.polyLength(AH.armB)) <= 3 / 2 + 1e-9 || drop >= 1) break;
+      drop += 1 / 8;
+    }
+    s.add('Front armhole', '1 1/4″ diagonal from S; curve through X, the diagonal, T and R', 1.25, 582);
+    s.add('Back armhole', '1 3/4″ diagonal from K; curve through X, the diagonal, L and G', 1.75, 582);
+    if (drop) s.add('Armhole lowered', 'Underarm lowered so the chart sleeve fits with 1 3/8″–1 1/2″ cap ease', drop, 583, 'derived');
+    const { Xd, armF, armB } = AH;
+    s.add('Shoulder pads', 'The foundation allows 1/2″ at the shoulder for pads: use thin 1/2″ pads', 1 / 2, 581);
+
+    // front: zip edge to edge at center front
+    const Pn = v(0, P.P.y);
+    s.add('Front neckline', 'From the neck point O (raised 1/8″) curved to the center front neck P', dist(P.O1, Pn), 582);
+    const neckF = G.hermite(Pn, v(P.O1.x * 1.3, 0), P.O1, v(0, -(Pn.y - P.O1.y) * 0.9), 24);
+    const xS = P.X.x;
+    const front = piece('front', 'Front', { count: 2, onFold: false, text: 'Cut 2 (a pair); interface the front edge' }, [
+      { name: 'Front edge (zipper)', pts: [v(0, hemY), Pn], sa: 1 / 2 },
+      { name: 'Neckline', pts: neckF, sa: 1 / 4 },
+      { name: 'Shoulder', pts: [P.O1, P.R], sa: 1 / 2 },
+      { name: 'Armhole', pts: armF, sa: 1 / 2 },
+      { name: 'Side seam', pts: [Xd, v(xS, hemY)], sa: 1 / 2 },
+      { name: 'Hem (to band)', pts: [v(xS, hemY), v(0, hemY)], sa: RIB_SA },
+    ], {
+      points: { J: P.J, M: P.M, N: P.N, P: Pn, O: P.O1, Q: P.Q, R: P.R, S: P.S, T: P.T, X: Xd },
+      marks: [{ type: 'guide', pts: [v(0, chestY), v(xS, chestY)], label: 'CHEST LINE' }, { type: 'guide', pts: [v(0, 0), v(xS, 0)], label: 'WAIST LINE' }],
+      notches: [Xd],
+    });
+    grain(front);
+    const wN = Bx - P.F1.x;
+    const neckB = G.hermite(P.D, v(-wN * 1.2, 0), P.F1, v(0, -wN * 0.6), 24);
+    const back = piece('back', 'Back', { count: 1, onFold: true, text: 'Cut 1 on fold' }, [
+      { name: 'Center back (fold)', pts: [v(Bx, hemY), P.D], sa: 0, fold: true },
+      { name: 'Neckline', pts: neckB, sa: 1 / 4 },
+      { name: 'Shoulder', pts: [P.F1, P.G], sa: 1 / 2 },
+      { name: 'Armhole', pts: [...armB].reverse(), sa: 1 / 2 },
+      { name: 'Side seam', pts: [Xd, v(xS, hemY)], sa: 1 / 2 },
+      { name: 'Hem (to band)', pts: [v(xS, hemY), v(Bx, hemY)], sa: RIB_SA },
+    ], {
+      points: { A: P.A, B: P.B, C: P.C, D: P.D, E: P.E, F: P.F1, G: P.G, H: P.H, K: P.K, L: P.L },
+      marks: [{ type: 'guide', pts: [v(xS, chestY), v(Bx, chestY)], label: 'CHEST LINE' }, { type: 'guide', pts: [v(xS, 0), v(Bx, 0)], label: 'WAIST LINE' }],
+      notches: [Xd],
+    });
+    grain(back);
+
+    // mandarin collar on the neckline
+    const backNeckLen = G.polyLength(neckB), halfNeck = backNeckLen + G.polyLength(neckF);
+    const collar = bandCollar('collar', 'Collar (stand)', backNeckLen, halfNeck, 1.5, 0, 1 / 4,
+      'Cut 2 on fold (collar and collar facing); interface one', s);
+
+    // one-piece jacket sleeve, ending in the rib cuff
+    const armhole = G.polyLength(armF) + G.polyLength(armB);
+    const capH = s.add('Sleeve: A to C', 'Cap height', b.capHeight, 583);
+    let bic = b.biceps, cap = JK.sleeveCap(bic, capH);
+    for (let k = 0; k < 80; k++) {
+      const ease = cap.len - armhole;
+      if (ease < 11 / 8 - 1e-9) bic += 1 / 16; else if (ease > 3 / 2 + 1e-9) bic -= 1 / 16; else break;
+      cap = JK.sleeveCap(bic, capH);
+    }
+    s.add('Sleeve: C to E, C to F', 'Half the biceps (adjusted so the cap ease is 1 3/8″–1 1/2″)', bic / 2, 583, bic === b.biceps ? 'book' : 'derived');
+    s.add('Sleeve: cap', 'Back: out 3/4″, out 1/4″, in 3/8″; front: out 7/8″, out 3/8″, in 1/2″ at the quarter points', 7 / 8, 583);
+    const full = s.add('Sleeve: A to B', 'Sleeve length + 1/2″ (shoulder pad)', b.sleeveLength + 1 / 2, 583);
+    const len = s.add('Sleeve to the cuff', 'Less the 2 1/2″ cuff, plus 1″ blousing over the cuff', full - BAND + 1, null, 'choice');
+    const wrist = s.add('Sleeve end', 'Biceps less 3″, gathered into the rib cuff', bic - 3, null, 'choice');
+    const Ew = v(-wrist / 2, len), Fw = v(wrist / 2, len);
+    const sleeve = piece('sleeve', 'Sleeve', { count: 2, onFold: false, text: 'Cut 2 (a pair)' }, [
+      { name: 'Sleeve cap (back)', pts: [...cap.back].reverse(), sa: 1 / 2 },
+      { name: 'Sleeve cap (front)', pts: cap.front, sa: 1 / 2 },
+      { name: 'Underarm seam', pts: [cap.F, Fw], sa: 1 / 2 },
+      { name: 'Sleeve end (to cuff)', pts: [Fw, Ew], sa: RIB_SA },
+      { name: 'Underarm seam', pts: [Ew, cap.E], sa: 1 / 2 },
+    ], {
+      marks: [{ type: 'grain', pts: [v(0, capH + 1), v(0, len - 1)] }, { type: 'guide', pts: [cap.E, cap.F], label: 'BICEPS LINE' }],
+      notches: [cap.A, cap.L], points: { A: cap.A, C: v(0, capH), E: cap.E, F: cap.F, B: v(0, len) },
+      dims: [{ a: cap.E, b: cap.F, text: fmt(bic), side: 1 }],
+    });
+
+    // rib bands (p.739)
+    s.add('Ribbing', 'Width double the finished width + 3/4″ for 3/8″ seams; length the edge it is sewn to, stretched on the form and the excess trimmed at the fitting', 2 * BAND + 3 / 4, 739);
+    const edge = 2 * Bx;
+    const waistband = ribBand('waistband', 'Waistband (rib)', 'Cut 1 in rib knit (seams included); trim the length at the fitting', 2 * BAND + 3 / 4, edge + 2 * RIB_SA);
+    const cuffLen = s.add('Cuffs', 'Long enough to pass over the hand: hand entry (cuff measurement) + 3/4″ for the joining seam', b.cuff + 2 * RIB_SA, 696, 'choice');
+    const cuff = ribBand('cuff', 'Cuff (rib)', 'Cut 2 in rib knit (seams included)', 2 * BAND + 3 / 4, cuffLen);
+    cuff.cut.count = 2;
+
+    // lining
+    s.add('Lining', 'Front, back and sleeve copied in lining; the jacket is bagged to the zipper and the rib bands', null, null, 'choice');
+    const zip = Math.round(hemY - Pn.y + BAND);
+    s.add('Zipper', `${zip}″ separating zipper at center front, from the neck to the bottom of the waistband`, zip, null, 'choice');
+    front.steps = s.steps;
+    const pieces = [front, back, sleeve, collar,
+      copyIn(front, 'frontLining', 'Front lining', 'lining', 'Cut 2 (a pair) in lining'),
+      copyIn(back, 'backLining', 'Back lining', 'lining', 'Cut 1 on fold in lining'),
+      copyIn(sleeve, 'sleeveLining', 'Sleeve lining', 'lining', 'Cut 2 (a pair) in lining'),
+      waistband, cuff];
+    const capEase = cap.len - armhole;
+    if (capEase < 11 / 8 - 1 / 16 || capEase > 3 / 2 + 1 / 16) warnings.push(`Sleeve cap ease is ${fmt(capEase)}; walk the sleeve into the armhole before cutting.`);
+    warnings.push('Sequin or pile fabric: cut in a single layer, all pieces the same way up, and remove the sequins from the seam allowances before stitching.');
+    if (options.derivedSize) warnings.push('Size S is graded one size below the smallest size of the chart. Check its lengths against the customer.');
+    const measured = {
+      chest: 2 * Bx, hem: 2 * Bx, backLength: b.centerLengthB + hemY + BAND, shoulder: 2 * (Bx - P.G.x),
+      armhole, sleeve: full, biceps: bic, sleeveEnd: wrist, capEase, cuff: b.cuff, waistband: edge, neck: 2 * halfNeck,
+      collarCB: 1.5, zipper: zip, rib: 2 * BAND + 3 / 4, ribLength: edge + 2 * RIB_SA + 2 * cuffLen,
+    };
+    return { pieces, warnings, measured, opt: {}, style: 'bomber' };
+  }
+
+  function draft(b, options = {}) {
+    if (options.garment === 'henley') return henley(b, options);
+    if (options.garment === 'bomber') return bomber(b, options);
+    throw new Error(`Unknown garment ${options.garment}`);
+  }
+
+  function finishedMeasurements(body, result) {
+    const m = result.measured;
+    const out = [];
+    const add_ = (label, value, kind = 'derived') => { if (value != null && Number.isFinite(value)) out.push({ label, value, kind }); };
+    if (result.style === 'henley') {
+      add_('Length (back, from shoulder at neck)', m.lengthBack, 'choice');
+      add_('Chest', m.chest);
+      add_('Hem', m.hem);
+      add_('Shoulder (tip to tip)', m.shoulder);
+      add_('Armhole (full round)', m.armhole, 'curve');
+      add_('Sleeve length', m.sleeve, 'book');
+      add_('Biceps', m.biceps);
+      add_('Sleeve end (round)', m.sleeveEnd);
+      add_('Collar (neck)', m.collar, 'curve');
+      add_('Collar width (finished)', m.collarWidth, 'choice');
+      add_('Placket opening', m.placket, 'book');
+    } else {
+      add_('Back length (center back neck to band)', m.backLength, 'choice');
+      add_('Chest', m.chest, 'book');
+      add_('Body hem (before the band)', m.hem);
+      add_('Shoulder (tip to tip, with pad allowance)', m.shoulder, 'book');
+      add_('Armhole (full round)', m.armhole, 'curve');
+      add_('Sleeve length (with pad allowance)', m.sleeve, 'book');
+      add_('Biceps', m.biceps);
+      add_('Sleeve end (gathered into the cuff)', m.sleeveEnd, 'choice');
+      add_('Cuff (round)', m.cuff, 'choice');
+      add_('Collar height (mandarin)', m.collarCB, 'book');
+      add_('Neck (collar)', m.neck, 'curve');
+      add_('Zipper (center front)', m.zipper, 'choice');
+    }
+    return out;
+  }
+
+  MA.drafts = MA.drafts || {};
+  MA.drafts.menCasual = { draft, finishedMeasurements, GARMENTS };
 })(globalThis.MA = globalThis.MA || {});
 
 </script>
@@ -15870,6 +16732,10 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   const isWStrapless = (g) => !!WSP.GARMENTS[g];
   const WBI = MA.drafts.womenBias;
   const isWBias = (g) => !!WBI.GARMENTS[g];
+  const WG = MA.drafts.womenGowns;
+  const isWGown = (g) => !!WG.GARMENTS[g];
+  const MC = MA.drafts.menCasual;
+  const isMCasual = (g) => !!MC.GARMENTS[g];
 
   // ------------------------------------------------------------ children's wear
   const K = MA.armstrong.kids, KDR = MA.drafts.kidsDresses, KTO = MA.drafts.kidsTops, KBO = MA.drafts.kidsBottoms;
@@ -15960,20 +16826,22 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       defaultSize: M.defaultSize,
       // western wear first (pants, shirts, vest, jackets, suit), then the Indian garments
       garments: (() => {
-        const all = { ...MT.GARMENTS, ...MS.GARMENTS, ...MV.GARMENTS, ...MJ.GARMENTS, ...MSU.GARMENTS, ...MK.GARMENTS };
-        const order = [...Object.keys(MT.GARMENTS), ...Object.keys(MS.GARMENTS), 'vest', 'jacket', 'jacketdb', 'suit3',
+        const all = { ...MT.GARMENTS, ...MS.GARMENTS, ...MC.GARMENTS, ...MV.GARMENTS, ...MJ.GARMENTS, ...MSU.GARMENTS, ...MK.GARMENTS };
+        const order = [...Object.keys(MT.GARMENTS), ...Object.keys(MS.GARMENTS), 'henley', 'vest', 'jacket', 'jacketdb', 'bomber', 'suit3',
           'nehru', 'bandhgala', 'sherwani', 'achkan', ...Object.keys(MK.GARMENTS)];
         for (const k of Object.keys(all)) if (!order.includes(k)) order.push(k);
         return Object.fromEntries(order.map((k) => [k, all[k]]));
       })(),
       instructions: (garment, f) => (isMIndian(garment) ? MA.instructions.menIndian.get(garment, f || {})
         : isSuit(garment) ? MA.instructions.menSuit.get(f || {})
+        : isMCasual(garment) ? MA.instructions.menCasual[garment]
         : isJacket(garment) ? MA.instructions.menJacket[garment] : isVest(garment) ? MA.instructions.menVest[garment]
         : isShirt(garment) ? MA.instructions.menShirt[garment] : MA.instructions.menPants[garment]),
       hemHint: 'Trousers, pajamas and churidars: hem allowance (1″ standard). Shirts use a 1/2″ narrow hem, kurtas 1″. The vest and Nehru jacket are lined to the edge.',
       bodyForSize: (s) => M.bodyForSize(s),
       draft(body, f) {
         const derivedSize = f.mode === 'size' && M.isDerivedSize(f.size);
+        if (isMCasual(f.garment)) return MC.draft(body, { garment: f.garment, derivedSize });
         if (isJacket(f.garment)) return MJ.draft(body, { garment: f.garment, jacketLength: f.jacketLength, sherwaniLength: f.sherwaniLength, derivedSize });
         if (isVest(f.garment)) return MV.draft(body, { garment: f.garment, vestBack: f.vestBack, derivedSize });
         if (isShirt(f.garment)) return MS.draft(body, { garment: f.garment, sleeve: f.shirtSleeve, backPleat: f.backPleat, derivedSize });
@@ -16000,6 +16868,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       },
       finished: (body, result, garment) => (isMIndian(garment) ? MK.finishedMeasurements(body, result)
         : isSuit(garment) ? MSU.finishedMeasurements(body, result)
+        : isMCasual(garment) ? MC.finishedMeasurements(body, result)
         : isJacket(garment) ? MJ.finishedMeasurements(body, result)
         : isVest(garment) ? MV.finishedMeasurements(body, result)
         : isShirt(garment) ? MS.finishedMeasurements(body, result) : MT.finishedMeasurements(body, result)),
@@ -16014,12 +16883,13 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
         note: `bust ${fmt(s.bust)} · waist ${fmt(s.waist)} · hip ${fmt(s.hip)} · shoulder ${fmt(s.shoulder)}`,
       })),
       defaultSize: 'M',
-      garments: { ...WD.GARMENTS, ...WDR.GARMENTS, ...WBI.GARMENTS, ...WSP.GARMENTS, ...WSH.GARMENTS, ...WJ.GARMENTS, ...WI.GARMENTS, ...WS.GARMENTS, ...WP.GARMENTS },
+      garments: { ...WD.GARMENTS, ...WDR.GARMENTS, ...WBI.GARMENTS, ...WG.GARMENTS, ...WSP.GARMENTS, ...WSH.GARMENTS, ...WJ.GARMENTS, ...WI.GARMENTS, ...WS.GARMENTS, ...WP.GARMENTS },
       instructions: (garment, f) => (isWPant(garment) ? MA.instructions.womenPants[garment]
         : isWJacket(garment) ? MA.instructions.womenJackets.get(garment, f)
         : isWDress(garment) ? MA.instructions.womenDresses.get(garment, f)
         : isWStrapless(garment) ? MA.instructions.womenStrapless.get(garment, f)
         : isWBias(garment) ? MA.instructions.womenBias.get(garment, f)
+        : isWGown(garment) ? MA.instructions.womenGowns.get(garment, f)
         : isWIndian(garment) ? MA.instructions.womenIndian.get(garment, f)
         : isWShirt(garment) ? MA.instructions.womenShirts.get(garment, f && f.collar, f && f.wSleeve)
         : isWSkirt(garment) ? (typeof MA.instructions.womenSkirts[garment] === 'function' ? MA.instructions.womenSkirts[garment](f) : MA.instructions.womenSkirts[garment])
@@ -16079,6 +16949,15 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
           if (f.mode === 'size') r.warnings.push('Only bust, waist, hip and shoulder come from the size chart. The lengths, bust depth and span, neck and sleeve are graded for this bust size; check them against the customer.');
           return r;
         }
+        if (isWGown(f.garment)) {
+          const r = WG.draft(body, {
+            garment: f.garment, cupId: f.mode === 'custom' ? f.cupId : 'B',
+            sa: { side: f.saSide, center: f.saCenter }, hem: f.hem,
+            skirt: f.gwSkirt, front: f.spFront, support: f.spSupport,
+          });
+          if (f.mode === 'size') r.warnings.push('Only bust, waist, hip and shoulder come from the size chart. The lengths, bust depth, span and radius are graded for this bust size; check them against the customer.');
+          return r;
+        }
         if (isWIndian(f.garment)) {
           const blouse = f.garment === 'sareeblouse';
           const r = WI.draft(body, {
@@ -16120,6 +16999,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
         : isWDress(garment) ? WDR.finishedMeasurements(body, result)
         : isWStrapless(garment) ? WSP.finishedMeasurements(body, result)
         : isWBias(garment) ? WBI.finishedMeasurements(body, result)
+        : isWGown(garment) ? WG.finishedMeasurements(body, result)
         : isWSkirt(garment) ? WS.finishedMeasurements(body, result) : WD.finishedMeasurements(body, result, garment)),
       summary: (f) => (f.mode === 'size' ? `Women · Size ${f.size}`
         : `Women · Customer's measurements (from size ${f.size}) · ${W.cupOptions.find((c) => c.id === f.cupId).label}`),
@@ -16523,6 +17403,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
         spFront: $('sp-front').value,
         spClosure: $('sp-closure').value,
         spSupport: $('sp-support').value,
+        gwSkirt: $('gw-skirt').value,
         lhLength: $('lh-length').value,
         lhPanels: Number($('lh-panels').value),
         lhSweep: Number($('lh-sweep').value),

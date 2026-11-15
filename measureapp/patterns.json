@@ -7,9 +7,11 @@
       "jean": "Jeans",
       "shirt": "Shirt (dress shirt)",
       "casual": "Casual shirt",
+      "henley": "Knit henley (zip placket, knit collar)",
       "vest": "Vest (waistcoat)",
       "jacket": "Jacket (single-breasted)",
       "jacketdb": "Jacket (double-breasted)",
+      "bomber": "Bomber jacket (rib bands, zip front)",
       "suit3": "Three-piece suit (jacket, vest, trouser)",
       "nehru": "Nehru jacket (bundi)",
       "bandhgala": "Bandhgala / Jodhpuri jacket",
@@ -33,6 +35,8 @@
       "slipdress": "Slip dress (bias-cut skirt)",
       "twistbodice": "Twist bodice dress (bias-cut)",
       "biasdress": "All-in-one bias dress",
+      "haltergown": "Halter gown (V-neck halter, gored skirt)",
+      "straplessgown": "Strapless gown (gored skirt)",
       "strapless": "Strapless princess bodice",
       "bustier": "Bustier (strapless)",
       "corselet": "Corselet",
@@ -356,7 +360,8 @@
     },
     "sp-front": {
       "for": [
-        "strapless"
+        "strapless",
+        "straplessgown"
       ],
       "values": [
         "seamed",
@@ -378,7 +383,8 @@
         "strapless",
         "bustier",
         "corselet",
-        "waspie"
+        "waspie",
+        "straplessgown"
       ],
       "values": [
         "light",
@@ -466,6 +472,16 @@
       "values": [
         "legmutton",
         "none"
+      ]
+    },
+    "gw-skirt": {
+      "for": [
+        "haltergown",
+        "straplessgown"
+      ],
+      "values": [
+        "trumpet",
+        "column"
       ]
     },
     "wj-length": {
@@ -694,6 +710,8 @@
         "bustier",
         "corselet",
         "waspie",
+        "haltergown",
+        "straplessgown",
         "kshift",
         "kprincess",
         "kempire",
@@ -733,7 +751,9 @@
         "princess",
         "empire",
         "strapless",
-        "bustier"
+        "bustier",
+        "haltergown",
+        "straplessgown"
       ],
       "values": [
         "0.5",

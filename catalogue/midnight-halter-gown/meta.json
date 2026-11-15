@@ -9,5 +9,6 @@
   "bestseller": false,
   "order": 10,
   "colors": [],
-  "defaultColor": ""
-}   
+  "defaultColor": "",
+  "pattern": { "garment": "haltergown", "options": { "gw-skirt": "trumpet" } }
+}

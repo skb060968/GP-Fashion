@@ -9,5 +9,6 @@
   "bestseller": false,
   "order": 10,
   "colors": [],
-  "defaultColor": ""
-}   
+  "defaultColor": "",
+  "pattern": { "garment": "straplessgown", "options": { "gw-skirt": "column", "sp-front": "bridged" } }
+}

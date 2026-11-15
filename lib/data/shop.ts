@@ -374,7 +374,12 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
-    "pattern": null,
+    "pattern": {
+      "app": "men",
+      "garment": "henley",
+      "name": "Knit henley (zip placket, knit collar)",
+      "options": {}
+    },
     "images": [
       "/images/shop/items/rib-knit-henley/rib-knit-henley-cover.webp",
       "/images/shop/items/rib-knit-henley/rib-knit-henley-1.webp",
@@ -404,7 +409,12 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
-    "pattern": null,
+    "pattern": {
+      "app": "men",
+      "garment": "bomber",
+      "name": "Bomber jacket (rib bands, zip front)",
+      "options": {}
+    },
     "images": [
       "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-cover.webp",
       "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-1.webp",
@@ -432,7 +442,15 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
-    "pattern": null,
+    "pattern": {
+      "app": "women",
+      "garment": "straplessgown",
+      "name": "Strapless gown (gored skirt)",
+      "options": {
+        "gw-skirt": "column",
+        "sp-front": "bridged"
+      }
+    },
     "images": [
       "/images/shop/items/coastline-dress/coastline-dress-cover.webp",
       "/images/shop/items/coastline-dress/coastline-dress-1.webp",
@@ -461,7 +479,14 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
-    "pattern": null,
+    "pattern": {
+      "app": "women",
+      "garment": "haltergown",
+      "name": "Halter gown (V-neck halter, gored skirt)",
+      "options": {
+        "gw-skirt": "trumpet"
+      }
+    },
     "images": [
       "/images/shop/items/midnight-halter-gown/midnight-halter-gown-cover.webp",
       "/images/shop/items/midnight-halter-gown/midnight-halter-gown-1.webp",
