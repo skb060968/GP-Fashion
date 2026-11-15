@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return {}
 
   const title = `${product.name} | Piyush Bholla`
-  const description = product.description || `${product.name} by Piyush Bholla. ₹${(product.price / 100).toLocaleString("en-IN")}.`
+  const description = product.description.split(/\n+/).map((l) => l.trim()).filter(Boolean).join(" · ") || `${product.name} by Piyush Bholla. ₹${(product.price / 100).toLocaleString("en-IN")}.`
 
   return {
     title,

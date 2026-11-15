@@ -254,7 +254,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 <p className="mt-3 font-jost text-xl tabular-nums">{formatRupees(product.price)}</p>
                 <p className="mt-1 font-jost text-xs text-black/50">Inclusive of all taxes. Complimentary shipping.</p>
 
-                {product.description && <p className="mt-6 font-jost text-base leading-relaxed text-black/75">{product.description}</p>}
+                {product.description && <p className="mt-6 whitespace-pre-line font-jost text-base leading-relaxed text-black/75">{product.description}</p>}
 
                 {collection && (
                   <p className="mt-4 font-jost text-sm text-black/60">
