@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { ArrowLeft, Copy, Download, ExternalLink, Mail, MessageCircle, Phone } from "lucide-react"
+import { ArrowLeft, Copy, Download, ExternalLink, Mail, MessageCircle, Phone, Ruler } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels"
 import { allowedTransitions, type Transition } from "@/lib/orders/transitions"
@@ -15,6 +15,8 @@ import StatusChangeDialog from "@/components/admin/StatusChangeDialog"
 import { adminFetch } from "@/lib/admin/fetch"
 import MeasurementsPanel from "@/components/admin/MeasurementsPanel"
 import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
+import { measureAppPayload } from "@/lib/measurements/measureApp"
+import { categoryOf } from "@/lib/data/categories"
 
 type Order = {
   orderCode: string
@@ -47,6 +49,7 @@ type Order = {
     price: number
     quantity: number
     coverThumbnail: string
+    pattern: unknown
     measurements: unknown
     measurementsConfirmedAt: string | null
     measurementsConfirmNote: string | null
@@ -251,6 +254,16 @@ export default function AdminOrderDetailClient() {
                     </div>
                     <p className="font-jost text-sm font-semibold tabular-nums">{formatRupees(it.price * it.quantity)}</p>
                   </div>
+                  {!isSnapshot(it.measurements) && measureAppPayload(order.orderCode, it, categoryOf(it.slug)) && (
+                    <div className="mt-2 pl-16">
+                      <Link
+                        href={`/admin/measure?order=${encodeURIComponent(order.orderCode)}&item=${encodeURIComponent(it.id)}`}
+                        className="inline-flex items-center gap-1.5 font-jost text-xs text-black/60 underline underline-offset-4 hover:text-black"
+                      >
+                        <Ruler className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden /> Open in Measurements (size {it.size})
+                      </Link>
+                    </div>
+                  )}
                   {isSnapshot(it.measurements) && (
                     <MeasurementsPanel<Order>
                       orderCode={order.orderCode}

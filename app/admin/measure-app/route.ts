@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { NextResponse, type NextRequest } from "next/server"
 import { isAdminRequest } from "@/lib/security/adminAuth"
+import { products } from "@/lib/data/shop"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -29,5 +30,13 @@ export async function GET(req: NextRequest) {
     return new NextResponse(SIGNED_OUT_PAGE, { status: 401, headers: HTML_HEADERS })
   }
   const html = await readFile(APP_FILE, "utf8")
-  return new NextResponse(html, { status: 200, headers: HTML_HEADERS })
+  return new NextResponse(withCatalogue(html), { status: 200, headers: HTML_HEADERS })
+}
+
+function withCatalogue(html: string) {
+  const list = products
+    .filter((p) => p.pattern)
+    .map((p) => ({ slug: p.slug, name: p.name, app: p.pattern!.app, garment: p.pattern!.garment, options: p.pattern!.options }))
+  const json = JSON.stringify(list).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029")
+  return html.replace("</head>", `<script>window.MA_CATALOGUE = ${json}</script>\n</head>`)
 }

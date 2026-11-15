@@ -170,6 +170,7 @@ model OrderItem {
   quantity       Int     @default(1)
   coverThumbnail String
 
+  pattern                 Json?
   measurements            Json?
   measurementsConfirmedAt DateTime?
   measurementsConfirmNote String?

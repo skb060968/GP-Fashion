@@ -69,6 +69,14 @@ export interface Product {
   coverThumbnail: string
   colors: ProductColor[]
   defaultColor: string | null
+  pattern: ProductPattern | null
+}
+
+export interface ProductPattern {
+  app: "men" | "women" | "girls" | "boys"
+  garment: string
+  name: string
+  options: Record<string, string>
 }
 
 export const classifications: Classification[] = [
@@ -168,6 +176,14 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": {
+      "app": "men",
+      "garment": "shirt",
+      "name": "Shirt (dress shirt)",
+      "options": {
+        "shirt-sleeve": "full"
+      }
+    },
     "images": [
       "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-cover.webp",
       "/images/shop/items/born-after-dark-shirt/black/born-after-dark-shirt-black-1.webp",
@@ -248,6 +264,14 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": {
+      "app": "men",
+      "garment": "jacket",
+      "name": "Jacket (single-breasted)",
+      "options": {
+        "jacket-length": "classic"
+      }
+    },
     "images": [
       "/images/shop/items/coastline-jacket/coastline-jacket-cover.webp",
       "/images/shop/items/coastline-jacket/coastline-jacket-1.webp",
@@ -277,6 +301,14 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": {
+      "app": "men",
+      "garment": "casual",
+      "name": "Casual shirt",
+      "options": {
+        "shirt-sleeve": "full"
+      }
+    },
     "images": [
       "/images/shop/items/dark-romance-shirt/dark-romance-shirt-cover.webp",
       "/images/shop/items/dark-romance-shirt/dark-romance-shirt-1.webp",
@@ -305,6 +337,14 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": {
+      "app": "men",
+      "garment": "shirt",
+      "name": "Shirt (dress shirt)",
+      "options": {
+        "shirt-sleeve": "full"
+      }
+    },
     "images": [
       "/images/shop/items/golden-haze-shirt/golden-haze-shirt-cover.webp",
       "/images/shop/items/golden-haze-shirt/golden-haze-shirt-1.webp",
@@ -334,6 +374,7 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": null,
     "images": [
       "/images/shop/items/rib-knit-henley/rib-knit-henley-cover.webp",
       "/images/shop/items/rib-knit-henley/rib-knit-henley-1.webp",
@@ -363,6 +404,7 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": null,
     "images": [
       "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-cover.webp",
       "/images/shop/items/thousand-stars-jacket/thousand-stars-jacket-1.webp",
@@ -390,6 +432,7 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": null,
     "images": [
       "/images/shop/items/coastline-dress/coastline-dress-cover.webp",
       "/images/shop/items/coastline-dress/coastline-dress-1.webp",
@@ -418,6 +461,7 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": null,
     "images": [
       "/images/shop/items/midnight-halter-gown/midnight-halter-gown-cover.webp",
       "/images/shop/items/midnight-halter-gown/midnight-halter-gown-1.webp",
@@ -445,6 +489,16 @@ export const products: Product[] = [
     ],
     "bestseller": false,
     "order": 10,
+    "pattern": {
+      "app": "women",
+      "garment": "sheath",
+      "name": "Sheath dress (fitted)",
+      "options": {
+        "d-length": "ankle",
+        "d-neck": "round",
+        "d-sleeve": "none"
+      }
+    },
     "images": [
       "/images/shop/items/pink-petal-gown/pink-petal-gown-cover.webp",
       "/images/shop/items/pink-petal-gown/pink-petal-gown-1.webp",

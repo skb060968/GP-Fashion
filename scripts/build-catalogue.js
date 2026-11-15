@@ -28,6 +28,8 @@ const SIZE_OPTIONS_BY_CATEGORY = {
   accessories: ["ONE SIZE"],
 }
 const CATEGORIES = Object.keys(SIZE_OPTIONS_BY_CATEGORY)
+const APP_CATEGORY = { menswear: "men", womenswear: "women" }
+const PATTERNS_FILE = path.join(ROOT, "measureapp/patterns.json")
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
@@ -202,6 +204,8 @@ function readMeta(slug, dir, taxonomy, collections) {
   const releaseDate = meta.releaseDate || (collection ? collections.get(collection).releaseDate : null)
   if (!releaseDate) fail(`${slug}: needs a "releaseDate" because it is not part of a collection`)
 
+  const pattern = readPattern(slug, meta)
+
   return {
     name: meta.name.trim(),
     category: meta.category,
@@ -215,7 +219,48 @@ function readMeta(slug, dir, taxonomy, collections) {
     order: meta.order ?? 1000,
     colors,
     defaultColor,
+    pattern,
   }
+}
+
+let patternList = null
+function measureAppPatterns() {
+  if (!patternList) {
+    if (!fs.existsSync(PATTERNS_FILE)) fail(`${path.relative(ROOT, PATTERNS_FILE)} is missing: run node scripts/build-measureapp.js first`)
+    patternList = readJson(PATTERNS_FILE, "measureapp patterns")
+  }
+  return patternList
+}
+
+function readPattern(slug, meta) {
+  if (meta.pattern === undefined || meta.pattern === null) return null
+  const p = meta.pattern
+  const label = `${slug}: "pattern"`
+  if (typeof p !== "object" || Array.isArray(p)) fail(`${label} must be an object like { "garment": "shirt" }`)
+  if (meta.category === "accessories") fail(`${label} is not used for accessories`)
+  let app = APP_CATEGORY[meta.category]
+  if (meta.category === "kidswear") {
+    if (!["girls", "boys"].includes(p.for)) fail(`${label} needs "for": "girls" or "boys" for kidswear`)
+    app = p.for
+  } else if (p.for !== undefined) {
+    fail(`${label}: "for" is only used for kidswear`)
+  }
+  const { categories, options: allOptions } = measureAppPatterns()
+  const garments = categories[app] || {}
+  if (typeof p.garment !== "string" || !garments[p.garment])
+    fail(`${label}: garment "${p.garment}" is not a ${app} pattern in MeasureApp (use one of ${Object.keys(garments).join(", ")})`)
+  if (p.options !== undefined && (typeof p.options !== "object" || p.options === null || Array.isArray(p.options)))
+    fail(`${label}: "options" must be an object like { "shirt-sleeve": "full" }`)
+  const options = {}
+  for (const [key, value] of Object.entries(p.options || {})) {
+    const o = allOptions[key]
+    if (!o) fail(`${label}: unknown option "${key}"`)
+    if (o.for && !o.for.includes(p.garment)) fail(`${label}: option "${key}" does not apply to ${p.garment}`)
+    if (typeof value !== "string" || !o.values.includes(value)) fail(`${label}: option "${key}" must be one of ${o.values.join(", ")}`)
+    options[key] = value
+  }
+  for (const key of Object.keys(p)) if (!["garment", "options", "for"].includes(key)) fail(`${label}: unknown field "${key}"`)
+  return { app, garment: p.garment, name: garments[p.garment], options }
 }
 
 async function encodeVariant(srcDir, label, itemDir, thumbDir, prefix) {
@@ -257,6 +302,7 @@ async function buildProduct(slug, taxonomy, collections) {
     sizes: meta.sizes,
     bestseller: meta.bestseller,
     order: meta.order,
+    pattern: meta.pattern,
   }
 
   if (meta.colors.length > 0) {
@@ -363,6 +409,14 @@ export interface Product {
   coverThumbnail: string
   colors: ProductColor[]
   defaultColor: string | null
+  pattern: ProductPattern | null
+}
+
+export interface ProductPattern {
+  app: "men" | "women" | "girls" | "boys"
+  garment: string
+  name: string
+  options: Record<string, string>
 }
 
 export const classifications: Classification[] = ${JSON.stringify(taxonomy, null, 2)}

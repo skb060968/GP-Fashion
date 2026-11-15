@@ -16337,6 +16337,8 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   const mode = () => ($('use-custom').checked ? 'custom' : 'size');
   const cat = () => CATS[catEl.value];
   const checkNote = () => h('span', { class: 'check-note' }, 'measure on draft');
+  // Products from the website catalogue that have a pattern here (added by the website when it serves the app).
+  const CATALOGUE = Array.isArray(globalThis.MA_CATALOGUE) ? globalThis.MA_CATALOGUE.filter((p) => p && p.slug && p.app && p.garment) : [];
 
   // ------------------------------------------------------------ home form
   cupEl.replaceChildren(...MA.armstrong.women.cupOptions.map((c) => h('option', { value: c.id }, c.label)));
@@ -16349,13 +16351,53 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       o.selected = s.id === (c.sizes.some((x) => x.id === prev) ? prev : c.defaultSize);
       return o;
     }));
-    garmentEl.replaceChildren(...Object.entries(c.garments).map(([id, g]) => h('option', { value: id }, g.name)));
+    const all = Object.entries(c.garments).map(([id, g]) => h('option', { value: id }, g.name));
+    const products = CATALOGUE.filter((p) => p.app === catEl.value && c.garments[p.garment]);
+    garmentEl.replaceChildren(...(products.length ? [
+      h('optgroup', { label: 'Collection' }, products.map((p) => h('option', { value: p.garment, 'data-product': p.slug }, p.name))),
+      h('optgroup', { label: 'All patterns' }, all),
+    ] : all));
     $('hem-hint').textContent = c.hemHint;
     document.querySelectorAll('.women-only').forEach((n) => { n.hidden = catEl.value !== 'women'; });
     document.querySelectorAll('.men-only').forEach((n) => { n.hidden = catEl.value !== 'men'; });
     updateGarmentOptions();
+    applyProductOptions();
     updateSizeNote();
     if (mode() === 'custom') fillCustomFields(true);
+  }
+
+  /** The website product chosen in the Dress list (its pattern and style options), if any. */
+  function selectedProduct() {
+    const o = garmentEl.selectedOptions[0];
+    const slug = o && o.dataset.product;
+    return slug ? CATALOGUE.find((p) => p.slug === slug) || null : null;
+  }
+
+  /** Sets style options (More options) by select id; unknown ids or values are skipped. */
+  function applyOptions(options) {
+    for (const [id, v] of Object.entries(options || {})) {
+      const el = $(id);
+      if (!el || el.tagName !== 'SELECT' || ![...el.options].some((o) => o.value === v) || el.value === v) continue;
+      el.value = v;
+      el.dispatchEvent(new Event('change'));
+    }
+  }
+
+  /** Sets the style options a website product is made with. */
+  function applyProductOptions() {
+    const p = selectedProduct();
+    if (p) applyOptions(p.options);
+  }
+
+  /** Picks a website product in the Dress list, or else the plain pattern. */
+  function selectGarment(slug, garment) {
+    const opts = [...garmentEl.options];
+    const o = (slug && opts.find((x) => x.dataset.product === slug)) || (garment && opts.find((x) => x.value === garment && !x.dataset.product));
+    if (!o) return false;
+    o.selected = true;
+    updateGarmentOptions();
+    applyProductOptions();
+    return true;
   }
 
   /** Shows options that apply to the chosen dress only (data-for="id,id"). */
@@ -16798,7 +16840,8 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   function summaryCard() {
     const c = CATS[ctx.f.category];
     return h('section', { class: 'card summary' },
-      h('h2', null, c.garments[ctx.f.garment].name),
+      h('h2', null, ctx.product ? ctx.product.name : c.garments[ctx.f.garment].name),
+      ctx.product ? h('p', null, `Pattern: ${c.garments[ctx.f.garment].name}`) : null,
       h('p', null, c.summary(ctx.f)),
       ctx.customer ? h('p', null, `Customer: ${ctx.customer}`) : null,
       h('p', { class: 'hint' }, new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })),
@@ -16901,7 +16944,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       const input = readInputs();
       const c = CATS[input.f.category];
       const result = c.draft(input.body, input.f);
-      ctx = { ...input, result, keys: requiredKeys(c, input.f.garment) };
+      ctx = { ...input, result, keys: requiredKeys(c, input.f.garment), product: selectedProduct() };
     } catch (err) {
       showError(err.message);
       return;
@@ -16917,28 +16960,50 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     prefillNote.replaceChildren();
   }
 
+  /**
+   * Fills the form from a website order item: category, the ordered dress (with its style options)
+   * and either the customer's own measurements (made to measure) or the ordered standard size.
+   */
   function loadCustomer(p) {
     if (!p || !CATS[p.category]) throw new Error('Unknown category.');
-    const r = MA.customer.fromCustomer(p.category, p.values);
+    const c = CATS[p.category];
+    const hasValues = !!p.values && Object.keys(p.values).length > 0;
+    const r = hasValues ? MA.customer.fromCustomer(p.category, p.values) : null;
+    const size = r ? r.size : c.sizes.some((s) => s.id === p.size) ? p.size : null;
     catEl.value = p.category;
     prefill = null;
+    $('use-custom').checked = false;
     fillCategory();
-    sizeEl.value = r.size;
+    const wanted = !!(p.product || p.garment);
+    const picked = wanted && selectGarment(p.product, p.garment);
+    // the order's own copy of the style options wins over the catalogue's current ones
+    if (picked && garmentEl.value === p.garment) applyOptions(p.options);
+    if (size) sizeEl.value = size;
     updateSizeNote();
-    prefill = { category: p.category, body: r.body };
-    $('use-custom').checked = true;
-    customSection.hidden = false;
-    fillCustomFields(true);
+    if (r) {
+      prefill = { category: p.category, body: r.body };
+      $('use-custom').checked = true;
+      customSection.hidden = false;
+      fillCustomFields(true);
+    } else {
+      updateMode();
+    }
     if (typeof p.customer === 'string') $('customer').value = p.customer.slice(0, 60);
-    const c = cat();
-    const given = r.given.map((k) => c.chart.measurements[k]).filter(Boolean).map((m) => m.label);
+    const product = selectedProduct();
+    const dress = !wanted ? null
+      : picked && product ? `Dress: ${product.name} (${c.garments[product.garment].name}), style options set below.`
+      : picked ? `Dress: ${c.garments[garmentEl.value].name}.`
+      : `${p.productName || 'The ordered dress'} has no pattern here yet: choose the nearest dress.`;
+    const given = r ? r.given.map((k) => c.chart.measurements[k]).filter(Boolean).map((m) => m.label) : [];
     prefillNote.replaceChildren(
-      h('strong', null, `Loaded from the website${p.source ? `: ${p.source}` : ''}.`), ' ',
-      `The customer gave: ${given.join(', ')}. Every other measurement is graded from the book's chart for these measurements (starting size ${r.size}).`,
-      r.unused.length ? h('span', { class: 'block' }, `Not used by the drafts: ${r.unused.map((u) => `${u.label} ${fmt(u.value)}`).join(' · ')}.`) : null,
+      h('strong', null, `Loaded from the website${p.source ? `: ${p.source}` : ''}.`),
+      dress ? h('span', { class: picked ? 'block' : 'block warn' }, dress) : null,
+      r ? h('span', { class: 'block' }, `The customer gave: ${given.join(', ')}. Every other measurement is graded from the book's chart for these measurements (starting size ${r.size}).`)
+        : h('span', { class: size ? 'block' : 'block warn' }, size ? `Standard size ${size}.` : 'Choose the size.'),
+      r && r.unused.length ? h('span', { class: 'block' }, `Not used by the drafts: ${r.unused.map((u) => `${u.label} ${fmt(u.value)}`).join(' · ')}.`) : null,
       p.notes ? h('span', { class: 'block' }, `Fit notes: ${p.notes}`) : null,
-      p.category === 'women' ? h('span', { class: 'block' }, 'Bust cup: B (standard). Change it below if needed.') : null,
-      ...r.warnings.map((w) => h('span', { class: 'block warn' }, w)),
+      r && p.category === 'women' ? h('span', { class: 'block' }, 'Bust cup: B (standard). Change it below if needed.') : null,
+      ...(r ? r.warnings : []).map((w) => h('span', { class: 'block warn' }, w)),
     );
     prefillNote.hidden = false;
     show('home');
@@ -16961,7 +17026,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   $('use-custom').addEventListener('change', updateMode);
   catEl.addEventListener('change', () => { clearPrefill(); fillCategory(); });
   sizeEl.addEventListener('change', () => { clearPrefill(); updateSizeNote(); if (mode() === 'custom') fillCustomFields(true); });
-  garmentEl.addEventListener('change', () => { updateGarmentOptions(); if (mode() === 'custom') fillCustomFields(false); });
+  garmentEl.addEventListener('change', () => { updateGarmentOptions(); applyProductOptions(); if (mode() === 'custom') fillCustomFields(false); });
   $('trouser-length').addEventListener('change', () => {
     $('trouser-length-custom').hidden = $('trouser-length').value !== 'custom';
     if (mode() === 'custom') fillCustomFields(false);

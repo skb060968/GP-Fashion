@@ -1,0 +1,745 @@
+{
+  "categories": {
+    "men": {
+      "trouser": "Trouser",
+      "pleated": "Pleated trouser (two pleats)",
+      "slack": "Slacks (closer fit, flat front)",
+      "jean": "Jeans",
+      "shirt": "Shirt (dress shirt)",
+      "casual": "Casual shirt",
+      "vest": "Vest (waistcoat)",
+      "jacket": "Jacket (single-breasted)",
+      "jacketdb": "Jacket (double-breasted)",
+      "suit3": "Three-piece suit (jacket, vest, trouser)",
+      "nehru": "Nehru jacket (bundi)",
+      "bandhgala": "Bandhgala / Jodhpuri jacket",
+      "sherwani": "Sherwani",
+      "achkan": "Achkan (flared below the waist)",
+      "kurta": "Kurta (mandarin collar)",
+      "pathani": "Pathani kurta",
+      "pajama": "Kurta pajama (drawstring)",
+      "aligarhi": "Aligarhi pajama",
+      "churidar": "Churidar",
+      "salwar": "Pathani salwar"
+    },
+    "women": {
+      "dress": "Basic dress (bodice + skirt + sleeve)",
+      "bodice": "Bodice with sleeve",
+      "skirt": "Skirt",
+      "sheath": "Sheath dress (fitted)",
+      "shift": "Shift dress (semi-fitted)",
+      "princess": "Princess-line dress",
+      "empire": "Empire-line dress",
+      "slipdress": "Slip dress (bias-cut skirt)",
+      "twistbodice": "Twist bodice dress (bias-cut)",
+      "biasdress": "All-in-one bias dress",
+      "strapless": "Strapless princess bodice",
+      "bustier": "Bustier (strapless)",
+      "corselet": "Corselet",
+      "waspie": "Waspie (waist cincher)",
+      "blouse": "Blouse",
+      "wshirt": "Shirt (with yoke)",
+      "wjacket": "Jacket (notch collar, lined)",
+      "wcoat": "Coat (notch collar, lined)",
+      "sareeblouse": "Saree blouse",
+      "kurti": "Kurti",
+      "aline": "A-line skirt",
+      "flared": "Flared skirt",
+      "gored6": "6-gore flared skirt",
+      "dirndl": "Gathered (dirndl) skirt",
+      "circle": "Full circle skirt",
+      "halfcircle": "Half circle skirt",
+      "culotte": "Culottes",
+      "lehenga": "Lehenga (kalidar)",
+      "wtrouser": "Trouser",
+      "wslack": "Slacks (closer fit)",
+      "wjean": "Jeans",
+      "wpalazzo": "Palazzo (wide leg)",
+      "wpleated": "Pleated trouser (two pleats, side pockets)"
+    },
+    "girls": {
+      "kshift": "Shift dress",
+      "kprincess": "Princess dress",
+      "kempire": "Empire dress with flare",
+      "ktent": "Tent dress",
+      "kjumper": "Torso jumper",
+      "kshirt": "Shirt",
+      "koversized": "Oversized shirt",
+      "kjacket": "Jacket with notched collar",
+      "kcoat": "Navy pea coat",
+      "ktrouser": "Trouser",
+      "kjean": "Jeans",
+      "kskirt": "Basic skirt",
+      "kflared": "Flared skirt",
+      "kgathered": "Gathered skirt with shaped waist band",
+      "kyoked": "Yoked circular skirt"
+    },
+    "boys": {
+      "kshirt": "Shirt",
+      "koversized": "Oversized shirt",
+      "kjacket": "Jacket with notched collar",
+      "kcoat": "Navy pea coat",
+      "ktrouser": "Trouser",
+      "kjean": "Jeans"
+    }
+  },
+  "options": {
+    "shirt-sleeve": {
+      "for": [
+        "shirt",
+        "casual",
+        "kshirt",
+        "koversized"
+      ],
+      "values": [
+        "full",
+        "half"
+      ]
+    },
+    "back-pleat": {
+      "for": [
+        "shirt"
+      ],
+      "values": [
+        "yes",
+        "no"
+      ]
+    },
+    "kurta-length": {
+      "for": [
+        "kurta",
+        "pathani"
+      ],
+      "values": [
+        "short",
+        "thigh",
+        "knee",
+        "calf"
+      ]
+    },
+    "kurta-sleeve": {
+      "for": [
+        "kurta",
+        "pathani"
+      ],
+      "values": [
+        "full",
+        "half"
+      ]
+    },
+    "suit-jacket": {
+      "for": [
+        "suit3"
+      ],
+      "values": [
+        "sb",
+        "db"
+      ]
+    },
+    "suit-trouser": {
+      "for": [
+        "suit3"
+      ],
+      "values": [
+        "trouser",
+        "slack"
+      ]
+    },
+    "sherwani-length": {
+      "for": [
+        "sherwani",
+        "achkan"
+      ],
+      "values": [
+        "knee",
+        "below",
+        "calf"
+      ]
+    },
+    "churidar-grain": {
+      "for": [
+        "churidar"
+      ],
+      "values": [
+        "bias",
+        "straight"
+      ]
+    },
+    "jacket-length": {
+      "for": [
+        "jacket",
+        "jacketdb",
+        "suit3",
+        "bandhgala"
+      ],
+      "values": [
+        "classic",
+        "seat"
+      ]
+    },
+    "vest-back": {
+      "for": [
+        "vest",
+        "suit3"
+      ],
+      "values": [
+        "lining",
+        "self"
+      ]
+    },
+    "trouser-length": {
+      "for": [
+        "trouser",
+        "pleated",
+        "slack",
+        "jean",
+        "wtrouser",
+        "wslack",
+        "wjean",
+        "wpalazzo",
+        "wpleated",
+        "pajama",
+        "aligarhi",
+        "churidar",
+        "salwar",
+        "suit3",
+        "ktrouser",
+        "kjean"
+      ],
+      "values": [
+        "ankle",
+        "floor",
+        "custom"
+      ]
+    },
+    "jean-fit": {
+      "for": [
+        "jean",
+        "wjean"
+      ],
+      "values": [
+        "regular",
+        "relaxed"
+      ]
+    },
+    "w-collar": {
+      "for": [
+        "blouse",
+        "wshirt"
+      ],
+      "values": [
+        "default",
+        "peterpan",
+        "convertible",
+        "stand",
+        "mandarin",
+        "none"
+      ]
+    },
+    "w-sleeve": {
+      "for": [
+        "blouse",
+        "wshirt"
+      ],
+      "values": [
+        "long",
+        "short"
+      ]
+    },
+    "sb-length": {
+      "for": [
+        "sareeblouse"
+      ],
+      "values": [
+        "3",
+        "2",
+        "1",
+        "0"
+      ]
+    },
+    "sb-neck-front": {
+      "for": [
+        "sareeblouse"
+      ],
+      "values": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "sb-neck-back": {
+      "for": [
+        "sareeblouse"
+      ],
+      "values": [
+        "3",
+        "5",
+        "7",
+        "9"
+      ]
+    },
+    "sb-sleeve": {
+      "for": [
+        "sareeblouse"
+      ],
+      "values": [
+        "short",
+        "elbow",
+        "puffhem",
+        "puffcap",
+        "puffboth",
+        "capsleeve",
+        "flutter",
+        "bell",
+        "petal",
+        "lanternshort",
+        "none"
+      ]
+    },
+    "sb-lining": {
+      "for": [
+        "sareeblouse"
+      ],
+      "values": [
+        "yes",
+        "no"
+      ]
+    },
+    "k-length": {
+      "for": [
+        "kurti"
+      ],
+      "values": [
+        "thigh",
+        "knee",
+        "calf"
+      ]
+    },
+    "k-fit": {
+      "for": [
+        "kurti"
+      ],
+      "values": [
+        "semi",
+        "fitted"
+      ]
+    },
+    "k-neck": {
+      "for": [
+        "kurti"
+      ],
+      "values": [
+        "round",
+        "vneck"
+      ]
+    },
+    "k-sleeve": {
+      "for": [
+        "kurti"
+      ],
+      "values": [
+        "threequarter",
+        "full",
+        "short",
+        "bell",
+        "belllong",
+        "puffhem",
+        "flutter",
+        "capsleeve",
+        "lanternshort",
+        "lantern",
+        "bishop",
+        "legmutton",
+        "none"
+      ]
+    },
+    "sp-front": {
+      "for": [
+        "strapless"
+      ],
+      "values": [
+        "seamed",
+        "bridged"
+      ]
+    },
+    "sp-closure": {
+      "for": [
+        "corselet",
+        "waspie"
+      ],
+      "values": [
+        "lace",
+        "busk"
+      ]
+    },
+    "sp-support": {
+      "for": [
+        "strapless",
+        "bustier",
+        "corselet",
+        "waspie"
+      ],
+      "values": [
+        "light",
+        "heavy"
+      ]
+    },
+    "d-length": {
+      "for": [
+        "sheath",
+        "shift",
+        "princess",
+        "empire",
+        "slipdress",
+        "twistbodice",
+        "biasdress"
+      ],
+      "values": [
+        "knee",
+        "midi",
+        "ankle"
+      ]
+    },
+    "d-neck": {
+      "for": [
+        "sheath",
+        "shift",
+        "princess",
+        "empire"
+      ],
+      "values": [
+        "round",
+        "scoop",
+        "vneck"
+      ]
+    },
+    "d-sleeve": {
+      "for": [
+        "sheath",
+        "shift",
+        "princess",
+        "empire"
+      ],
+      "values": [
+        "short",
+        "elbow",
+        "threequarter",
+        "full",
+        "puffhem",
+        "puffcap",
+        "puffboth",
+        "capsleeve",
+        "flutter",
+        "bell",
+        "belllong",
+        "petal",
+        "lanternshort",
+        "lantern",
+        "bishop",
+        "legmutton",
+        "wedding",
+        "cowl",
+        "none"
+      ]
+    },
+    "bd-stretch": {
+      "for": [
+        "biasdress"
+      ],
+      "values": [
+        "0",
+        "0.25",
+        "0.375",
+        "0.5",
+        "0.625",
+        "0.75",
+        "1",
+        "1.25",
+        "1.5"
+      ]
+    },
+    "bd-sleeve": {
+      "for": [
+        "biasdress"
+      ],
+      "values": [
+        "legmutton",
+        "none"
+      ]
+    },
+    "wj-length": {
+      "for": [
+        "wjacket"
+      ],
+      "values": [
+        "short",
+        "hip",
+        "long"
+      ]
+    },
+    "wc-length": {
+      "for": [
+        "wcoat"
+      ],
+      "values": [
+        "short",
+        "knee",
+        "calf"
+      ]
+    },
+    "wj-collar": {
+      "for": [
+        "wjacket",
+        "wcoat"
+      ],
+      "values": [
+        "notch",
+        "lownotch",
+        "portrait",
+        "shawl"
+      ]
+    },
+    "wj-front": {
+      "for": [
+        "wjacket",
+        "wcoat"
+      ],
+      "values": [
+        "sb",
+        "db"
+      ]
+    },
+    "wj-sleeve": {
+      "for": [
+        "wjacket",
+        "wcoat"
+      ],
+      "values": [
+        "one",
+        "two"
+      ]
+    },
+    "wj-style": {
+      "for": [
+        "wjacket",
+        "wcoat"
+      ],
+      "values": [
+        "basic",
+        "wrap",
+        "threepanel"
+      ]
+    },
+    "c-length": {
+      "for": [
+        "kshift",
+        "kprincess",
+        "kempire",
+        "ktent",
+        "kjumper",
+        "kskirt",
+        "kflared",
+        "kgathered",
+        "kyoked"
+      ],
+      "values": [
+        "aboveknee",
+        "knee",
+        "midcalf",
+        "ankle"
+      ]
+    },
+    "c-sleeve": {
+      "for": [
+        "kshift",
+        "kprincess",
+        "ktent"
+      ],
+      "values": [
+        "short",
+        "full",
+        "none"
+      ]
+    },
+    "c-sleeve-empire": {
+      "for": [
+        "kempire"
+      ],
+      "values": [
+        "legmutton",
+        "short",
+        "full",
+        "none"
+      ]
+    },
+    "c-princess": {
+      "for": [
+        "kprincess"
+      ],
+      "values": [
+        "shoulder",
+        "armhole"
+      ]
+    },
+    "c-tent": {
+      "for": [
+        "ktent"
+      ],
+      "values": [
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "c-coat-length": {
+      "for": [
+        "kcoat"
+      ],
+      "values": [
+        "hip",
+        "thigh",
+        "knee"
+      ]
+    },
+    "c-waist": {
+      "for": [
+        "ktrouser",
+        "kjean",
+        "kskirt",
+        "kflared",
+        "kyoked"
+      ],
+      "values": [
+        "auto",
+        "band",
+        "elastic",
+        "partial"
+      ]
+    },
+    "lh-length": {
+      "for": [
+        "lehenga"
+      ],
+      "values": [
+        "floor",
+        "ankle"
+      ]
+    },
+    "lh-panels": {
+      "for": [
+        "lehenga"
+      ],
+      "values": [
+        "12",
+        "16",
+        "24"
+      ]
+    },
+    "lh-sweep": {
+      "for": [
+        "lehenga"
+      ],
+      "values": [
+        "120",
+        "160",
+        "200",
+        "240"
+      ]
+    },
+    "lh-lining": {
+      "for": [
+        "lehenga"
+      ],
+      "values": [
+        "yes",
+        "no"
+      ]
+    },
+    "skirt-fullness": {
+      "for": [
+        "dirndl",
+        "kjumper",
+        "kgathered"
+      ],
+      "values": [
+        "1.5",
+        "2",
+        "2.5",
+        "3"
+      ]
+    },
+    "sa-side": {
+      "for": [
+        "dress",
+        "bodice",
+        "skirt",
+        "aline",
+        "flared",
+        "gored6",
+        "dirndl",
+        "circle",
+        "halfcircle",
+        "culotte",
+        "blouse",
+        "wshirt",
+        "sareeblouse",
+        "kurti",
+        "lehenga",
+        "sheath",
+        "shift",
+        "princess",
+        "empire",
+        "strapless",
+        "bustier",
+        "corselet",
+        "waspie",
+        "kshift",
+        "kprincess",
+        "kempire",
+        "ktent",
+        "kjumper",
+        "kshirt",
+        "koversized",
+        "kjacket",
+        "kcoat",
+        "ktrouser",
+        "kjean",
+        "kskirt",
+        "kflared",
+        "kgathered",
+        "kyoked"
+      ],
+      "values": [
+        "0.5",
+        "0.75",
+        "1"
+      ]
+    },
+    "sa-center": {
+      "for": [
+        "dress",
+        "bodice",
+        "skirt",
+        "aline",
+        "flared",
+        "gored6",
+        "dirndl",
+        "circle",
+        "halfcircle",
+        "culotte",
+        "sheath",
+        "shift",
+        "princess",
+        "empire",
+        "strapless",
+        "bustier"
+      ],
+      "values": [
+        "0.5",
+        "0.75",
+        "1"
+      ]
+    }
+  }
+}

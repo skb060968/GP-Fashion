@@ -120,6 +120,18 @@ export const adminHelpTopics: HelpTopic[] = [
             ["description", "Optional", "Product-page copy"],
             ["bestseller", "Optional", "true or false; defaults to false"],
             ["order", "Optional", "Lower display priority; defaults to 1000"],
+            ["pattern", "Optional", "The Measurements pattern the piece is cut from, e.g. { \"garment\": \"shirt\", \"options\": { \"shirt-sleeve\": \"full\" } }. Kidswear also needs \"for\": \"girls\" or \"boys\"."],
+          ] },
+        ],
+      },
+      {
+        title: "Linking a product to its pattern",
+        blocks: [
+          { type: "text", text: "With a pattern set, the product appears by name at the top of the Dress list in Measurements, with its style options already chosen, and Open in Measurements on an order fills in the category, the dress and either the customer's measurements or the ordered size. Without a pattern the product still sells and can be made to measure; Measurements then opens with the category and size only." },
+          { type: "list", items: [
+            "garment is a pattern id from measureapp/patterns.json, under the product's category (men, women, girls, boys).",
+            "options are style choices from More options in Measurements, by their id, e.g. d-length: ankle, d-neck: round, d-sleeve: none. The allowed values are listed in measureapp/patterns.json.",
+            "The catalogue build checks every pattern and stops with a message if a garment or option does not exist.",
           ] },
         ],
       },

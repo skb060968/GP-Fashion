@@ -136,6 +136,7 @@ export async function POST(req: Request) {
         quantity: submitted.quantity,
         coverThumbnail,
         measurements,
+        pattern: product.pattern,
       });
     }
 
@@ -197,6 +198,7 @@ export async function POST(req: Request) {
             quantity: item.quantity ?? 1,
             coverThumbnail: item.coverThumbnail,
             ...(item.measurements ? { measurements: item.measurements as unknown as Prisma.InputJsonValue } : {}),
+            ...(item.pattern ? { pattern: item.pattern as unknown as Prisma.InputJsonValue } : {}),
           })),
         },
 

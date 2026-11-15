@@ -7,21 +7,21 @@ import { ArrowLeft, ExternalLink } from "lucide-react"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, btn } from "@/components/admin/ui"
 import { adminFetch } from "@/lib/admin/fetch"
-import { KIND_LABEL, isSnapshot, type MeasurementSnapshot } from "@/lib/measurements/fields"
+import { categoryOf } from "@/lib/data/categories"
+import { KIND_LABEL } from "@/lib/measurements/fields"
+import { measureAppPayload, type MeasureAppItem, type MeasureAppPayload } from "@/lib/measurements/measureApp"
 
 type OrderForMeasure = {
   orderCode: string
-  items: { id: string; name: string; measurements: unknown }[]
+  items: (MeasureAppItem & { id: string })[]
 }
-
-type Prefill = { orderCode: string; itemName: string; snapshot: MeasurementSnapshot }
 
 export default function MeasureClient() {
   const params = useSearchParams()
   const orderCode = params.get("order")
   const itemId = params.get("item")
   const frame = useRef<HTMLIFrameElement>(null)
-  const [prefill, setPrefill] = useState<Prefill | null>(null)
+  const [payload, setPayload] = useState<MeasureAppPayload | null>(null)
   const [frameReady, setFrameReady] = useState(false)
   const [status, setStatus] = useState<{ tone: "success" | "error"; text: string } | null>(null)
 
@@ -30,30 +30,19 @@ export default function MeasureClient() {
     adminFetch<OrderForMeasure>(`/api/admin/orders/${encodeURIComponent(orderCode)}`)
       .then((o) => {
         const item = o.items.find((i) => i.id === itemId)
-        if (!item || !isSnapshot(item.measurements)) throw new Error("That order item has no made-to-measure measurements.")
-        setPrefill({ orderCode: o.orderCode, itemName: item.name, snapshot: item.measurements })
+        if (!item) throw new Error("That item is not on this order.")
+        const p = measureAppPayload(o.orderCode, item, categoryOf(item.slug))
+        if (!p) throw new Error("This item is not something the Measurements tool drafts.")
+        setPayload(p)
       })
       .catch((e) => setStatus({ tone: "error", text: e instanceof Error ? e.message : "Could not load the order" }))
   }, [orderCode, itemId])
 
   const send = useCallback(() => {
     const win = frame.current?.contentWindow
-    if (!prefill || !win) return
-    const s = prefill.snapshot
-    win.postMessage(
-      {
-        type: "measureapp:prefill",
-        payload: {
-          category: s.kind,
-          customer: `${s.name} · order ${prefill.orderCode}`.slice(0, 60),
-          values: s.values,
-          notes: s.notes,
-          source: `${prefill.itemName}, order ${prefill.orderCode}`,
-        },
-      },
-      window.location.origin
-    )
-  }, [prefill])
+    if (!payload || !win) return
+    win.postMessage({ type: "measureapp:prefill", payload }, window.location.origin)
+  }, [payload])
 
   useEffect(() => {
     try {
@@ -65,8 +54,8 @@ export default function MeasureClient() {
   }, [])
 
   useEffect(() => {
-    if (frameReady && prefill) send()
-  }, [frameReady, prefill, send])
+    if (frameReady && payload) send()
+  }, [frameReady, payload, send])
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -75,13 +64,15 @@ export default function MeasureClient() {
       if (d?.type !== "measureapp:prefilled") return
       setStatus(
         d.ok
-          ? { tone: "success", text: `Loaded the measurements for ${prefill?.snapshot.name ?? "the customer"}. Choose the dress and press Submit.` }
-          : { tone: "error", text: d.error || "MeasureApp could not use these measurements." }
+          ? { tone: "success", text: `Loaded ${payload?.productName ?? "the order item"}. Check the dress and size, then press Submit.` }
+          : { tone: "error", text: d.error || "MeasureApp could not use these details." }
       )
     }
     window.addEventListener("message", onMessage)
     return () => window.removeEventListener("message", onMessage)
-  }, [prefill])
+  }, [payload])
+
+  const who = payload ? (payload.values ? payload.customer.split(" · ")[0] : `Size ${payload.size}`) : ""
 
   return (
     <>
@@ -94,15 +85,15 @@ export default function MeasureClient() {
       <AdminPageHeader
         title="Measurements"
         description={
-          prefill
-            ? `${prefill.itemName} · ${prefill.snapshot.name} (${KIND_LABEL[prefill.snapshot.kind]}) · order ${prefill.orderCode}`
+          payload
+            ? `${payload.productName} · ${who} (${KIND_LABEL[payload.category]}) · order ${orderCode}`
             : "Garment measurements, patterns, fabric, cutting and sewing, and costing."
         }
         actions={
           <>
-            {prefill && (
+            {payload && (
               <button type="button" onClick={send} className={btn.secondary}>
-                Load measurements again
+                Load again
               </button>
             )}
             <a href="/admin/measure-app" target="_blank" rel="noopener" className={btn.secondary}>
