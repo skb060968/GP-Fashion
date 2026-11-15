@@ -243,7 +243,7 @@ export default function PaymentPage() {
                       />
                     </div>
                     <div className="font-jost">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                         Amount to pay
                       </p>
                       <p className="mt-1 text-3xl font-semibold tabular-nums">{formatRupees(total)}</p>
@@ -340,12 +340,12 @@ export default function PaymentPage() {
                       {placing ? "Placing order…" : "Place order"}
                     </button>
                     {!confirmed ? (
-                      <p className="mt-3 text-center font-jost text-xs text-black/50">
+                      <p className="mt-3 text-center font-jost text-xs text-black/60">
                         Confirm your UPI payment above to continue.
                       </p>
                     ) : (
                       !canPlace && (
-                        <p className="mt-3 text-center font-jost text-xs text-black/50">
+                        <p className="mt-3 text-center font-jost text-xs text-black/60">
                           Accept the made-to-measure terms above to continue.
                         </p>
                       )

@@ -7,6 +7,8 @@ const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 type Props = { params: Promise<{ slug: string }> }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return getCollections().map((c) => ({ slug: c.slug }))
 }
@@ -20,6 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    alternates: { canonical: `/collections/${c.slug}` },
     openGraph: { title, description, url: `${SITE_URL}/collections/${c.slug}`, images: [{ url: `${SITE_URL}${c.coverImage}` }] },
   }
 }

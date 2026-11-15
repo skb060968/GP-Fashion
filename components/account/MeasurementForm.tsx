@@ -139,7 +139,7 @@ export default function MeasurementForm({
         error={errors[key]}
         hint={f.how}
         optional={!f.required}
-        endAdornment={<span className="pr-2 font-jost text-xs text-black/45">{unit}</span>}
+        endAdornment={<span className="pr-2 font-jost text-xs text-black/60">{unit}</span>}
       />
     )
   }
@@ -248,7 +248,7 @@ export default function MeasurementForm({
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 font-jost text-sm font-semibold">
                     <span>{GROUP_TITLE[g]}</span>
-                    <span className="text-xs font-normal text-black/50">
+                    <span className="text-xs font-normal text-black/60">
                       {filled ? `${filled} of ${groupFields.length} added` : `${groupFields.length} optional`}
                       <span aria-hidden className="ml-2 inline-block transition-transform group-open:rotate-180">⌄</span>
                     </span>

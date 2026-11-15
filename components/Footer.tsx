@@ -62,7 +62,7 @@ export default function Footer() {
           </div>
 
           <div className="text-center md:text-left">
-            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
+            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/60">
               {footer.quickLinksHeading}
             </h3>
             <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
@@ -77,7 +77,7 @@ export default function Footer() {
           </div>
 
           <div className="text-center md:text-left">
-            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
+            <h3 className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/60">
               {footer.servicesHeading}
             </h3>
             <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
@@ -92,7 +92,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center gap-4 border-t border-black/10 pt-6 font-jost text-xs tracking-wide text-black/50 sm:flex-row sm:justify-between sm:text-sm">
+        <div className="mt-14 flex flex-col items-center gap-4 border-t border-black/10 pt-6 font-jost text-xs tracking-wide text-black/60 sm:flex-row sm:justify-between sm:text-sm">
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {footer.policyLinks.map((link) => (
               <li key={link.href}>

@@ -40,7 +40,7 @@ export default function AccountShell({
                   href={t.href}
                   aria-current={active ? "page" : undefined}
                   className={`-mb-px shrink-0 border-b-2 px-3 py-3 font-jost text-xs font-semibold uppercase tracking-[0.12em] transition-colors sm:px-4 sm:text-sm sm:tracking-[0.15em] ${
-                    active ? "border-black text-black" : "border-transparent text-black/50 hover:text-black"
+                    active ? "border-black text-black" : "border-transparent text-black/60 hover:text-black"
                   }`}
                 >
                   {t.label}
@@ -54,7 +54,7 @@ export default function AccountShell({
                 router.push("/")
                 router.refresh()
               }}
-              className="-mb-px ml-auto shrink-0 border-b-2 border-transparent px-3 py-3 font-jost text-xs text-black/50 transition-colors hover:text-black sm:px-4 sm:text-sm"
+              className="-mb-px ml-auto shrink-0 border-b-2 border-transparent px-3 py-3 font-jost text-xs text-black/60 transition-colors hover:text-black sm:px-4 sm:text-sm"
             >
               Sign out
             </button>

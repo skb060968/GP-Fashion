@@ -58,7 +58,7 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
           <div className="flex items-start justify-between gap-4 border-b border-black/10 px-6 py-5 sm:px-8">
             <div>
               <h2 id="size-guide-title" className="font-cinzel text-lg font-bold uppercase tracking-[0.15em] sm:text-xl">Size Guide</h2>
-              <p className="mt-1 font-jost text-xs uppercase tracking-[0.2em] text-black/50">{categoryMeta[category].title} · body measurements</p>
+              <p className="mt-1 font-jost text-xs uppercase tracking-[0.2em] text-black/60">{categoryMeta[category].title} · body measurements</p>
             </div>
             <button type="button" onClick={close} aria-label="Close size guide" className="-mr-2 -mt-1 rounded p-2 text-black/60 transition-colors hover:text-black focus-visible:ring-black">
               <X className="h-5 w-5" strokeWidth={1.5} aria-hidden />
@@ -85,7 +85,7 @@ export default function SizeGuide({ category, availableSizes }: { category: Cate
             <div className="mt-5 overflow-x-auto">
               <table className="w-full border-collapse font-jost text-sm">
                 <thead>
-                  <tr className="border-b border-black/15 text-left text-xs uppercase tracking-[0.15em] text-black/50">
+                  <tr className="border-b border-black/15 text-left text-xs uppercase tracking-[0.15em] text-black/60">
                     <th scope="col" className="py-3 pr-4 font-semibold">Size</th>
                     {guide.measurements.map((m) => (
                       <th key={m} scope="col" className="py-3 pr-4 font-semibold">{m}</th>

@@ -143,7 +143,7 @@ function LoginForm() {
       <div className="flex flex-col items-center text-center">
         <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} priority className="h-12 w-auto" />
         <span className="mt-2 font-cinzel text-sm font-bold uppercase tracking-[0.04em]">Piyush Bholla</span>
-        <span className="mt-1 font-jost text-[11px] uppercase tracking-[0.2em] text-black/50">Admin</span>
+        <span className="mt-1 font-jost text-[11px] uppercase tracking-[0.2em] text-black/60">Admin</span>
       </div>
 
       {expired && phase === "password" && !error && (
@@ -169,7 +169,7 @@ function LoginForm() {
                 aria-controls="field-password"
                 aria-pressed={passwordVisible}
                 onClick={() => setPasswordVisible((visible) => !visible)}
-                className="rounded p-2 text-black/50 transition-colors hover:text-black focus-visible:ring-black"
+                className="rounded p-2 text-black/60 transition-colors hover:text-black focus-visible:ring-black"
               >
                 {passwordVisible ? <EyeOff className="h-5 w-5" strokeWidth={1.5} aria-hidden /> : <Eye className="h-5 w-5" strokeWidth={1.5} aria-hidden />}
               </button>
@@ -183,7 +183,7 @@ function LoginForm() {
             {linkVerifying ? "Verifying your secure email link…" : `Enter the six-digit verification code sent to ${destination}. It expires in five minutes.`}
           </p>
           {!linkVerifying && (
-            <p className="mb-5 font-jost text-xs leading-relaxed text-black/50">
+            <p className="mb-5 font-jost text-xs leading-relaxed text-black/60">
               Use Verify and sign in from the email for one-click access, or copy and enter the code here.
             </p>
           )}

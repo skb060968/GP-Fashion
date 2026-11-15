@@ -15,9 +15,19 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <>
+      {!isAdmin && (
+        <a
+          href="#main"
+          className="sr-only font-jost text-sm font-semibold uppercase tracking-[0.15em] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-white focus:px-4 focus:py-3 focus:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+        >
+          Skip to content
+        </a>
+      )}
       {!isAdmin && <SplashScreen />}
       {!isAdmin && <Navbar />}
-      <main className={`flex-grow ${offset}`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`flex-grow outline-none ${offset}`}>
+        {children}
+      </main>
       {!isAdmin && <Footer />}
       {!isAdmin && <WhatsAppButton />}
     </>

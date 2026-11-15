@@ -54,7 +54,7 @@ export default function AboutUs() {
             </FadeIn>
 
             <FadeIn delay={120} className="text-center lg:col-span-7 lg:text-left">
-              <p className="font-jost text-xs font-semibold uppercase tracking-[0.3em] text-black/50">
+              <p className="font-jost text-xs font-semibold uppercase tracking-[0.3em] text-black/60">
                 {founder.role}
               </p>
               <h3 className="mt-3 font-cinzel text-2xl font-bold uppercase tracking-[0.2em] sm:text-3xl lg:text-3xl lg:tracking-[0.25em]">

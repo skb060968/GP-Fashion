@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Sparkles } from "lucide-react"
 import FadeIn from "@/components/FadeIn"
-import ProductCard from "@/components/ProductCard"
+import SortedProductGrid from "@/components/SortedProductGrid"
 import EmptyState from "@/components/EmptyState"
 import type { Product } from "@/lib/data/categories"
 
@@ -49,7 +49,7 @@ export default function CategoryListing({
         <div className="container-max">
           <FadeIn className="mx-auto max-w-3xl text-center">
             {eyebrow && (
-              <Link href={eyebrow.href} className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50 transition-colors hover:text-black">
+              <Link href={eyebrow.href} className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/60 transition-colors hover:text-black">
                 {eyebrow.label}
               </Link>
             )}
@@ -58,7 +58,7 @@ export default function CategoryListing({
             </h1>
             <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
             {description && <p className="mt-6 font-jost text-base leading-relaxed text-black/70 sm:text-lg">{description}</p>}
-            <p className="mt-5 font-jost text-sm uppercase tracking-[0.2em] text-black/50">
+            <p className="mt-5 font-jost text-sm uppercase tracking-[0.2em] text-black/60">
               {products.length} {products.length === 1 ? "piece" : "pieces"}
             </p>
           </FadeIn>
@@ -79,7 +79,7 @@ export default function CategoryListing({
                   </Link>
                 ))}
               </nav>
-              {note && <p className="font-jost text-xs text-black/50">{note}</p>}
+              {note && <p className="font-jost text-xs text-black/60">{note}</p>}
             </FadeIn>
           )}
 
@@ -88,15 +88,7 @@ export default function CategoryListing({
               <EmptyState icon={Sparkles} title="Coming soon" description={emptyMessage} ctaLabel="Browse all pieces" ctaHref="/shop" />
             </div>
           ) : (
-            <ul className="mt-14 grid grid-cols-2 gap-x-6 gap-y-12 lg:mt-16 lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
-              {products.map((product, index) => (
-                <li key={product.slug}>
-                  <FadeIn delay={(index % 4) * 60}>
-                    <ProductCard product={product} priority={index < 4} />
-                  </FadeIn>
-                </li>
-              ))}
-            </ul>
+            <SortedProductGrid products={products} />
           )}
         </div>
       </section>

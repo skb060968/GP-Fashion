@@ -60,6 +60,7 @@ export interface Product {
   collection: string | null
   releaseDate: string
   description: string
+  care: string | null
   price: number
   sizes: string[]
   bestseller: boolean
@@ -167,6 +168,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Classic Dagger Collar Shirt in Solid Satin Crepe, Featuring a Sleek Minimalist Silhouette\nComponents: Shirt\nSurface: Plain / No Embellishment\nFabric: Satin Crepe",
+    "care": null,
     "price": 499000,
     "sizes": [
       "S",
@@ -255,6 +257,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Contemporary Statement Blazer in Ivory and Midnight Blue, Featuring Bold Abstract Patterns with Dual Sequin Embellishments\nComponents: Blazer\nSurface: Dual Sequin Embellishment\nFabric: Sequin Net Lycra",
+    "care": null,
     "price": 1499000,
     "sizes": [
       "S",
@@ -292,6 +295,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Ornate Statement Shirt in Champagne and Black, Intricately Embellished with Baroque-Inspired Motifs\nComponents: Shirt\nSurface: Intricate Thread Embroidery, Sequin and Bead Embellishments\nFabric: imported organza and satin crepe",
+    "care": null,
     "price": 999000,
     "sizes": [
       "S",
@@ -328,6 +332,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Elegant Lace Sequin Shirt Featuring Intricate Lace Detailing and All-Over Sequin Embellishments\nComponents: Shirt\nSurface: Lace Detailing with Sequin Embellishment\nFabric: Lace and Sequin Fabric",
+    "care": null,
     "price": 1099000,
     "sizes": [
       "S",
@@ -365,6 +370,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Ribbed Velvet Henley Top Featuring a Contemporary Zip-Front Neckline\nComponents: Henley Top\nSurface: Ribbed Texture\nFabric: Rib Knit Velvet",
+    "care": null,
     "price": 599000,
     "sizes": [
       "S",
@@ -400,6 +406,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Statement Sequin Bomber Jacket Featuring a Luxurious Fur Collar and All-Over Sequin Embellishments\nComponents: Bomber Jacket\nSurface: All-Over Sequin Embellishment\nFabric: Sequin Fabric with Fur Collar",
+    "care": null,
     "price": 999000,
     "sizes": [
       "S",
@@ -433,6 +440,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Glamorous Dual Sequin Net Lycra Dress Featuring All-Over Shimmering Embellishments and a Contemporary Statement Silhouette\nComponents: Dress\nSurface: Dual Sequin Embellishment\nFabric: Sequin Net Lycra",
+    "care": null,
     "price": 1599000,
     "sizes": [
       "S",
@@ -470,6 +478,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Elegant Velvet Gown in a Rich Luxurious Finish, Featuring a Sophisticated Silhouette and Timeless Eveningwear Appeal\nComponents: Gown\nSurface: Plain Velvet\nFabric: Velvet",
+    "care": null,
     "price": 1199000,
     "sizes": [
       "S",
@@ -505,6 +514,7 @@ export const products: Product[] = [
     "collection": "into-the-night",
     "releaseDate": "2026-11-25",
     "description": "Elegant Printed Crepe Dress Featuring Intricate Embroidery and Delicate Surface Detailing\nComponents: Dress\nSurface: Printed with Intricate Thread Embroidery\nFabric: Crepe",
+    "care": null,
     "price": 1499000,
     "sizes": [
       "S",

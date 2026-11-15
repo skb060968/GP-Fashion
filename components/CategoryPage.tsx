@@ -45,6 +45,7 @@ export function categoryViewMetadata(category: CategorySlug, view?: string): Met
   return {
     title: full,
     description,
+    alternates: { canonical: path },
     openGraph: { title: full, description, url: `${SITE_URL}${path}`, images: [{ url: `${SITE_URL}${image}` }] },
   }
 }

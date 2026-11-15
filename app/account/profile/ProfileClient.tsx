@@ -46,7 +46,7 @@ export default function ProfileClient() {
       <div>
         <p className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Email</p>
         <p className="mt-2 font-jost text-black">{user.email}</p>
-        <p className="mt-1 font-jost text-xs text-black/50">This is how you sign in and where order updates are sent.</p>
+        <p className="mt-1 font-jost text-xs text-black/60">This is how you sign in and where order updates are sent.</p>
       </div>
       <Field label="Name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} optional />
       <Field

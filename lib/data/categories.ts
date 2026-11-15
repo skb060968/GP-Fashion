@@ -88,6 +88,26 @@ export function getClassificationProducts(category: CategorySlug, classification
 
 export const NEW_ARRIVALS_WINDOW_DAYS = 90
 
+export function isNewProduct(product: Pick<Product, "releaseDate">, now: Date = new Date()): boolean {
+  if (!product.releaseDate) return false
+  const cutoff = new Date(now.getTime() - NEW_ARRIVALS_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10)
+  return product.releaseDate >= cutoff
+}
+
+export function getRelatedProducts(product: Product, limit = 4): Product[] {
+  const others = products.filter((p) => p.slug !== product.slug)
+  const score = (p: Product) =>
+    (p.collection && p.collection === product.collection ? 2 : 0) +
+    (p.category === product.category ? 2 : 0) +
+    (p.classification === product.classification ? 1 : 0)
+  return others
+    .map((p) => ({ p, s: score(p) }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s || a.p.order - b.p.order || a.p.name.localeCompare(b.p.name))
+    .slice(0, limit)
+    .map((x) => x.p)
+}
+
 export function getNewArrivals(category: CategorySlug, now: Date = new Date()): Product[] {
   const pool = getCategoryProducts(category)
   if (pool.length === 0) return []

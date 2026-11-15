@@ -14,6 +14,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: "Contact | Piyush Bholla",
   description: DESCRIPTION,
+  alternates: { canonical: "/contact" },
   openGraph: {
     title: "Contact | Piyush Bholla",
     description: DESCRIPTION,
@@ -152,7 +153,7 @@ function Info({
         <Icon className="h-4 w-4 text-white" strokeWidth={1.5} aria-hidden />
       </div>
       <div className="font-jost">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">{label}</p>
         {href ? (
           <a
             href={href}

@@ -130,7 +130,7 @@ export default function TrackOrderClient() {
               <div className="card-elevated p-6 sm:p-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="font-jost text-xs font-semibold uppercase tracking-[0.2em] text-black/50">
+                    <p className="font-jost text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                       Order number
                     </p>
                     <p className="mt-1 font-cinzel text-2xl font-bold tracking-[0.2em]">{order.orderCode}</p>
@@ -148,7 +148,7 @@ export default function TrackOrderClient() {
                 <div className="mt-8 border-t border-black/10 pt-8">
                   {failed ? (
                     <div className="rounded-lg border border-black/10 p-5 font-jost">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Status</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Status</p>
                       <p className="mt-1 text-base font-semibold">{statusLabel(order.status)}</p>
                       <p className="mt-2 text-sm text-black/65">
                         If you have questions about this order, please{" "}
@@ -205,7 +205,7 @@ export default function TrackOrderClient() {
                           {item.madeToMeasureFor ? mtmLabel(item.madeToMeasureFor) : `Size ${item.size}`}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                         </p>
                         {item.madeToMeasureFor && ["UNDER_VERIFICATION", "VERIFIED"].includes(order.status) && (
-                          <p className="mt-0.5 text-xs text-black/50">
+                          <p className="mt-0.5 text-xs text-black/60">
                             {item.measurementsConfirmed ? "Measurements confirmed" : "Measurements being confirmed. We will contact you before cutting."}
                           </p>
                         )}

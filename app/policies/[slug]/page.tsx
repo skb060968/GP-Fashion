@@ -9,6 +9,8 @@ const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 type Props = { params: Promise<{ slug: string }> }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return policies.map((p) => ({ slug: p.slug }))
 }
@@ -21,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description: policy.description,
+    alternates: { canonical: `/policies/${policy.slug}` },
     openGraph: { title, description: policy.description, url: `${SITE_URL}/policies/${policy.slug}` },
   }
 }
@@ -66,7 +69,7 @@ export default async function PolicyPage({ params }: Props) {
             </div>
 
             <nav aria-label="Other policies" className="mt-16 border-t border-black/10 pt-8 font-jost text-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Also see</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Also see</p>
               <ul className="mt-3 flex flex-wrap gap-x-8 gap-y-2">
                 {others.map((p) => (
                   <li key={p.slug}>

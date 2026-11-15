@@ -92,7 +92,7 @@ export default function MeasurementsClient() {
                     </div>
                     <p className="mt-2 flex-1 leading-relaxed text-black/70">
                       {s.main.join(" · ")}
-                      {s.extra > 0 && <span className="block text-black/50">+ {s.extra} more {s.extra === 1 ? "measurement" : "measurements"}</span>}
+                      {s.extra > 0 && <span className="block text-black/60">+ {s.extra} more {s.extra === 1 ? "measurement" : "measurements"}</span>}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                       <button type="button" onClick={() => setEditing(p)} className="underline underline-offset-4 hover:text-black">Edit</button>

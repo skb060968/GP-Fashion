@@ -106,7 +106,7 @@ function SuccessContent() {
                   Your order has been placed. We are verifying your UPI payment and will email you at{" "}
                   <span className="text-black">{order.address?.email}</span> once it is confirmed.
                 </p>
-                <p className="mt-6 font-jost text-xs font-semibold uppercase tracking-[0.2em] text-black/50">
+                <p className="mt-6 font-jost text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                   Order number
                 </p>
                 <p className="mt-1 font-cinzel text-3xl font-bold tracking-[0.2em]">{order.orderCode}</p>
@@ -116,15 +116,15 @@ function SuccessContent() {
                 <div className="card-elevated p-6 sm:p-8">
                   <dl className="grid grid-cols-1 gap-6 font-jost text-sm sm:grid-cols-3">
                     <div>
-                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Status</dt>
+                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Status</dt>
                       <dd className="mt-1 text-black">{statusLabel(order.status)}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Payment</dt>
+                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Payment</dt>
                       <dd className="mt-1 text-black">{paymentLabel(order.paymentMethod)}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Placed on</dt>
+                      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Placed on</dt>
                       <dd className="mt-1 text-black">
                         {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                       </dd>
@@ -143,7 +143,7 @@ function SuccessContent() {
                             {itemSizeLabel(item)}{item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                           </p>
                           {isSnapshot(item.measurements) && (
-                            <p className="mt-0.5 text-xs text-black/50">We will contact you to confirm the measurements before cutting. Ready in {MTM_LEAD_TIME}.</p>
+                            <p className="mt-0.5 text-xs text-black/60">We will contact you to confirm the measurements before cutting. Ready in {MTM_LEAD_TIME}.</p>
                           )}
                         </div>
                         <p className="font-jost text-sm tabular-nums">{formatRupees(item.price * item.quantity)}</p>
@@ -172,7 +172,7 @@ function SuccessContent() {
 
                   {order.address && (
                     <div className="mt-8 border-t border-black/10 pt-6 font-jost text-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Shipping to</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Shipping to</p>
                       <address className="mt-2 not-italic leading-relaxed text-black/75">
                         <span className="text-black">{order.address.fullName}</span>
                         <br />

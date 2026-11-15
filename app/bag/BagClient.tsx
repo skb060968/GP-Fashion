@@ -67,7 +67,7 @@ export default function BagClient() {
                                 {item.color && <> · {item.color}</>}
                               </p>
                               {item.profileId && (
-                                <p className="mt-1 font-jost text-xs text-black/50">
+                                <p className="mt-1 font-jost text-xs text-black/60">
                                   Ready in {MTM_LEAD_TIME}. We confirm your measurements before cutting.
                                 </p>
                               )}
@@ -76,7 +76,7 @@ export default function BagClient() {
                               type="button"
                               onClick={() => removeFromCart(item)}
                               aria-label={`Remove ${item.name} from bag`}
-                              className="-mr-2 -mt-2 rounded p-2 text-black/50 transition-colors hover:text-black focus-visible:ring-black"
+                              className="-mr-2 -mt-2 rounded p-2 text-black/60 transition-colors hover:text-black focus-visible:ring-black"
                             >
                               <X className="h-5 w-5" strokeWidth={1.5} aria-hidden />
                             </button>
@@ -115,7 +115,7 @@ export default function BagClient() {
                                 {formatRupees(item.price * item.quantity)}
                               </p>
                               {item.quantity > 1 && (
-                                <p className="mt-0.5 text-xs text-black/50 tabular-nums">
+                                <p className="mt-0.5 text-xs text-black/60 tabular-nums">
                                   {formatRupees(item.price)} each
                                 </p>
                               )}
@@ -141,7 +141,7 @@ export default function BagClient() {
                     </div>
                     <div className="flex justify-between">
                       <dt>Shipping</dt>
-                      <dd className="text-black/50">Calculated at checkout</dd>
+                      <dd className="text-black/60">Calculated at checkout</dd>
                     </div>
                   </dl>
 

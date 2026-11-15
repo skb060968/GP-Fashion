@@ -27,7 +27,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
         <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
           Your Order
         </h2>
-        <span className="font-jost text-xs uppercase tracking-[0.15em] text-black/50">
+        <span className="font-jost text-xs uppercase tracking-[0.15em] text-black/60">
           {itemCount} {itemCount === 1 ? "item" : "items"}
         </span>
       </div>
@@ -69,7 +69,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
         )}
         <div className="flex justify-between">
           <dt>Shipping</dt>
-          <dd className="text-black/50">Complimentary</dd>
+          <dd className="text-black/60">Complimentary</dd>
         </div>
       </dl>
 

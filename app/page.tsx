@@ -3,12 +3,14 @@ import Hero from "@/components/Hero"
 import CategoryShowcase from "@/components/CategoryShowcase"
 import AboutUs from "@/components/AboutUs"
 import { ACTIVE_CATEGORY_SLUGS, categoryMeta, getCategoryImage } from "@/lib/data/categories"
+import { generateOrganizationJsonLd, serializeJsonLd } from "@/lib/seo/jsonld"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 export const metadata: Metadata = {
   title: "Piyush Bholla | Contemporary Designer Label",
   description: "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Piyush Bholla | Contemporary Designer Label",
     description: "Bold, sensual, expressive dressing. Western silhouettes in dialogue with Indian craftsmanship.",
@@ -20,6 +22,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(generateOrganizationJsonLd()) }} />
       <Hero />
 
       {ACTIVE_CATEGORY_SLUGS.map((category, index) => {

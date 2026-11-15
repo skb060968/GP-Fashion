@@ -126,7 +126,7 @@ export default function LoginClient() {
                   <button type="submit" disabled={busy || !email.trim()} className="btn-solid-dark w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white">
                     {busy ? "Sending…" : "Email me a code"}
                   </button>
-                  <p className="text-center font-jost text-xs text-black/50">
+                  <p className="text-center font-jost text-xs text-black/60">
                     First time here? Signing in creates your account.
                   </p>
                 </form>
@@ -168,13 +168,13 @@ export default function LoginClient() {
                         error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-black/15 focus:border-black focus:ring-black"
                       }`}
                     />
-                    <p className="mt-1.5 font-jost text-xs text-black/50">The code expires in 10 minutes. Check your spam folder if it hasn't arrived.</p>
+                    <p className="mt-1.5 font-jost text-xs text-black/60">The code expires in 10 minutes. Check your spam folder if it hasn't arrived.</p>
                   </div>
                   {error && <ErrorNote text={error} />}
                   <button type="submit" disabled={busy || code.length !== 6} className="btn-solid-dark w-full disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black disabled:hover:text-white">
                     {busy ? "Checking…" : "Sign in"}
                   </button>
-                  <p className="text-center font-jost text-xs text-black/50">
+                  <p className="text-center font-jost text-xs text-black/60">
                     {cooldown > 0 ? (
                       <>Resend code in {cooldown}s</>
                     ) : (

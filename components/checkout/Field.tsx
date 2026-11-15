@@ -57,7 +57,7 @@ export default function Field(props: InputFieldProps | TextareaFieldProps) {
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="mt-1.5 font-jost text-xs text-black/50">
+        <p id={`${id}-hint`} className="mt-1.5 font-jost text-xs text-black/60">
           {hint}
         </p>
       ) : null}

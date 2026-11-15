@@ -148,7 +148,7 @@ export const policies: Policy[] = [
     slug: "privacy",
     title: "Privacy Policy",
     description: "How PIYUSH BHOLLA LABEL collects, uses and protects your personal information.",
-    updated: "2026-11-06",
+    updated: "2026-11-15",
     sections: [
       {
         heading: "Who we are",
@@ -163,7 +163,7 @@ export const policies: Policy[] = [
           "When you order: your name, phone number, email address and delivery address, the items ordered, and the UPI transaction reference you provide.",
           "When you create an account: your email address, and optionally your name, phone number and saved addresses. We never store a password; you sign in with a one-time code.",
           "When you save measurements: the body measurements and fit notes you enter in your account, for yourself or for family members, including children's measurements entered by a parent or guardian. This is optional and only needed for made-to-measure orders.",
-          "When you use the site: items in your bag and wishlist (stored in your browser, and in your account if you are signed in), and standard server logs such as IP address and browser type.",
+          "When you use the site: items in your bag and wishlist (stored in your browser, and in your account if you are signed in), standard server logs such as IP address and browser type, and a count of the pages you visit. We count page visits with Vercel Web Analytics, which sets no cookies, does not identify you across days or other sites, and receives page addresses without their query strings.",
           "When you contact us: whatever you include in your message.",
         ],
       },
@@ -199,7 +199,7 @@ export const policies: Policy[] = [
       {
         heading: "Cookies",
         paragraphs: [
-          "We use a small number of strictly necessary cookies: one to keep you signed in to your account, and one for the admin area. We do not use advertising or tracking cookies. Your bag, wishlist and checkout address are kept in your browser's local storage so they survive a page reload.",
+          "We use a small number of strictly necessary cookies: one to keep you signed in to your account, and one for the admin area. We do not use advertising or tracking cookies. We count page visits with Vercel Web Analytics, which sets no cookies, does not identify you across days or other sites, and receives page addresses without their query strings. Your bag, wishlist and checkout address are kept in your browser's local storage so they survive a page reload.",
         ],
       },
       {

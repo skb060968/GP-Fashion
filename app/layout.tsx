@@ -6,10 +6,16 @@ import LayoutShell from "@/components/LayoutShell"
 import { CartProvider } from "@/context/CartContext"
 import { WishlistProvider } from "@/context/WishlistContext"
 import { UserProvider } from "@/context/UserContext"
+import SiteAnalytics from "@/components/SiteAnalytics"
+import type { Metadata } from "next"
 
-export const metadata = {
-  title: "Piyush Bholla",
-  description: "Fashion & Design",
+const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: { default: "Piyush Bholla", template: "%s" },
+  description:
+    "Designer menswear and womenswear by Piyush Bholla, made in New Delhi. Ready to wear in standard sizes or made to measure at the same price.",
 }
 
 export default function RootLayout({
@@ -28,6 +34,7 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </UserProvider>
+        <SiteAnalytics />
       </body>
     </html>
   )

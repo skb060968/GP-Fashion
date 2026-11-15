@@ -88,7 +88,7 @@ export default function OrdersClient() {
               <article className="card-elevated overflow-hidden">
                 <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-black/10 px-6 py-4 font-jost">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Order</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Order</p>
                     <p className="font-cinzel text-lg font-bold tracking-[0.15em]">{o.orderCode}</p>
                   </div>
                   <div className="text-sm text-black/60">
@@ -106,7 +106,7 @@ export default function OrdersClient() {
                       {TRACKING_STEPS.map((s, idx) => (
                         <li key={s.key} className="flex flex-col items-center gap-1.5 text-center">
                           <span className={`h-1 w-full rounded-full ${idx <= progress ? "bg-black" : "bg-black/10"}`} aria-hidden />
-                          <span className={`font-jost text-[10px] leading-tight sm:text-xs ${idx === progress ? "font-semibold text-black" : "text-black/45"}`}>{s.label}</span>
+                          <span className={`font-jost text-[10px] leading-tight sm:text-xs ${idx === progress ? "font-semibold text-black" : "text-black/60"}`}>{s.label}</span>
                         </li>
                       ))}
                     </ol>
@@ -128,7 +128,7 @@ export default function OrdersClient() {
                           {it.madeToMeasureFor ? mtmLabel(it.madeToMeasureFor) : `Size ${it.size}`}{it.color ? ` · ${it.color}` : ""} · Qty {it.quantity}
                         </p>
                         {it.madeToMeasureFor && ["UNDER_VERIFICATION", "VERIFIED"].includes(o.status) && (
-                          <p className="text-xs text-black/50">
+                          <p className="text-xs text-black/60">
                             {it.measurementsConfirmed ? "Measurements confirmed" : "Measurements being confirmed. We will contact you before cutting."}
                           </p>
                         )}

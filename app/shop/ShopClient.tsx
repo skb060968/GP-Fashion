@@ -105,7 +105,7 @@ export default function ShopClient() {
                 className="w-full rounded-full border border-black/15 bg-white py-4 pl-14 pr-12 font-jost text-base text-black placeholder:text-black/40 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
               {input && (
-                <button type="button" onClick={() => setInput("")} aria-label="Clear search" className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-black/50 hover:text-black">
+                <button type="button" onClick={() => setInput("")} aria-label="Clear search" className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-black/60 hover:text-black">
                   <X className="h-4 w-4" strokeWidth={1.5} />
                 </button>
               )}
@@ -121,15 +121,15 @@ export default function ShopClient() {
               ))}
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {availableSizes.length > 0 && <span className="mr-1 font-jost text-xs uppercase tracking-[0.15em] text-black/50">Size</span>}
+              {availableSizes.length > 0 && <span className="mr-1 font-jost text-xs uppercase tracking-[0.15em] text-black/60">Size</span>}
               {availableSizes.map((size) => (
                 <button key={size} type="button" aria-pressed={selectedSizes.includes(size)} onClick={() => toggleSize(size)} className={chip(selectedSizes.includes(size))}>
                   {size}
                 </button>
               ))}
-              <span className="ml-3 mr-1 font-jost text-xs uppercase tracking-[0.15em] text-black/50">Up to</span>
+              <span className="ml-3 mr-1 font-jost text-xs uppercase tracking-[0.15em] text-black/60">Up to</span>
               <label className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-jost text-sm text-black/50">₹</span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-jost text-sm text-black/60">₹</span>
                 <input
                   type="number"
                   inputMode="numeric"

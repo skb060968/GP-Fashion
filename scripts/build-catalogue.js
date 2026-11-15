@@ -158,6 +158,7 @@ function readMeta(slug, dir, taxonomy, collections) {
   }
   if (new Set(sizes).size !== sizes.length) fail(`${slug}: "sizes" contains duplicates`)
   if (meta.description !== undefined && typeof meta.description !== "string") fail(`${slug}: "description" must be a string`)
+  if (meta.care !== undefined && typeof meta.care !== "string") fail(`${slug}: "care" must be a string`)
   if (meta.order !== undefined && !Number.isInteger(meta.order)) fail(`${slug}: "order" must be a whole number`)
   if (meta.bestseller !== undefined && typeof meta.bestseller !== "boolean") fail(`${slug}: "bestseller" must be true or false`)
   if (meta.releaseDate !== undefined && (!DATE_RE.test(meta.releaseDate) || isNaN(Date.parse(meta.releaseDate))))
@@ -213,6 +214,7 @@ function readMeta(slug, dir, taxonomy, collections) {
     collection,
     releaseDate,
     description: (meta.description || "").trim(),
+    care: (meta.care || "").trim() || null,
     price: meta.priceInr * 100,
     sizes: allowedSizes.filter((size) => sizes.includes(size)),
     bestseller: meta.bestseller === true,
@@ -298,6 +300,7 @@ async function buildProduct(slug, taxonomy, collections) {
     collection: meta.collection,
     releaseDate: meta.releaseDate,
     description: meta.description,
+    care: meta.care,
     price: meta.price,
     sizes: meta.sizes,
     bestseller: meta.bestseller,
@@ -400,6 +403,7 @@ export interface Product {
   collection: string | null
   releaseDate: string
   description: string
+  care: string | null
   price: number
   sizes: string[]
   bestseller: boolean

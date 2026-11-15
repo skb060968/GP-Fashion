@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import WishlistButton from "@/components/WishlistButton"
 import { formatRupees } from "@/lib/money"
-import type { Product } from "@/lib/data/categories"
+import { isNewProduct, type Product } from "@/lib/data/categories"
 
 interface ProductCardProps {
   product: Product
@@ -11,6 +11,9 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const href = `/shop/${product.slug}`
+  const hoverImage = product.images.find((src) => src !== product.coverImage)
+  const isNew = isNewProduct(product)
+  const colourCount = product.colors.length
 
   return (
     <article className="group flex flex-col">
@@ -24,7 +27,22 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
+          {hoverImage && (
+            <Image
+              src={hoverImage}
+              alt=""
+              aria-hidden
+              fill
+              sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover opacity-0 transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.03] [@media(hover:hover)]:group-hover:opacity-100"
+            />
+          )}
         </Link>
+        {isNew && (
+          <span className="pointer-events-none absolute left-2 top-2 bg-white px-2 py-1 font-jost text-[10px] font-semibold uppercase tracking-[0.2em] text-black">
+            New in
+          </span>
+        )}
         <WishlistButton
           item={{
             slug: product.slug,
@@ -47,6 +65,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         <p className="mt-1 font-jost text-sm text-black/70 tabular-nums sm:text-base">
           {formatRupees(product.price)}
         </p>
+        {colourCount > 1 && <p className="mt-1 font-jost text-xs text-black/60">{colourCount} colours</p>}
       </div>
     </article>
   )

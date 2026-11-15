@@ -140,7 +140,7 @@ function InvoiceContent() {
 
             <div className="grid grid-cols-1 gap-8 py-8 font-jost text-sm sm:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">Billed to</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Billed to</p>
                 {order.address && (
                   <address className="mt-3 not-italic leading-relaxed text-black/75">
                     <span className="font-semibold text-black">{order.address.fullName}</span>
@@ -161,7 +161,7 @@ function InvoiceContent() {
                 )}
               </div>
               <div className="sm:text-right">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/50">From</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">From</p>
                 <address className="mt-3 not-italic leading-relaxed text-black/75">
                   <span className="font-semibold text-black">Piyush Bholla Label</span>
                   <br />
@@ -173,11 +173,11 @@ function InvoiceContent() {
                 </address>
                 <dl className="mt-5 space-y-1 text-black/75">
                   <div className="flex justify-between gap-6 sm:justify-end">
-                    <dt className="text-black/50">Payment</dt>
+                    <dt className="text-black/60">Payment</dt>
                     <dd>{paymentLabel(order.paymentMethod)}</dd>
                   </div>
                   <div className="flex justify-between gap-6 sm:justify-end">
-                    <dt className="text-black/50">Status</dt>
+                    <dt className="text-black/60">Status</dt>
                     <dd>{statusLabel(order.status)}</dd>
                   </div>
                 </dl>
@@ -186,7 +186,7 @@ function InvoiceContent() {
 
             <table className="w-full border-t border-black/10 font-jost text-sm">
               <thead>
-                <tr className="text-left text-xs font-semibold uppercase tracking-[0.15em] text-black/50">
+                <tr className="text-left text-xs font-semibold uppercase tracking-[0.15em] text-black/60">
                   <th scope="col" className="py-3 pr-4 font-semibold">Item</th>
                   <th scope="col" className="py-3 pr-4 font-semibold">Size</th>
                   <th scope="col" className="py-3 pr-4 text-right font-semibold">Price</th>
@@ -199,7 +199,7 @@ function InvoiceContent() {
                   <tr key={item.id}>
                     <td className="py-3 pr-4 font-semibold">
                       {item.name}
-                      {item.color && <span className="block font-normal text-black/50">{item.color}</span>}
+                      {item.color && <span className="block font-normal text-black/60">{item.color}</span>}
                     </td>
                     <td className="py-3 pr-4 text-black/70">{isSnapshot(item.measurements) ? "Made to measure" : item.size}</td>
                     <td className="py-3 pr-4 text-right tabular-nums text-black/70">{formatRupees(item.price)}</td>
@@ -223,7 +223,7 @@ function InvoiceContent() {
               )}
               <div className="flex justify-between">
                 <dt>Shipping</dt>
-                <dd className="text-black/50">Complimentary</dd>
+                <dd className="text-black/60">Complimentary</dd>
               </div>
               <div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold text-black">
                 <dt className="uppercase tracking-[0.15em]">Total</dt>
@@ -231,7 +231,7 @@ function InvoiceContent() {
               </div>
             </dl>
 
-            <footer className="mt-12 border-t border-black/10 pt-6 text-center font-jost text-xs leading-relaxed text-black/50">
+            <footer className="mt-12 border-t border-black/10 pt-6 text-center font-jost text-xs leading-relaxed text-black/60">
               <p>Thank you for shopping with Piyush Bholla.</p>
               <p>This invoice is generated electronically and does not require a signature.</p>
             </footer>

@@ -4,21 +4,23 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react"
+import { Check, ChevronLeft, ChevronRight, Maximize2, Share2 } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
-import { categoryMeta, getClassification, getCollection, type Product } from "@/lib/data/categories"
+import { categoryMeta, getClassification, getCollection, getRelatedProducts, isNewProduct, type Product } from "@/lib/data/categories"
 import WishlistButton from "@/components/WishlistButton"
 import SizeGuide from "@/components/SizeGuide"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
 import FadeIn from "@/components/FadeIn"
+import ProductCard from "@/components/ProductCard"
+import ImageLightbox from "@/components/product/ImageLightbox"
+import InfoSection from "@/components/product/InfoSection"
+import StickyBuyBar from "@/components/product/StickyBuyBar"
 import { whatsappHref } from "@/lib/whatsapp"
 import { useUser } from "@/context/UserContext"
 import MeasurementForm from "@/components/account/MeasurementForm"
 import type { ProfileDTO } from "@/lib/measurements/profiles"
 import { KINDS_FOR_CATEGORY, KIND_LABEL, MTM_LEAD_TIME, MTM_SIZE, fieldLabel, fieldsFor, formatInches } from "@/lib/measurements/fields"
-
-const MAX_QTY = 10
 
 function profileSummary(p: ProfileDTO) {
   const main = fieldsFor(p.kind)
@@ -27,11 +29,22 @@ function profileSummary(p: ProfileDTO) {
   return `${KIND_LABEL[p.kind]} · ${main.join(" · ")}`
 }
 
-const DETAILS_STANDARD = [
-  "Standard sizes are dispatched within 4 weeks of payment confirmation",
-  "Designed and made in Delhi",
-  "Dry clean only",
-]
+const FACT_KEY = /^[A-Za-z][A-Za-z &/()-]{0,39}$/
+
+function splitDescription(description: string) {
+  const prose: string[] = []
+  const facts: { label: string; value: string }[] = []
+  for (const raw of description.split("\n")) {
+    const line = raw.trim()
+    if (!line) continue
+    const at = line.indexOf(": ")
+    const label = at > 0 ? line.slice(0, at).trim() : ""
+    const value = at > 0 ? line.slice(at + 2).trim() : ""
+    if (label && value && FACT_KEY.test(label)) facts.push({ label, value })
+    else prose.push(line)
+  }
+  return { prose: prose.join("\n"), facts }
+}
 
 type FitMode = "standard" | "mtm"
 
@@ -43,9 +56,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [index, setIndex] = useState(0)
   const [size, setSize] = useState<string | null>(product.sizes.length === 1 ? product.sizes[0] : null)
   const [colorSlug, setColorSlug] = useState<string | null>(product.defaultColor)
-  const [qty, setQty] = useState(1)
   const [sizeError, setSizeError] = useState(false)
   const [added, setAdded] = useState(false)
+  const [lightbox, setLightbox] = useState<number | null>(null)
+  const [shareMsg, setShareMsg] = useState("")
+  const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const buyRef = useRef<HTMLDivElement>(null)
 
   const mtmKinds = KINDS_FOR_CATEGORY[product.category]
   const mtmAvailable = mtmKinds.length > 0
@@ -72,10 +88,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     if (mode === "mtm" && user && profiles === null) loadProfiles()
   }, [mode, user, profiles, loadProfiles])
 
+  useEffect(() => () => {
+    if (shareTimer.current) clearTimeout(shareTimer.current)
+  }, [])
+
   const chosenProfile = profiles?.find((p) => p.id === profileId) ?? null
-  const DETAILS = mtmAvailable
-    ? [DETAILS_STANDARD[0], `Made to measure at the same price, ready in ${MTM_LEAD_TIME}`, ...DETAILS_STANDARD.slice(1)]
-    : DETAILS_STANDARD
 
   const activeColor = product.colors.find((c) => c.slug === colorSlug) ?? null
   const selectColor = (slug: string) => {
@@ -86,12 +103,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const category = product.category
   const classification = getClassification(product.classification)
   const collection = product.collection ? getCollection(product.collection) : undefined
+  const isNew = isNewProduct(product)
+  const related = getRelatedProducts(product, 4)
+  const { prose, facts } = splitDescription(product.description)
+  const care = product.care || "Dry clean only"
 
   const crumbs = [
     { href: `/${category}`, label: categoryMeta[category].title },
     ...(classification ? [{ href: `/${category}/${classification.slug}`, label: classification.title }] : []),
   ]
-  const crumb = crumbs[crumbs.length - 1]
 
   const imageSource = activeColor ?? product
   const gallery = Array.from(new Set([imageSource.coverImage, ...imageSource.images]))
@@ -100,17 +120,56 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const step = (delta: number) => setIndex((i) => (i + delta + gallery.length) % gallery.length)
 
   const touchStartX = useRef<number | null>(null)
-  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX }
+  const swiped = useRef(false)
+  const onTouchStart = (e: React.TouchEvent) => {
+    swiped.current = false
+    touchStartX.current = e.touches[0].clientX
+  }
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return
     const dx = e.changedTouches[0].clientX - touchStartX.current
     touchStartX.current = null
-    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1)
+    if (Math.abs(dx) > 40) {
+      swiped.current = true
+      step(dx < 0 ? 1 : -1)
+    }
   }
 
   const onGalleryKey = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight") { e.preventDefault(); step(1) }
     if (e.key === "ArrowLeft") { e.preventDefault(); step(-1) }
+  }
+
+  const onMainImageClick = () => {
+    if (swiped.current) {
+      swiped.current = false
+      return
+    }
+    setLightbox(index)
+  }
+
+  const flashShare = (msg: string) => {
+    setShareMsg(msg)
+    if (shareTimer.current) clearTimeout(shareTimer.current)
+    shareTimer.current = setTimeout(() => setShareMsg(""), 2500)
+  }
+
+  const share = async () => {
+    const url = window.location.href
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: product.name, url })
+        return
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      flashShare("Link copied")
+    } catch {
+      flashShare("Could not copy the link")
+    }
   }
 
   const add = (thenGo?: "bag") => {
@@ -126,7 +185,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       price: product.price,
       coverThumbnail: activeColor ? activeColor.coverThumbnail : product.coverThumbnail,
       size: isMtm ? MTM_SIZE : size!,
-      quantity: qty,
+      quantity: 1,
       color: activeColor ? activeColor.name : undefined,
       ...(isMtm && chosenProfile ? { profileId: chosenProfile.id, profileName: chosenProfile.name } : {}),
     })
@@ -142,17 +201,20 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     slug: product.slug,
     name: product.name,
     price: product.price,
-    coverThumbnail: product.coverThumbnail,
-    coverImage: product.coverImage,
+    coverThumbnail: activeColor ? activeColor.coverThumbnail : product.coverThumbnail,
+    coverImage: activeColor ? activeColor.coverImage : product.coverImage,
     sizes: product.sizes,
   }
 
+  const roundButton =
+    "flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11"
+
   return (
-    <div className="bg-white text-black">
-      <section className="pb-20 pt-6 sm:pt-10 lg:pb-32 lg:pt-12">
+    <div className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-black lg:pb-0">
+      <section className={`pt-6 sm:pt-10 lg:pt-12 ${related.length > 0 ? "pb-16 lg:pb-24" : "pb-20 lg:pb-32"}`}>
         <div className="container-max">
 
-          <nav aria-label="Breadcrumb" className="mb-6 font-jost text-xs uppercase tracking-[0.15em] text-black/50 lg:mb-10">
+          <nav aria-label="Breadcrumb" className="mb-6 font-jost text-xs uppercase tracking-[0.15em] text-black/60 lg:mb-10">
             <ol className="flex flex-wrap items-center gap-2">
               <li><Link href="/" className="hover:text-black">Home</Link></li>
               {crumbs.map((c) => (
@@ -168,9 +230,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
 
-            <FadeIn className="lg:col-span-7">
-              <div className="flex flex-col gap-3">
-
+            <div className="lg:col-span-7">
+              <div className="flex flex-col gap-3 lg:hidden">
                 <div
                   className="group relative aspect-[3/4] overflow-hidden bg-stone-100 focus-visible:ring-black"
                   role={hasMany ? "region" : undefined}
@@ -181,17 +242,27 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   onTouchStart={hasMany ? onTouchStart : undefined}
                   onTouchEnd={hasMany ? onTouchEnd : undefined}
                 >
-                  <Image
-                    key={active}
-                    src={active}
-                    alt={hasMany ? `${product.name}, image ${index + 1} of ${gallery.length}` : product.name}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 55vw"
-                    quality={90}
-                    className="object-cover"
-                  />
+                  <div className="absolute inset-0 cursor-zoom-in" onClick={onMainImageClick}>
+                    <Image
+                      key={active}
+                      src={active}
+                      alt={hasMany ? `${product.name}, image ${index + 1} of ${gallery.length}` : product.name}
+                      fill
+                      priority
+                      sizes="100vw"
+                      className="object-cover"
+                    />
+                  </div>
                   <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />
+
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(index)}
+                    aria-label="Zoom image"
+                    className={`absolute bottom-3 right-3 ${roundButton}`}
+                  >
+                    <Maximize2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                  </button>
 
                   {hasMany && (
                     <>
@@ -199,7 +270,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                         type="button"
                         onClick={() => step(-1)}
                         aria-label="Previous image"
-                        className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"
+                        className={`absolute left-3 top-1/2 -translate-y-1/2 ${roundButton}`}
                       >
                         <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                       </button>
@@ -207,7 +278,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                         type="button"
                         onClick={() => step(1)}
                         aria-label="Next image"
-                        className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 ${roundButton}`}
                       >
                         <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                       </button>
@@ -242,29 +313,62 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </ul>
                 )}
               </div>
-            </FadeIn>
+
+              <ul className={`hidden gap-3 lg:grid ${hasMany ? "lg:grid-cols-2" : "lg:grid-cols-1"}`} aria-label={`${product.name} images`}>
+                {gallery.map((src, i) => (
+                  <li key={src} className="relative aspect-[3/4] bg-stone-100">
+                    <button
+                      type="button"
+                      onClick={() => setLightbox(i)}
+                      aria-label={hasMany ? `Zoom image ${i + 1} of ${gallery.length}` : "Zoom image"}
+                      className="absolute inset-0 cursor-zoom-in overflow-hidden focus-visible:ring-black"
+                    >
+                      <Image
+                        src={src}
+                        alt={hasMany ? `${product.name}, image ${i + 1} of ${gallery.length}` : product.name}
+                        fill
+                        priority={i < 2}
+                        sizes={hasMany ? "30vw" : "55vw"}
+                        className="object-cover"
+                      />
+                    </button>
+                    {i === 0 && <WishlistButton item={wishlistItem} className="absolute right-3 top-3" />}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <FadeIn delay={100} className="lg:col-span-5">
               <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
-                <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
-                  {categoryMeta[category].title}
-                  {classification && <> · {classification.title}</>}
-                </p>
-                <h1 className="mt-2 font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">{product.name}</h1>
-                <p className="mt-3 font-jost text-xl tabular-nums">{formatRupees(product.price)}</p>
-                <p className="mt-1 font-jost text-xs text-black/50">Inclusive of all taxes. Complimentary shipping.</p>
-
-                {product.description && <p className="mt-6 whitespace-pre-line font-jost text-base leading-relaxed text-black/75">{product.description}</p>}
-
-                {collection && (
-                  <p className="mt-4 font-jost text-sm text-black/60">
-                    From the{" "}
-                    <Link href={`/collections/${collection.slug}`} className="underline underline-offset-4 hover:text-black">
-                      {collection.name}
-                    </Link>{" "}
-                    collection.
-                  </p>
+                {isNew && (
+                  <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/70">New in</p>
                 )}
+                <div className="flex items-start justify-between gap-4">
+                  <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">{product.name}</h1>
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={share}
+                      aria-label="Share"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-black transition-colors hover:border-black focus-visible:ring-black"
+                    >
+                      <Share2 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                    </button>
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      className={
+                        shareMsg
+                          ? "absolute right-0 top-full z-10 mt-2 whitespace-nowrap rounded-md bg-black px-2.5 py-1 font-jost text-xs text-white"
+                          : "sr-only"
+                      }
+                    >
+                      {shareMsg}
+                    </span>
+                  </div>
+                </div>
+                <p className="mt-3 font-jost text-xl tabular-nums">{formatRupees(product.price)}</p>
+                <p className="mt-1 font-jost text-xs text-black/60">Inclusive of all taxes. Complimentary shipping in India.</p>
 
                 {product.colors.length > 1 && (
                   <div className="mt-8">
@@ -318,7 +422,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                             className={`rounded-lg border px-4 py-3 text-left font-jost transition-colors focus-visible:ring-black ${on ? "border-black bg-black/[0.03]" : "border-black/15 hover:border-black"}`}
                           >
                             <span className="block text-sm font-semibold">{title}</span>
-                            <span className="mt-0.5 block text-xs text-black/55">{sub}</span>
+                            <span className="mt-0.5 block text-xs text-black/60">{sub}</span>
                           </button>
                         )
                       })}
@@ -379,7 +483,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                                 >
                                   <span className="min-w-0">
                                     <span className="block text-sm font-semibold">{p.name}</span>
-                                    <span className="mt-0.5 block truncate text-xs text-black/55">{profileSummary(p)}</span>
+                                    <span className="mt-0.5 block truncate text-xs text-black/60">{profileSummary(p)}</span>
                                   </span>
                                   {on && <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden />}
                                 </button>
@@ -400,7 +504,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                       </div>
                     )}
 
-                    <p className="mt-4 font-jost text-xs leading-relaxed text-black/55">
+                    <p className="mt-4 font-jost text-xs leading-relaxed text-black/60">
                       Same price as standard sizes. Ready in {MTM_LEAD_TIME}. We confirm your measurements with you before cutting.
                       Made-to-measure pieces cannot be returned, exchanged or altered.
                     </p>
@@ -437,20 +541,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 </div>
                 )}
 
-                <div className="mt-6">
-                  <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Quantity</span>
-                  <div className="mt-3 inline-flex items-center border border-black/20">
-                    <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label="Decrease quantity" className="flex h-11 w-11 items-center justify-center transition-colors hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent">
-                      <Minus className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                    </button>
-                    <span aria-live="polite" className="w-10 text-center font-jost text-sm font-semibold tabular-nums">{qty}</span>
-                    <button type="button" onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))} disabled={qty >= MAX_QTY} aria-label="Increase quantity" className="flex h-11 w-11 items-center justify-center transition-colors hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent">
-                      <Plus className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex flex-col gap-3">
+                <div ref={buyRef} className="mt-8 flex flex-col gap-3">
                   <button type="button" onClick={() => add()} className="btn-solid-dark w-full">
                     {added ? (
                       <span className="inline-flex items-center gap-2"><Check className="h-4 w-4" strokeWidth={2.5} aria-hidden /> Added to bag</span>
@@ -463,44 +554,106 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </button>
                 </div>
 
-                <ul className="mt-10 space-y-2 border-t border-black/10 pt-6 font-jost text-sm text-black/70">
-                  {DETAILS.map((d) => (
-                    <li key={d} className="flex gap-3">
-                      <span aria-hidden className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-black/60" />
-                      {d}
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-10 border-y border-black/10">
+                  {(prose || collection) && (
+                    <InfoSection title="Description" defaultOpen>
+                      {prose && <p className="whitespace-pre-line">{prose}</p>}
+                      {collection && (
+                        <p className={prose ? "mt-3" : undefined}>
+                          From the{" "}
+                          <Link href={`/collections/${collection.slug}`} className="underline underline-offset-4 hover:text-black">
+                            {collection.name}
+                          </Link>{" "}
+                          collection.
+                        </p>
+                      )}
+                    </InfoSection>
+                  )}
 
-                <p className="mt-6 font-jost text-sm text-black/60">
-                  Questions about fit or customisation?{" "}
-                  <a
-                    href={whatsappHref(`Hello, I have a question about the ${product.name}.`)}
-                    onClick={(e) => {
+                  <InfoSection title="Details and care">
+                    <dl className="space-y-2.5">
+                      {[...facts, { label: "Care", value: care }, { label: "Origin", value: "Designed and made in New Delhi, India" }].map((f) => (
+                        <div key={f.label} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4">
+                          <dt className="text-black/60">{f.label}</dt>
+                          <dd>{f.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </InfoSection>
 
-                      e.currentTarget.href = whatsappHref(`Hello, I have a question about the ${product.name} (${window.location.href}).`)
-                    }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-black"
-                  >
-                    <WhatsAppIcon className="h-3.5 w-3.5" /> Chat on WhatsApp
-                  </a>{" "}
-                  or{" "}
-                  <Link href={`/contact?design=${product.slug}`} className="underline underline-offset-4 hover:text-black">
-                    write to us
-                  </Link>
-                  .
-                </p>
+                  <InfoSection title="Delivery and returns">
+                    <ul className="space-y-2">
+                      <li>
+                        {mtmAvailable ? "Standard sizes are" : "This piece is"} dispatched within 4 weeks of payment verification.
+                      </li>
+                      {mtmAvailable && <li>Made to measure is dispatched within {MTM_LEAD_TIME} after we confirm your measurements.</li>}
+                      <li>Shipping within India is complimentary and usually takes 2 to 7 working days after dispatch.</li>
+                      <li>
+                        Unworn ready-to-wear pieces with tags attached can be exchanged within 7 days of delivery. We do not give refunds, except for damaged or incorrect items.
+                      </li>
+                      {mtmAvailable && <li>Made-to-measure pieces cannot be returned or exchanged.</li>}
+                      <li>We do not offer alterations on any order.</li>
+                    </ul>
+                    <Link href="/policies/shipping-returns" className="mt-4 inline-block underline underline-offset-4 hover:text-black">
+                      Read the full Shipping &amp; Returns policy
+                    </Link>
+                  </InfoSection>
 
-                <Link href={crumb.href} className="mt-8 inline-flex items-center gap-2 font-jost text-sm text-black/60 hover:text-black">
-                  <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Back to {crumb.label}
-                </Link>
+                  <InfoSection title="Need help?">
+                    <p>
+                      Questions about fit or customisation?{" "}
+                      <a
+                        href={whatsappHref(`Hello, I have a question about the ${product.name}.`)}
+                        onClick={(e) => {
+                          e.currentTarget.href = whatsappHref(`Hello, I have a question about the ${product.name} (${window.location.href}).`)
+                        }}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-black"
+                      >
+                        <WhatsAppIcon className="h-3.5 w-3.5" /> Chat on WhatsApp
+                      </a>{" "}
+                      or{" "}
+                      <Link href={`/contact?design=${product.slug}`} className="underline underline-offset-4 hover:text-black">
+                        write to us
+                      </Link>
+                      .
+                    </p>
+                  </InfoSection>
+                </div>
               </div>
             </FadeIn>
           </div>
         </div>
       </section>
+
+      {related.length > 0 && (
+        <section aria-labelledby="related-heading" className="border-t border-black/10 pb-20 pt-16 sm:pt-20 lg:pb-32 lg:pt-24">
+          <div className="container-max">
+            <FadeIn className="text-center">
+              <h2 id="related-heading" className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">
+                You may also like
+              </h2>
+              <span aria-hidden className="mx-auto mt-6 block h-px w-16 bg-black/30" />
+            </FadeIn>
+            <ul className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 lg:mt-14 lg:grid-cols-4 lg:gap-x-8">
+              {related.map((p, i) => (
+                <li key={p.slug}>
+                  <FadeIn delay={(i % 4) * 60}>
+                    <ProductCard product={p} />
+                  </FadeIn>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      <StickyBuyBar name={product.name} price={product.price} added={added} onAdd={() => add()} targetRef={buyRef} />
+
+      {lightbox !== null && (
+        <ImageLightbox images={gallery} startIndex={lightbox} alt={product.name} onClose={() => setLightbox(null)} />
+      )}
     </div>
   )
 }

@@ -14,6 +14,7 @@ const DESCRIPTION = "Every release from PIYUSH BHOLLA LABEL, newest first. Each 
 export const metadata: Metadata = {
   title: "Collections | Piyush Bholla",
   description: DESCRIPTION,
+  alternates: { canonical: "/collections" },
   openGraph: { title: "Collections | Piyush Bholla", description: DESCRIPTION, url: `${SITE_URL}/collections`, images: [{ url: `${SITE_URL}/images/hero/poster.jpg` }] },
 }
 
@@ -51,14 +52,14 @@ export default function CollectionsPage() {
                           />
                         </div>
                         <div className="mt-5">
-                          <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/50">
+                          <p className="font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/60">
                             {c.season || formatRelease(c.releaseDate)}
                           </p>
                           <h2 className="mt-2 font-cinzel text-xl font-bold uppercase tracking-[0.15em] transition-colors group-hover:text-black/60 sm:text-2xl">
                             {c.name}
                           </h2>
                           {c.description && <p className="mt-3 font-jost text-base leading-relaxed text-black/70">{c.description}</p>}
-                          <p className="mt-3 font-jost text-sm uppercase tracking-[0.2em] text-black/50">
+                          <p className="mt-3 font-jost text-sm uppercase tracking-[0.2em] text-black/60">
                             {count} {count === 1 ? "piece" : "pieces"}
                           </p>
                         </div>
