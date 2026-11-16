@@ -53,10 +53,20 @@ export default function WishlistClient() {
 function WishlistCard({ item }: { item: WishlistItem }) {
   const { removeFromWishlist } = useWishlist()
   const { addToCart } = useCart()
-  const [size, setSize] = useState<string>(item.sizes.length === 1 ? item.sizes[0] : "")
-  const [added, setAdded] = useState(false)
   const product = getProduct(item.slug)
+  const sizes = product?.sizes ?? item.sizes
+  const colors = product?.colors ?? []
+  const [size, setSize] = useState<string>(sizes.length === 1 ? sizes[0] : "")
+  const [colorSlug, setColorSlug] = useState<string | null>(() => {
+    const saved = colors.find((c) => c.coverImage === item.coverImage || c.coverThumbnail === item.coverThumbnail)
+    return (saved ?? colors.find((c) => c.slug === product?.defaultColor) ?? colors[0])?.slug ?? null
+  })
+  const [added, setAdded] = useState(false)
+  const color = colors.find((c) => c.slug === colorSlug) ?? null
   const mtmAvailable = !!product && KINDS_FOR_CATEGORY[product.category].length > 0
+  const colorQuery = color && colors.length > 1 ? `color=${color.slug}` : ""
+  const productHref = `/shop/${item.slug}${colorQuery ? `?${colorQuery}` : ""}`
+  const mtmHref = `/shop/${item.slug}?fit=mtm${colorQuery ? `&${colorQuery}` : ""}`
 
   const handleAdd = () => {
     if (!size) return
@@ -64,9 +74,10 @@ function WishlistCard({ item }: { item: WishlistItem }) {
       slug: item.slug,
       name: item.name,
       price: item.price,
-      coverThumbnail: item.coverThumbnail,
+      coverThumbnail: color ? color.coverThumbnail : item.coverThumbnail,
       size,
       quantity: 1,
+      ...(color ? { color: color.name } : {}),
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1800)
@@ -75,9 +86,10 @@ function WishlistCard({ item }: { item: WishlistItem }) {
   return (
     <article className="group flex h-full flex-col">
       <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
-        <Link href={`/shop/${item.slug}`} className="absolute inset-0">
+        <Link href={productHref} className="absolute inset-0">
           <Image
-            src={item.coverImage ?? item.coverThumbnail}
+            key={color?.slug ?? "item"}
+            src={color ? color.coverImage : item.coverImage ?? item.coverThumbnail}
             alt={item.name}
             fill
             sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -96,7 +108,7 @@ function WishlistCard({ item }: { item: WishlistItem }) {
 
       <div className="mt-4 flex flex-1 flex-col">
         <h2 className="font-cinzel text-sm font-bold uppercase tracking-[0.12em] sm:text-base">
-          <Link href={`/shop/${item.slug}`} className="hover:text-black/60">
+          <Link href={productHref} className="hover:text-black/60">
             {item.name}
           </Link>
         </h2>
@@ -104,9 +116,36 @@ function WishlistCard({ item }: { item: WishlistItem }) {
           {formatRupees(item.price)}
         </p>
 
-        {item.sizes.length > 1 && (
+        {colors.length > 1 && (
+          <div className="mt-4">
+            <p className="font-jost text-xs text-black/60">{color?.name}</p>
+            <div role="radiogroup" aria-label="Colour" className="mt-2 flex flex-wrap gap-2">
+              {colors.map((c) => {
+                const on = c.slug === colorSlug
+                return (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    aria-label={c.name}
+                    title={c.name}
+                    onClick={() => setColorSlug(c.slug)}
+                    className={`relative h-7 w-7 rounded-full border transition focus-visible:ring-black ${
+                      on ? "border-black ring-1 ring-black ring-offset-2" : "border-black/20 hover:border-black/50"
+                    }`}
+                  >
+                    <span className="absolute inset-[3px] rounded-full" style={{ backgroundColor: c.hex }} aria-hidden />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {sizes.length > 1 && (
           <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
-            {item.sizes.map((s) => {
+            {sizes.map((s) => {
               const active = s === size
               return (
                 <button
@@ -139,7 +178,7 @@ function WishlistCard({ item }: { item: WishlistItem }) {
 
         {mtmAvailable && (
           <Link
-            href={`/shop/${item.slug}?fit=mtm`}
+            href={mtmHref}
             className="mt-3 text-center font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70 underline underline-offset-4 transition-colors hover:text-black"
           >
             Made to measure

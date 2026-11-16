@@ -85,8 +85,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   }, [mtmKinds])
 
   useEffect(() => {
-    if (mtmAvailable && new URLSearchParams(window.location.search).get("fit") === "mtm") setMode("mtm")
-  }, [mtmAvailable])
+    const params = new URLSearchParams(window.location.search)
+    if (mtmAvailable && params.get("fit") === "mtm") setMode("mtm")
+    const wanted = params.get("color")
+    if (wanted && product.colors.some((c) => c.slug === wanted)) setColorSlug(wanted)
+  }, [mtmAvailable, product.colors])
 
   useEffect(() => {
     if (mode === "mtm" && user && profiles === null) loadProfiles()
@@ -438,7 +441,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                       <div className="mt-3 h-16 animate-pulse rounded-lg bg-stone-100" />
                     ) : !user ? (
                       <p className="mt-3 rounded-lg border border-black/10 p-4 font-jost text-sm text-black/70">
-                        <Link href={`/login?next=${encodeURIComponent(`/shop/${product.slug}?fit=mtm`)}`} className="font-semibold text-black underline underline-offset-4">Sign in</Link>{" "}
+                        <Link href={`/login?next=${encodeURIComponent(`/shop/${product.slug}?fit=mtm${activeColor && product.colors.length > 1 ? `&color=${activeColor.slug}` : ""}`)}`} className="font-semibold text-black underline underline-offset-4">Sign in</Link>{" "}
                         to save your measurements and order made to measure.
                       </p>
                     ) : profilesError ? (
