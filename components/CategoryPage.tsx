@@ -1,16 +1,8 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import CategoryListing, { type ListingChip } from "@/components/CategoryListing"
-import {
-  ACTIVE_CATEGORY_SLUGS,
-  categoryMeta,
-  getCategoryImage,
-  getCategoryProducts,
-  getCategoryViews,
-  getClassificationProducts,
-  getNewArrivals,
-  type CategorySlug,
-} from "@/lib/data/categories"
+import { categoryMeta, type CategorySlug } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 import { getBestsellers } from "@/lib/services/bestsellers"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
@@ -21,12 +13,13 @@ const VIEW_COPY: Record<"new-arrivals" | "bestsellers", (category: string) => st
   bestsellers: (category) => `The ${category.toLowerCase()} pieces our customers come back for.`,
 }
 
-export function categoryViewMetadata(category: CategorySlug, view?: string): Metadata {
-  if (!ACTIVE_CATEGORY_SLUGS.includes(category)) return { robots: { index: false, follow: false } }
+export async function categoryViewMetadata(category: CategorySlug, view?: string): Promise<Metadata> {
+  const catalog = await getVisibleCatalog()
+  if (!catalog.activeCategorySlugs.includes(category)) return { robots: { index: false, follow: false } }
 
   const meta = categoryMeta[category]
   const path = view ? `/${category}/${view}` : `/${category}`
-  const views = getCategoryViews(category)
+  const views = catalog.getCategoryViews(category)
   const current = view ? views.find((candidate) => candidate.slug === view) : undefined
   if (view && !current) return {}
 
@@ -41,7 +34,7 @@ export function categoryViewMetadata(category: CategorySlug, view?: string): Met
   }
 
   const full = `${title} | ${BRAND}`
-  const image = getCategoryImage(category)
+  const image = catalog.getCategoryImage(category)
   return {
     title: full,
     description,
@@ -51,11 +44,12 @@ export function categoryViewMetadata(category: CategorySlug, view?: string): Met
 }
 
 export default async function CategoryPage({ category, view }: { category: CategorySlug; view?: string }) {
-  const products = getCategoryProducts(category)
+  const catalog = await getVisibleCatalog()
+  const products = catalog.getCategoryProducts(category)
   if (products.length === 0) notFound()
 
   const meta = categoryMeta[category]
-  const views = getCategoryViews(category)
+  const views = catalog.getCategoryViews(category)
   const current = view ? views.find((candidate) => candidate.slug === view) : undefined
   if (view && !current) notFound()
 
@@ -65,17 +59,17 @@ export default async function CategoryPage({ category, view }: { category: Categ
   ]
 
   if (!current) {
-    return <CategoryListing title={meta.title} description={meta.description} banner={{ src: getCategoryImage(category) }} chips={chips} products={products} />
+    return <CategoryListing title={meta.title} description={meta.description} banner={{ src: catalog.getCategoryImage(category) }} chips={chips} products={products} />
   }
 
   const eyebrow = { label: meta.title, href: `/${category}` }
 
   if (current.kind === "new-arrivals") {
-    return <CategoryListing eyebrow={eyebrow} title="New Arrivals" description={VIEW_COPY["new-arrivals"](meta.title)} chips={chips} products={getNewArrivals(category)} />
+    return <CategoryListing eyebrow={eyebrow} title="New Arrivals" description={VIEW_COPY["new-arrivals"](meta.title)} chips={chips} products={catalog.getNewArrivals(category)} />
   }
 
   if (current.kind === "bestsellers") {
-    const result = await getBestsellers(category)
+    const result = await getBestsellers(products)
     return (
       <CategoryListing
         eyebrow={eyebrow}
@@ -95,7 +89,7 @@ export default async function CategoryPage({ category, view }: { category: Categ
       title={current.title}
       description={`${current.title} for ${meta.title.toLowerCase()}.`}
       chips={chips}
-      products={getClassificationProducts(category, current.slug)}
+      products={catalog.getClassificationProducts(category, current.slug)}
     />
   )
 }

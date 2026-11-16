@@ -2,14 +2,16 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import FadeIn from "@/components/FadeIn"
-import { ACTIVE_CATEGORY_SLUGS, categoryMeta } from "@/lib/data/categories"
+import { categoryMeta } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
 export const metadata: Metadata = {
   title: "Page not found | Piyush Bholla",
   robots: { index: false },
 }
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { activeCategorySlugs } = await getVisibleCatalog()
   return (
     <div className="bg-white text-black">
       <section className="flex min-h-[60vh] items-center pb-20 pt-12 sm:pb-24 sm:pt-16">
@@ -26,7 +28,7 @@ export default function NotFound() {
               <Link href="/" className="btn-outline-dark">Home</Link>
             </div>
             <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 font-jost text-sm text-black/60">
-              {ACTIVE_CATEGORY_SLUGS.map((category) => (
+              {activeCategorySlugs.map((category) => (
                 <li key={category}><Link href={`/${category}`} className="hover:text-black">{categoryMeta[category].title}</Link></li>
               ))}
               <li><Link href="/collections" className="hover:text-black">Collections</Link></li>

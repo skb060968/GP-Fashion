@@ -13,8 +13,9 @@ import EmptyState from "@/components/EmptyState"
 import { getProduct } from "@/lib/data/categories"
 import { KINDS_FOR_CATEGORY } from "@/lib/measurements/fields"
 
-export default function WishlistClient() {
+export default function WishlistClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
   const { wishlist } = useWishlist()
+  const hidden = new Set(hiddenSlugs)
 
   return (
     <div className="bg-white text-black">
@@ -38,7 +39,7 @@ export default function WishlistClient() {
               {wishlist.map((item, index) => (
                 <li key={item.slug}>
                   <FadeIn delay={(index % 4) * 60} className="h-full">
-                    <WishlistCard item={item} />
+                    <WishlistCard item={item} unavailable={hidden.has(item.slug)} />
                   </FadeIn>
                 </li>
               ))}
@@ -50,10 +51,10 @@ export default function WishlistClient() {
   )
 }
 
-function WishlistCard({ item }: { item: WishlistItem }) {
+function WishlistCard({ item, unavailable }: { item: WishlistItem; unavailable: boolean }) {
   const { removeFromWishlist } = useWishlist()
   const { addToCart } = useCart()
-  const product = getProduct(item.slug)
+  const product = unavailable ? undefined : getProduct(item.slug)
   const sizes = product?.sizes ?? item.sizes
   const colors = product?.colors ?? []
   const [size, setSize] = useState<string>(sizes.length === 1 ? sizes[0] : "")
@@ -67,6 +68,39 @@ function WishlistCard({ item }: { item: WishlistItem }) {
   const colorQuery = color && colors.length > 1 ? `color=${color.slug}` : ""
   const productHref = `/shop/${item.slug}${colorQuery ? `?${colorQuery}` : ""}`
   const mtmHref = `/shop/${item.slug}?fit=mtm${colorQuery ? `&${colorQuery}` : ""}`
+
+  const removeButton = (
+    <button
+      type="button"
+      onClick={() => removeFromWishlist(item.slug)}
+      aria-label={`Remove ${item.name} from wishlist`}
+      className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow-sm transition-colors hover:bg-white focus-visible:ring-black"
+    >
+      <X className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+    </button>
+  )
+
+  if (unavailable) {
+    return (
+      <article className="flex h-full flex-col">
+        <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
+          <Image
+            src={item.coverImage ?? item.coverThumbnail}
+            alt={item.name}
+            fill
+            sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            className="object-cover opacity-50 grayscale"
+          />
+          {removeButton}
+        </div>
+        <div className="mt-4 flex flex-1 flex-col">
+          <h2 className="font-cinzel text-sm font-bold uppercase tracking-[0.12em] text-black/50 sm:text-base">{item.name}</h2>
+          <p className="mt-1 font-jost text-sm text-black/50 tabular-nums sm:text-base">{formatRupees(item.price)}</p>
+          <p className="mt-4 font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Currently unavailable</p>
+        </div>
+      </article>
+    )
+  }
 
   const handleAdd = () => {
     if (!size) return
@@ -96,14 +130,7 @@ function WishlistCard({ item }: { item: WishlistItem }) {
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
         </Link>
-        <button
-          type="button"
-          onClick={() => removeFromWishlist(item.slug)}
-          aria-label={`Remove ${item.name} from wishlist`}
-          className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow-sm transition-colors hover:bg-white focus-visible:ring-black"
-        >
-          <X className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-        </button>
+        {removeButton}
       </div>
 
       <div className="mt-4 flex flex-1 flex-col">

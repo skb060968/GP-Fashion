@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import WishlistClient from "./WishlistClient"
+import { getHiddenSlugs } from "@/lib/catalog/visibility"
 
 export const metadata: Metadata = {
   title: "Wishlist | Piyush Bholla",
@@ -7,6 +8,6 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-export default function WishlistPage() {
-  return <WishlistClient />
+export default async function WishlistPage() {
+  return <WishlistClient hiddenSlugs={await getHiddenSlugs()} />
 }

@@ -7,6 +7,8 @@ import { CartProvider } from "@/context/CartContext"
 import { WishlistProvider } from "@/context/WishlistContext"
 import { UserProvider } from "@/context/UserContext"
 import SiteAnalytics from "@/components/SiteAnalytics"
+import { storefrontNav } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 import type { Metadata } from "next"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
@@ -18,11 +20,12 @@ export const metadata: Metadata = {
     "Designer menswear and womenswear by Piyush Bholla, made in New Delhi. Ready to wear in standard sizes or made to measure at the same price.",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const nav = storefrontNav(await getVisibleCatalog())
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className="flex min-h-screen flex-col">
@@ -30,7 +33,7 @@ export default function RootLayout({
           <CartProvider>
             <WishlistProvider>
               <ClientGuards />
-              <LayoutShell>{children}</LayoutShell>
+              <LayoutShell nav={nav}>{children}</LayoutShell>
             </WishlistProvider>
           </CartProvider>
         </UserProvider>

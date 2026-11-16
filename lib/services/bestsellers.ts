@@ -1,7 +1,7 @@
 
 
 import { prisma } from "@/lib/prisma"
-import { getCategoryProducts, type CategorySlug, type Product } from "@/lib/data/categories"
+import type { Product } from "@/lib/data/categories"
 import { OrderStatus } from "@prisma/client"
 
 const EXCLUDED_STATUSES: OrderStatus[] = ["REJECTED", "CANCELLED", "REFUNDED"]
@@ -37,8 +37,7 @@ async function unitsSoldSince(since: Date): Promise<Map<string, number>> {
   return new Map(rows.map((r) => [r.slug, r._sum.quantity ?? 0]))
 }
 
-export async function getBestsellers(category: CategorySlug): Promise<{ products: Product[]; source: "sales" | "manual" }> {
-  const pool = getCategoryProducts(category)
+export async function getBestsellers(pool: Product[]): Promise<{ products: Product[]; source: "sales" | "manual" }> {
   if (pool.length === 0) return { products: [], source: "manual" }
 
   try {

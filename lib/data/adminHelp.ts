@@ -254,6 +254,42 @@ export const adminHelpTopics: HelpTopic[] = [
             "Include generated TypeScript, generated WebP additions, and generated WebP deletions in the pushed change.",
           ] },
           { type: "note", tone: "warning", text: "Catalogue source photographs are ignored by Git, and the whole catalogue/ and scripts/ folders are excluded from Vercel uploads. Production depends on the generated lib/data files and public/images/shop assets created locally." },
+          { type: "note", tone: "info", text: "To take a piece off the site for a while, hide it from Admin → Products instead of deleting its folder. See Hide a product." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "hide-product",
+    title: "Hide a product",
+    summary: "Take a piece off the live site from the admin panel, without deleting its folder or deploying.",
+    keywords: ["hide product", "unhide", "show product", "take down", "unavailable", "sold out", "products"],
+    sections: [
+      {
+        title: "Hide or show a piece",
+        blocks: [
+          { type: "steps", items: [
+            "Open Admin → Products.",
+            "Find the piece and press Hide. The prompt shows how many signed-in customers have it in their bag or wishlist, and how many open orders include it.",
+            "Press Hide product. The site updates within a few seconds.",
+            "To bring it back, open the Hidden filter and press Show on site.",
+          ] },
+          { type: "text", text: "Hiding is saved in the database of the site you are signed in to. Hide on the live site's admin for real changes; hiding on the test site does not affect the live site. The catalogue folder and images stay untouched, and regenerating the catalogue does not bring a hidden piece back." },
+        ],
+      },
+      {
+        title: "What customers see",
+        blocks: [
+          { type: "list", items: [
+            "The piece disappears from category, collection, New Arrivals, Bestsellers, You may also like, All Pieces and search, the sitemap and Google product data.",
+            "Its product page shows Page not found.",
+            "In a bag it is marked No longer available and checkout is blocked until it is removed. The server also refuses orders for it.",
+            "In a wishlist it shows Currently unavailable, with Add to bag and Made to measure turned off.",
+            "If every piece in a category is hidden, the category leaves the menu, home page and footer until one is shown again.",
+            "Placed orders, invoices, tracking, admin order pages and Measurements are not affected.",
+          ] },
+          { type: "note", tone: "info", text: "Guests' bags and wishlists live only in their browser, so the counts in the prompt cover signed-in customers only. Guests still see the piece as unavailable." },
+          { type: "note", tone: "warning", text: "Hiding is matched by folder name. Renaming a hidden product's folder makes it a new product that is visible until you hide it again." },
         ],
       },
     ],
@@ -612,7 +648,7 @@ export const adminHelpTopics: HelpTopic[] = [
             ["Collection has no folder", "Create the matching collection folder or remove/reassign the product reference"],
             ["Category missing from menu", "It has no generated products; regenerate after adding one"],
             ["Classification missing", "No product in that category currently uses the slug"],
-            ["Old product still live", "Delete its source folder, rerun catalogue, and include generated deletions in the push"],
+            ["Old product still live", "Hide it in Admin → Products, or delete its source folder, rerun catalogue, and include generated deletions in the push"],
             ["Different visual size between domains", "Browser zoom is stored per domain; press Ctrl+0 on each site"],
             ["Font letters look mixed", "Verify complete Fontsource packages are installed; do not restore old subset WOFF2 files"],
             ["Prisma missing table/column", "Check the correct database branch and run prisma migrate status/deploy"],

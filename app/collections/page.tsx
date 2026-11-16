@@ -5,7 +5,8 @@ import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import EmptyState from "@/components/EmptyState"
 import { Layers } from "lucide-react"
-import { getCollections, getCollectionProducts } from "@/lib/data/categories"
+import { getCollections } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
@@ -22,8 +23,9 @@ function formatRelease(iso: string) {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { month: "long", year: "numeric", timeZone: "UTC" })
 }
 
-export default function CollectionsPage() {
+export default async function CollectionsPage() {
   const collections = getCollections()
+  const catalog = await getVisibleCatalog()
 
   return (
     <div className="bg-white text-black">
@@ -36,7 +38,7 @@ export default function CollectionsPage() {
           ) : (
             <ul className="mt-14 grid grid-cols-1 gap-10 lg:mt-16 lg:grid-cols-2 lg:gap-12">
               {collections.map((c, i) => {
-                const count = getCollectionProducts(c.slug).length
+                const count = catalog.getCollectionProducts(c.slug).length
                 return (
                   <li key={c.slug}>
                     <FadeIn delay={(i % 2) * 100}>

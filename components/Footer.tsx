@@ -3,10 +3,12 @@ import Image from "next/image"
 import { Instagram, Mail, Phone } from "lucide-react"
 import { content } from "@/lib/data"
 import AnchorLink from "@/components/AnchorLink"
+import type { StorefrontNav } from "@/lib/data/categories"
 
-export default function Footer() {
+export default function Footer({ nav }: { nav: StorefrontNav }) {
   const { footer, contact } = content
   const year = new Date().getFullYear()
+  const quickLinks = [...nav.categories.map((category) => ({ label: category.title, href: `/${category.slug}` })), ...footer.quickLinks]
 
   return (
     <footer className="border-t border-black/10 bg-white text-black">
@@ -66,7 +68,7 @@ export default function Footer() {
               {footer.quickLinksHeading}
             </h3>
             <ul className="mt-5 space-y-3 font-jost text-sm text-black/75 sm:text-base">
-              {footer.quickLinks.map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.href}>
                   <AnchorLink href={link.href} className="transition-colors hover:text-black">
                     {link.label}

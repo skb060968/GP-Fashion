@@ -2,9 +2,11 @@ import { describe, it, expect } from "vitest"
 import {
   ACTIVE_CATEGORY_SLUGS,
   CATEGORY_SLUGS,
+  createCatalog,
   getAllProducts,
   getCategoryProducts,
   getCategoryViews,
+  storefrontNav,
   getClassification,
   getClassifications,
   getClassificationProducts,
@@ -116,6 +118,59 @@ describe("new arrivals", () => {
       for (const product of result) expect(product.releaseDate).toBe(latest)
     })
   }
+})
+
+describe("hidden products", () => {
+  const all = getAllProducts()
+  const target = all.find((product) => getCategoryProducts(product.category).length > 1) ?? all[0]
+
+  it("with nothing hidden matches the full catalogue", () => {
+    const catalog = createCatalog([])
+    expect(catalog.products).toEqual(all)
+    expect(catalog.activeCategorySlugs).toEqual(ACTIVE_CATEGORY_SLUGS)
+  })
+
+  it("removes a hidden product from every listing", () => {
+    const catalog = createCatalog([target.slug])
+    expect(catalog.getProduct(target.slug)).toBeUndefined()
+    expect(catalog.products.some((p) => p.slug === target.slug)).toBe(false)
+    expect(catalog.getCategoryProducts(target.category).some((p) => p.slug === target.slug)).toBe(false)
+    expect(catalog.getClassificationProducts(target.category, target.classification).some((p) => p.slug === target.slug)).toBe(false)
+    expect(catalog.getNewArrivals(target.category).some((p) => p.slug === target.slug)).toBe(false)
+    if (target.collection) expect(catalog.getCollectionProducts(target.collection).some((p) => p.slug === target.slug)).toBe(false)
+    for (const other of catalog.products) expect(catalog.getRelatedProducts(other, 10).some((p) => p.slug === target.slug)).toBe(false)
+  })
+
+  it("keeps the full catalogue unchanged for admin and page generation", () => {
+    createCatalog([target.slug])
+    expect(getProduct(target.slug)).toBe(target)
+    expect(getAllProducts()).toContain(target)
+  })
+
+  it("drops a category from the menu once all its products are hidden", () => {
+    const category = ACTIVE_CATEGORY_SLUGS[0]
+    const catalog = createCatalog(getCategoryProducts(category).map((p) => p.slug))
+    expect(catalog.activeCategorySlugs).not.toContain(category)
+    expect(catalog.getCategoryViews(category)).toEqual([])
+    expect(catalog.isActiveCategorySlug(category)).toBe(false)
+    expect(storefrontNav(catalog).categories.some((c) => c.slug === category)).toBe(false)
+  })
+
+  it("drops a classification view when its only products are hidden", () => {
+    for (const category of ACTIVE_CATEGORY_SLUGS) {
+      for (const classification of getClassifications(category)) {
+        const members = getClassificationProducts(category, classification.slug)
+        if (members.length === getCategoryProducts(category).length) continue
+        const catalog = createCatalog(members.map((p) => p.slug))
+        expect(catalog.getCategoryViews(category).some((view) => view.slug === classification.slug)).toBe(false)
+        return
+      }
+    }
+  })
+
+  it("ignores unknown slugs", () => {
+    expect(createCatalog(["no-such-piece"]).products).toEqual(all)
+  })
 })
 
 describe("bestsellers ranking", () => {

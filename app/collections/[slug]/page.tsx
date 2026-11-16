@@ -1,13 +1,12 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import CategoryListing from "@/components/CategoryListing"
-import { getCollection, getCollectionProducts, getCollections } from "@/lib/data/categories"
+import { getCollection, getCollections } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 type Props = { params: Promise<{ slug: string }> }
-
-export const dynamicParams = false
 
 export function generateStaticParams() {
   return getCollections().map((c) => ({ slug: c.slug }))
@@ -31,6 +30,7 @@ export default async function CollectionPage({ params }: Props) {
   const { slug } = await params
   const collection = getCollection(slug)
   if (!collection) notFound()
+  const catalog = await getVisibleCatalog()
 
   return (
     <CategoryListing
@@ -38,7 +38,7 @@ export default async function CollectionPage({ params }: Props) {
       title={collection.name}
       description={collection.description || undefined}
       banner={{ src: collection.coverImage, alt: collection.name }}
-      products={getCollectionProducts(slug)}
+      products={catalog.getCollectionProducts(slug)}
       emptyMessage="Pieces from this collection are being added."
     />
   )

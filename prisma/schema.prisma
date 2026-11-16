@@ -231,6 +231,11 @@ model Coupon {
   createdAt      DateTime     @default(now())
 }
 
+model HiddenProduct {
+  slug     String   @id
+  hiddenAt DateTime @default(now())
+}
+
 model AdminSession {
   id          String   @id @default(cuid())
   tokenHash   String   @unique

@@ -10,9 +10,11 @@ import FadeIn from "@/components/FadeIn"
 import PageHeading from "@/components/PageHeading"
 import EmptyState from "@/components/EmptyState"
 
-export default function BagClient() {
+export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
 
+  const hidden = new Set(hiddenSlugs)
+  const unavailableCount = cart.filter((i) => hidden.has(i.slug)).length
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0)
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
 
@@ -37,36 +39,54 @@ export default function BagClient() {
             <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
 
               <ul className="divide-y divide-black/10 lg:col-span-8">
-                {cart.map((item, index) => (
+                {cart.map((item, index) => {
+                  const unavailable = hidden.has(item.slug)
+                  const image = (
+                    <Image
+                      src={item.coverThumbnail}
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 640px) 6rem, 8rem"
+                      className={`object-cover ${unavailable ? "opacity-50 grayscale" : ""}`}
+                    />
+                  )
+                  return (
                   <li key={cartLineKey(item)} className="py-8 first:pt-0">
                     <FadeIn delay={index * 60}>
                       <div className="flex gap-5 sm:gap-8">
-                        <Link
-                          href={`/shop/${item.slug}`}
-                          className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-stone-100 sm:w-32"
-                        >
-                          <Image
-                            src={item.coverThumbnail}
-                            alt={item.name}
-                            fill
-                            sizes="(max-width: 640px) 6rem, 8rem"
-                            className="object-cover"
-                          />
-                        </Link>
+                        {unavailable ? (
+                          <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-stone-100 sm:w-32">{image}</div>
+                        ) : (
+                          <Link
+                            href={`/shop/${item.slug}`}
+                            className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-stone-100 sm:w-32"
+                          >
+                            {image}
+                          </Link>
+                        )}
 
                         <div className="flex min-w-0 flex-1 flex-col">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.12em] sm:text-lg">
-                                <Link href={`/shop/${item.slug}`} className="hover:text-black/60">
-                                  {item.name}
-                                </Link>
+                                {unavailable ? (
+                                  <span className="text-black/50">{item.name}</span>
+                                ) : (
+                                  <Link href={`/shop/${item.slug}`} className="hover:text-black/60">
+                                    {item.name}
+                                  </Link>
+                                )}
                               </h2>
                               <p className="mt-1.5 font-jost text-sm text-black/60">
                                 {itemSizeLabel(item)}
                                 {item.color && <> · {item.color}</>}
                               </p>
-                              {item.profileId && (
+                              {unavailable && (
+                                <p className="mt-2 font-jost text-sm font-semibold text-red-700">
+                                  No longer available. Please remove it to check out.
+                                </p>
+                              )}
+                              {item.profileId && !unavailable && (
                                 <p className="mt-1 font-jost text-xs text-black/60">
                                   Ready in {MTM_LEAD_TIME}. We confirm your measurements before cutting.
                                 </p>
@@ -103,8 +123,9 @@ export default function BagClient() {
                               <button
                                 type="button"
                                 onClick={() => updateQuantity(item, item.quantity + 1)}
+                                disabled={unavailable}
                                 aria-label="Increase quantity"
-                                className="flex h-10 w-10 items-center justify-center transition-colors hover:bg-black/5 focus-visible:ring-black"
+                                className="flex h-10 w-10 items-center justify-center transition-colors hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent focus-visible:ring-black"
                               >
                                 <Plus className="h-4 w-4" strokeWidth={1.5} aria-hidden />
                               </button>
@@ -125,7 +146,8 @@ export default function BagClient() {
                       </div>
                     </FadeIn>
                   </li>
-                ))}
+                  )
+                })}
               </ul>
 
               <FadeIn delay={120} className="lg:col-span-4">
@@ -150,9 +172,21 @@ export default function BagClient() {
                     <span className="text-lg font-semibold tabular-nums">{formatRupees(subtotal)}</span>
                   </div>
 
-                  <Link href="/checkout/address" className="btn-solid-dark mt-8 w-full">
-                    Checkout
-                  </Link>
+                  {unavailableCount > 0 ? (
+                    <>
+                      <p role="alert" className="mt-6 font-jost text-sm text-red-700">
+                        {unavailableCount === 1 ? "One piece in your bag is" : `${unavailableCount} pieces in your bag are`} no longer available. Remove{" "}
+                        {unavailableCount === 1 ? "it" : "them"} to check out.
+                      </p>
+                      <button type="button" disabled className="btn-solid-dark mt-4 w-full cursor-not-allowed opacity-40 hover:bg-black hover:text-white">
+                        Checkout
+                      </button>
+                    </>
+                  ) : (
+                    <Link href="/checkout/address" className="btn-solid-dark mt-8 w-full">
+                      Checkout
+                    </Link>
+                  )}
                   <Link
                     href="/"
                     className="mt-4 block text-center font-jost text-sm text-black/60 underline-offset-4 transition-colors hover:text-black hover:underline"

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest"
 import * as fc from "fast-check"
-import sitemap, { STATIC_PATHS, categoryBasePaths, categoryViewPaths } from "@/app/sitemap"
+import { buildSitemap, STATIC_PATHS, categoryBasePaths, categoryViewPaths } from "@/app/sitemap"
 import {
   ACTIVE_CATEGORY_SLUGS,
   CATEGORY_SLUGS,
+  createCatalog,
   getAllProducts,
   getCategoryProducts,
   getCollections,
@@ -11,8 +12,25 @@ import {
 
 const BASE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
+describe("Sitemap with hidden products", () => {
+  const all = getAllProducts()
+
+  it("leaves out a hidden product and keeps the rest", () => {
+    const hidden = all[0]
+    const urls = buildSitemap(createCatalog([hidden.slug])).map((entry) => entry.url)
+    expect(urls).not.toContain(`${BASE_URL}/shop/${hidden.slug}`)
+    for (const product of all.slice(1)) expect(urls).toContain(`${BASE_URL}/shop/${product.slug}`)
+  })
+
+  it("drops a category and its views once every product in it is hidden", () => {
+    const category = ACTIVE_CATEGORY_SLUGS[0]
+    const urls = buildSitemap(createCatalog(getCategoryProducts(category).map((product) => product.slug))).map((entry) => entry.url)
+    expect(urls.some((url) => url === `${BASE_URL}/${category}` || url.startsWith(`${BASE_URL}/${category}/`))).toBe(false)
+  })
+})
+
 describe("Sitemap completeness", () => {
-  const entries = sitemap()
+  const entries = buildSitemap()
   const urls = entries.map((entry) => entry.url)
 
   it("contains every static public page", () => {

@@ -15,6 +15,7 @@ import { createRateLimiter } from "@/lib/security/rateLimiter";
 import { orderAccessToken } from "@/lib/security/orderAccess";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 import { getProduct } from "@/lib/data/categories";
+import { getHiddenSlugs } from "@/lib/catalog/visibility";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
@@ -85,11 +86,18 @@ export async function POST(req: Request) {
       : [];
     const profileById = new Map(profiles.map((p) => [p.id, p]));
 
+    const hiddenSlugs = new Set(await getHiddenSlugs());
     const items = [];
     for (const submitted of submittedItems) {
       const product = getProduct(submitted.slug);
       if (!product) {
         return NextResponse.json({ error: "A product or selected size is no longer available" }, { status: 400 });
+      }
+      if (hiddenSlugs.has(product.slug)) {
+        return NextResponse.json(
+          { error: `${product.name} is currently unavailable. Please remove it from your bag to continue.`, unavailable: [product.slug] },
+          { status: 400 }
+        );
       }
 
       let measurements: MeasurementSnapshot | null = null;

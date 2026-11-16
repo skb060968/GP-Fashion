@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import BagClient from "./BagClient"
+import { getHiddenSlugs } from "@/lib/catalog/visibility"
 
 export const metadata: Metadata = {
   title: "Shopping Bag | Piyush Bholla",
@@ -7,6 +8,6 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-export default function BagPage() {
-  return <BagClient />
+export default async function BagPage() {
+  return <BagClient hiddenSlugs={await getHiddenSlugs()} />
 }

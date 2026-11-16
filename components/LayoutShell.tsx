@@ -5,8 +5,9 @@ import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import SplashScreen from "@/components/SplashScreen"
 import WhatsAppButton from "@/components/WhatsAppButton"
+import type { StorefrontNav } from "@/lib/data/categories"
 
-export default function LayoutShell({ children }: { children: React.ReactNode }) {
+export default function LayoutShell({ children, nav }: { children: React.ReactNode; nav: StorefrontNav }) {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith("/admin")
   const isHome = pathname === "/"
@@ -24,11 +25,11 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
         </a>
       )}
       {!isAdmin && <SplashScreen />}
-      {!isAdmin && <Navbar />}
+      {!isAdmin && <Navbar nav={nav} />}
       <main id="main" tabIndex={-1} className={`flex-grow outline-none ${offset}`}>
         {children}
       </main>
-      {!isAdmin && <Footer />}
+      {!isAdmin && <Footer nav={nav} />}
       {!isAdmin && <WhatsAppButton />}
     </>
   )

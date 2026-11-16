@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next"
-import { ACTIVE_CATEGORY_SLUGS, getAllProducts, getCategoryViews, getCollections } from "@/lib/data/categories"
+import { fullCatalog, getCollections, type Catalog } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
 const BASE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
@@ -15,15 +16,15 @@ export const STATIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitema
   { path: "/policies/privacy", changeFrequency: "yearly", priority: 0.3 },
 ]
 
-export function categoryBasePaths(): string[] {
-  return ACTIVE_CATEGORY_SLUGS.map((category) => `/${category}`)
+export function categoryBasePaths(catalog: Catalog = fullCatalog): string[] {
+  return catalog.activeCategorySlugs.map((category) => `/${category}`)
 }
 
-export function categoryViewPaths(): string[] {
-  return ACTIVE_CATEGORY_SLUGS.flatMap((category) => getCategoryViews(category).map((view) => `/${category}/${view.slug}`))
+export function categoryViewPaths(catalog: Catalog = fullCatalog): string[] {
+  return catalog.activeCategorySlugs.flatMap((category) => catalog.getCategoryViews(category).map((view) => `/${category}/${view.slug}`))
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export function buildSitemap(catalog: Catalog = fullCatalog): MetadataRoute.Sitemap {
   const now = new Date().toISOString()
   const entry = (path: string, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"], priority: number) => ({
     url: `${BASE_URL}${path}`,
@@ -33,10 +34,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   })
 
   const staticPages = STATIC_PATHS.map((page) => entry(page.path, page.changeFrequency, page.priority))
-  const categoryPages = categoryBasePaths().map((path) => entry(path, "weekly", 0.9))
-  const viewPages = categoryViewPaths().map((path) => entry(path, "weekly", 0.7))
+  const categoryPages = categoryBasePaths(catalog).map((path) => entry(path, "weekly", 0.9))
+  const viewPages = categoryViewPaths(catalog).map((path) => entry(path, "weekly", 0.7))
   const collectionPages = getCollections().map((collection) => entry(`/collections/${collection.slug}`, "monthly", 0.8))
-  const productPages = getAllProducts().map((product) => entry(`/shop/${product.slug}`, "weekly", 0.8))
+  const productPages = catalog.products.map((product) => entry(`/shop/${product.slug}`, "weekly", 0.8))
 
   return [...staticPages, ...categoryPages, ...viewPages, ...collectionPages, ...productPages]
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return buildSitemap(await getVisibleCatalog())
 }

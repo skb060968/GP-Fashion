@@ -2,13 +2,12 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import ProductDetailClient from "./ProductDetailClient"
 import { categoryMeta, getAllProducts, getClassification, getProduct } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 import { generateBreadcrumbJsonLd, generateProductJsonLd, serializeJsonLd } from "@/lib/seo/jsonld"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
 type Props = { params: Promise<{ slug: string }> }
-
-export const dynamicParams = false
 
 export function generateStaticParams() {
   return getAllProducts().map((product) => ({ slug: product.slug }))
@@ -16,7 +15,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const product = getProduct(slug)
+  if (!getProduct(slug)) return {}
+  const product = (await getVisibleCatalog()).getProduct(slug)
   if (!product) return {}
 
   const title = `${product.name} | Piyush Bholla`
@@ -32,7 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
-  const product = getProduct(slug)
+  if (!getProduct(slug)) notFound()
+  const catalog = await getVisibleCatalog()
+  const product = catalog.getProduct(slug)
   if (!product) notFound()
 
   const category = categoryMeta[product.category]
@@ -48,7 +50,7 @@ export default async function ProductPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(generateProductJsonLd(product)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumb) }} />
-      <ProductDetailClient product={product} />
+      <ProductDetailClient product={product} related={catalog.getRelatedProducts(product, 4)} />
     </>
   )
 }

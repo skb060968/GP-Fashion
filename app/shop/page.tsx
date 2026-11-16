@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import ShopClient from "./ShopClient"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
 export const metadata: Metadata = {
   title: "All Pieces | Piyush Bholla",
@@ -8,10 +9,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/shop" },
 }
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const catalog = await getVisibleCatalog()
   return (
     <Suspense fallback={null}>
-      <ShopClient />
+      <ShopClient products={catalog.products} categories={catalog.activeCategorySlugs} />
     </Suspense>
   )
 }

@@ -5,30 +5,29 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Search, X } from "lucide-react"
 import { filterProducts } from "@/lib/search/filterProducts"
 import {
-  ACTIVE_CATEGORY_SLUGS,
   CATEGORY_SLUGS,
   categoryMeta,
-  getAllProducts,
-  isActiveCategorySlug,
   sizeOptionsByCategory,
   type CategorySlug,
+  type Product,
 } from "@/lib/data/categories"
 import ProductCard from "@/components/ProductCard"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 
-const CATEGORIES: { key: "all" | CategorySlug; label: string }[] = [
-  { key: "all", label: "All" },
-  ...ACTIVE_CATEGORY_SLUGS.map((category) => ({ key: category, label: categoryMeta[category].title })),
-]
-
-export default function ShopClient() {
+export default function ShopClient({ products, categories }: { products: Product[]; categories: CategorySlug[] }) {
   const router = useRouter()
   const sp = useSearchParams()
 
+  const CATEGORIES: { key: "all" | CategorySlug; label: string }[] = useMemo(
+    () => [{ key: "all", label: "All" }, ...categories.map((category) => ({ key: category, label: categoryMeta[category].title }))],
+    [categories]
+  )
+
   const q = sp.get("q") ?? ""
   const requestedCategory = sp.get("category")
-  const cat: "all" | CategorySlug = requestedCategory && isActiveCategorySlug(requestedCategory) ? requestedCategory : "all"
+  const cat: "all" | CategorySlug =
+    requestedCategory && (categories as string[]).includes(requestedCategory) ? (requestedCategory as CategorySlug) : "all"
   const sizes = (sp.get("sizes") ?? "").split(",").filter(Boolean)
   const max = sp.get("max") ?? ""
 
@@ -52,7 +51,7 @@ export default function ShopClient() {
     return () => clearTimeout(timer)
   }, [input, q, setParams])
 
-  const all = useMemo(() => getAllProducts(), [])
+  const all = products
   const categoryPool = useMemo(() => cat === "all" ? all : all.filter((product) => product.category === cat), [all, cat])
   const availableSizes = useMemo(() => {
     const present = new Set(categoryPool.flatMap((product) => product.sizes))

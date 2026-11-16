@@ -43,47 +43,10 @@ export function isCategorySlug(value: string): value is CategorySlug {
   return (CATEGORY_SLUGS as string[]).includes(value)
 }
 
-const bySlug = new Map(products.map((product) => [product.slug, product]))
-
-export function getProduct(slug: string): Product | undefined {
-  return bySlug.get(slug)
-}
-
-export function categoryOf(slug: string): CategorySlug | null {
-  return bySlug.get(slug)?.category ?? null
-}
-
-export function getCategoryProducts(category: CategorySlug): Product[] {
-  return products.filter((product) => product.category === category)
-}
-
-export const ACTIVE_CATEGORY_SLUGS: CategorySlug[] = CATEGORY_SLUGS.filter((category) => getCategoryProducts(category).length > 0)
-
-export function isActiveCategorySlug(value: string): value is CategorySlug {
-  return isCategorySlug(value) && ACTIVE_CATEGORY_SLUGS.includes(value)
-}
-
-export function getCategoryImage(category: CategorySlug): string {
-  return categoryMeta[category].image || getCategoryProducts(category)[0]?.coverImage || "/images/hero/poster.jpg"
-}
-
-export function getAllProducts(): Product[] {
-  return products
-}
-
 const classificationBySlug = new Map(classifications.map((classification) => [classification.slug, classification]))
 
 export function getClassification(slug: string): Classification | undefined {
   return classificationBySlug.get(slug)
-}
-
-export function getClassifications(category: CategorySlug): Classification[] {
-  const present = new Set(products.filter((product) => product.category === category).map((product) => product.classification))
-  return classifications.filter((classification) => present.has(classification.slug))
-}
-
-export function getClassificationProducts(category: CategorySlug, classification: string): Product[] {
-  return products.filter((product) => product.category === category && product.classification === classification)
 }
 
 export const NEW_ARRIVALS_WINDOW_DAYS = 90
@@ -92,34 +55,6 @@ export function isNewProduct(product: Pick<Product, "releaseDate">, now: Date = 
   if (!product.releaseDate) return false
   const cutoff = new Date(now.getTime() - NEW_ARRIVALS_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10)
   return product.releaseDate >= cutoff
-}
-
-export function getRelatedProducts(product: Product, limit = 4): Product[] {
-  const others = products.filter((p) => p.slug !== product.slug)
-  const score = (p: Product) =>
-    (p.collection && p.collection === product.collection ? 2 : 0) +
-    (p.category === product.category ? 2 : 0) +
-    (p.classification === product.classification ? 1 : 0)
-  return others
-    .map((p) => ({ p, s: score(p) }))
-    .filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || a.p.order - b.p.order || a.p.name.localeCompare(b.p.name))
-    .slice(0, limit)
-    .map((x) => x.p)
-}
-
-export function getNewArrivals(category: CategorySlug, now: Date = new Date()): Product[] {
-  const pool = getCategoryProducts(category)
-  if (pool.length === 0) return []
-
-  const cutoff = new Date(now.getTime() - NEW_ARRIVALS_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10)
-  const byNewest = (a: Product, b: Product) => b.releaseDate.localeCompare(a.releaseDate) || a.order - b.order
-
-  const recent = pool.filter((product) => product.releaseDate >= cutoff).sort(byNewest)
-  if (recent.length > 0) return recent
-
-  const latest = pool.reduce((max, product) => (product.releaseDate > max ? product.releaseDate : max), pool[0].releaseDate)
-  return pool.filter((product) => product.releaseDate === latest).sort(byNewest)
 }
 
 const collectionBySlug = new Map(collections.map((collection) => [collection.slug, collection]))
@@ -132,28 +67,133 @@ export function getCollections(): Collection[] {
   return collections
 }
 
-export function getCollectionProducts(slug: string): Product[] {
-  return products.filter((product) => product.collection === slug)
-}
-
 export type CategoryView = { slug: string; title: string; kind: "new-arrivals" | "classification" | "bestsellers" }
 
-export function getCategoryViews(category: CategorySlug): CategoryView[] {
-  const categoryProducts = getCategoryProducts(category)
-  if (categoryProducts.length === 0) return []
+export function createCatalog(hiddenSlugs: Iterable<string> = []) {
+  const hidden: ReadonlySet<string> = new Set(hiddenSlugs)
+  const list = hidden.size ? products.filter((product) => !hidden.has(product.slug)) : products
+  const bySlug = new Map(list.map((product) => [product.slug, product]))
 
-  const views: CategoryView[] = [
-    { slug: "new-arrivals", title: "New Arrivals", kind: "new-arrivals" },
-    ...getClassifications(category).map((classification) => ({
-      slug: classification.slug,
-      title: classification.title,
-      kind: "classification" as const,
-    })),
-  ]
+  const getProduct = (slug: string): Product | undefined => bySlug.get(slug)
 
-  if (categoryProducts.some((product) => product.bestseller)) {
-    views.push({ slug: "bestsellers", title: "Bestsellers", kind: "bestsellers" })
+  const getCategoryProducts = (category: CategorySlug): Product[] => list.filter((product) => product.category === category)
+
+  const activeCategorySlugs: CategorySlug[] = CATEGORY_SLUGS.filter((category) => getCategoryProducts(category).length > 0)
+
+  const isActiveCategorySlug = (value: string): value is CategorySlug => isCategorySlug(value) && activeCategorySlugs.includes(value)
+
+  const getCategoryImage = (category: CategorySlug): string =>
+    categoryMeta[category].image || getCategoryProducts(category)[0]?.coverImage || "/images/hero/poster.jpg"
+
+  const getClassifications = (category: CategorySlug): Classification[] => {
+    const present = new Set(getCategoryProducts(category).map((product) => product.classification))
+    return classifications.filter((classification) => present.has(classification.slug))
   }
 
-  return views
+  const getClassificationProducts = (category: CategorySlug, classification: string): Product[] =>
+    list.filter((product) => product.category === category && product.classification === classification)
+
+  const getRelatedProducts = (product: Product, limit = 4): Product[] => {
+    const others = list.filter((p) => p.slug !== product.slug)
+    const score = (p: Product) =>
+      (p.collection && p.collection === product.collection ? 2 : 0) +
+      (p.category === product.category ? 2 : 0) +
+      (p.classification === product.classification ? 1 : 0)
+    return others
+      .map((p) => ({ p, s: score(p) }))
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s || a.p.order - b.p.order || a.p.name.localeCompare(b.p.name))
+      .slice(0, limit)
+      .map((x) => x.p)
+  }
+
+  const getNewArrivals = (category: CategorySlug, now: Date = new Date()): Product[] => {
+    const pool = getCategoryProducts(category)
+    if (pool.length === 0) return []
+
+    const cutoff = new Date(now.getTime() - NEW_ARRIVALS_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10)
+    const byNewest = (a: Product, b: Product) => b.releaseDate.localeCompare(a.releaseDate) || a.order - b.order
+
+    const recent = pool.filter((product) => product.releaseDate >= cutoff).sort(byNewest)
+    if (recent.length > 0) return recent
+
+    const latest = pool.reduce((max, product) => (product.releaseDate > max ? product.releaseDate : max), pool[0].releaseDate)
+    return pool.filter((product) => product.releaseDate === latest).sort(byNewest)
+  }
+
+  const getCollectionProducts = (slug: string): Product[] => list.filter((product) => product.collection === slug)
+
+  const getCategoryViews = (category: CategorySlug): CategoryView[] => {
+    const categoryProducts = getCategoryProducts(category)
+    if (categoryProducts.length === 0) return []
+
+    const views: CategoryView[] = [
+      { slug: "new-arrivals", title: "New Arrivals", kind: "new-arrivals" },
+      ...getClassifications(category).map((classification) => ({
+        slug: classification.slug,
+        title: classification.title,
+        kind: "classification" as const,
+      })),
+    ]
+
+    if (categoryProducts.some((product) => product.bestseller)) {
+      views.push({ slug: "bestsellers", title: "Bestsellers", kind: "bestsellers" })
+    }
+
+    return views
+  }
+
+  return {
+    hidden,
+    products: list,
+    getProduct,
+    getCategoryProducts,
+    activeCategorySlugs,
+    isActiveCategorySlug,
+    getCategoryImage,
+    getClassifications,
+    getClassificationProducts,
+    getRelatedProducts,
+    getNewArrivals,
+    getCollectionProducts,
+    getCategoryViews,
+  }
+}
+
+export type Catalog = ReturnType<typeof createCatalog>
+
+export const fullCatalog: Catalog = createCatalog()
+
+export const getProduct = fullCatalog.getProduct
+export const getCategoryProducts = fullCatalog.getCategoryProducts
+export const ACTIVE_CATEGORY_SLUGS: CategorySlug[] = fullCatalog.activeCategorySlugs
+export const isActiveCategorySlug = fullCatalog.isActiveCategorySlug
+export const getCategoryImage = fullCatalog.getCategoryImage
+export const getClassifications = fullCatalog.getClassifications
+export const getClassificationProducts = fullCatalog.getClassificationProducts
+export const getRelatedProducts = fullCatalog.getRelatedProducts
+export const getNewArrivals = fullCatalog.getNewArrivals
+export const getCollectionProducts = fullCatalog.getCollectionProducts
+export const getCategoryViews = fullCatalog.getCategoryViews
+
+export function categoryOf(slug: string): CategorySlug | null {
+  return getProduct(slug)?.category ?? null
+}
+
+export function getAllProducts(): Product[] {
+  return products
+}
+
+export type NavCategory = { slug: CategorySlug; title: string; views: { slug: string; title: string }[] }
+export type StorefrontNav = { categories: NavCategory[]; collections: { slug: string; name: string }[] }
+
+export function storefrontNav(catalog: Catalog): StorefrontNav {
+  return {
+    categories: catalog.activeCategorySlugs.map((category) => ({
+      slug: category,
+      title: categoryMeta[category].title,
+      views: catalog.getCategoryViews(category).map((view) => ({ slug: view.slug, title: view.title })),
+    })),
+    collections: getCollections().map((collection) => ({ slug: collection.slug, name: collection.name })),
+  }
 }

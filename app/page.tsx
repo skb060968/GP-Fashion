@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import Hero from "@/components/Hero"
 import CategoryShowcase from "@/components/CategoryShowcase"
 import AboutUs from "@/components/AboutUs"
-import { ACTIVE_CATEGORY_SLUGS, categoryMeta, getCategoryImage } from "@/lib/data/categories"
+import { categoryMeta } from "@/lib/data/categories"
+import { getVisibleCatalog } from "@/lib/catalog/visibility"
 import { generateOrganizationJsonLd, serializeJsonLd } from "@/lib/seo/jsonld"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
@@ -19,13 +20,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Home() {
+export default async function Home() {
+  const catalog = await getVisibleCatalog()
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(generateOrganizationJsonLd()) }} />
       <Hero />
 
-      {ACTIVE_CATEGORY_SLUGS.map((category, index) => {
+      {catalog.activeCategorySlugs.map((category, index) => {
         const meta = categoryMeta[category]
         return (
           <CategoryShowcase
@@ -33,7 +35,7 @@ export default function Home() {
             id={category}
             title={meta.title}
             description={meta.description}
-            image={getCategoryImage(category)}
+            image={catalog.getCategoryImage(category)}
             imageAlt={`${meta.title} from the current collection`}
             ctaHref={`/${category}`}
             priority={index === 0}

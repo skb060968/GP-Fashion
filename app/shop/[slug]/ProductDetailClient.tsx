@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Check, ChevronLeft, ChevronRight, Maximize2, Share2 } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
-import { categoryMeta, getClassification, getCollection, getRelatedProducts, isNewProduct, type Product } from "@/lib/data/categories"
+import { categoryMeta, getClassification, getCollection, isNewProduct, type Product } from "@/lib/data/categories"
 import WishlistButton from "@/components/WishlistButton"
 import SizeGuide from "@/components/SizeGuide"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
@@ -48,7 +48,7 @@ function splitDescription(description: string) {
 
 type FitMode = "standard" | "mtm"
 
-export default function ProductDetailClient({ product }: { product: Product }) {
+export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
   const router = useRouter()
   const { addToCart } = useCart()
   const { user, ready } = useUser()
@@ -111,7 +111,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const classification = getClassification(product.classification)
   const collection = product.collection ? getCollection(product.collection) : undefined
   const isNew = isNewProduct(product)
-  const related = getRelatedProducts(product, 4)
   const { prose, facts } = splitDescription(product.description)
   const care = product.care || "Dry clean only"
 

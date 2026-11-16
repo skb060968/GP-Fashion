@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -8,28 +8,30 @@ import { Menu, X, Heart, ShoppingBag, User, Search, ChevronDown } from "lucide-r
 import { useCart } from "@/context/CartContext"
 import { useUser } from "@/context/UserContext"
 import AnchorLink, { ANCHOR_NAV_EVENT } from "@/components/AnchorLink"
-import { categoryMeta, getCategoryViews, getCollections, ACTIVE_CATEGORY_SLUGS } from "@/lib/data/categories"
+import type { StorefrontNav } from "@/lib/data/categories"
 
 type MenuLeaf = { label: string; href: string }
 type MenuItem = MenuLeaf | { label: string; children: MenuLeaf[] }
 
-const menuItems: MenuItem[] = [
-  ...ACTIVE_CATEGORY_SLUGS.map((category) => ({
-    label: categoryMeta[category].title,
-    children: getCategoryViews(category).map((v) => ({ label: v.title, href: `/${category}/${v.slug}` })),
-  })),
-  {
-    label: "Collections",
-    children: [
-      { label: "All Collections", href: "/collections" },
-      ...getCollections().map((c) => ({ label: c.name, href: `/collections/${c.slug}` })),
-    ],
-  },
-  { label: "About Us", href: "/#about-us" },
-  { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
-  { label: "Track Order", href: "/track-order" },
-]
+function buildMenu(nav: StorefrontNav): MenuItem[] {
+  return [
+    ...nav.categories.map((category) => ({
+      label: category.title,
+      children: category.views.map((v) => ({ label: v.title, href: `/${category.slug}/${v.slug}` })),
+    })),
+    {
+      label: "Collections",
+      children: [
+        { label: "All Collections", href: "/collections" },
+        ...nav.collections.map((c) => ({ label: c.name, href: `/collections/${c.slug}` })),
+      ],
+    },
+    { label: "About Us", href: "/#about-us" },
+    { label: "Services", href: "/services" },
+    { label: "Contact", href: "/contact" },
+    { label: "Track Order", href: "/track-order" },
+  ]
+}
 
 const MENU_ITEM_CLASS =
   "font-jost text-sm font-semibold uppercase tracking-[0.15em] text-black/80 transition-colors hover:bg-black/5 hover:text-black focus-visible:ring-black sm:text-base sm:tracking-[0.18em] lg:text-lg 2xl:text-xl"
@@ -46,7 +48,8 @@ const searchLink = iconLinks[0]
 
 const ICON_CLASS = "h-[var(--nav-icon)] w-[var(--nav-icon)]"
 
-export default function Navbar() {
+export default function Navbar({ nav }: { nav: StorefrontNav }) {
+  const menuItems = useMemo(() => buildMenu(nav), [nav])
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [openGroup, setOpenGroup] = useState<string | null>(null)
