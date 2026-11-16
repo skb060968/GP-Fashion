@@ -103,6 +103,13 @@ export default function ProductDetailClient({ product, related }: { product: Sto
 
   const chosenProfile = profiles?.find((p) => p.id === profileId) ?? null
 
+  const mtmRef = useRef<HTMLDivElement>(null)
+  const chooseCustom = () => {
+    setMode("mtm")
+    setSizeError(false)
+    requestAnimationFrame(() => mtmRef.current?.focus({ preventScroll: true }))
+  }
+
   const activeColor = product.colors.find((c) => c.slug === colorSlug) ?? null
   const selectColor = (slug: string) => {
     setColorSlug(slug)
@@ -434,7 +441,7 @@ export default function ProductDetailClient({ product, related }: { product: Sto
                 )}
 
                 {soldOut ? null : mode === "mtm" ? (
-                  <div id="size-picker" className="mt-6">
+                  <div id="size-picker" ref={mtmRef} tabIndex={-1} className="mt-6 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                     <div className="flex items-baseline justify-between gap-4">
                       <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Measurements</span>
                       {sizeError && <span role="alert" className="font-jost text-xs text-red-600">Please choose whose measurements to use</span>}
@@ -540,6 +547,19 @@ export default function ProductDetailClient({ product, related }: { product: Sto
                         </button>
                       )
                     })}
+                    {mtmAvailable && (
+                      <button
+                        type="button"
+                        onClick={chooseCustom}
+                        aria-label="Custom, made to measure"
+                        title="Made to measure"
+                        className={`h-11 min-w-[3rem] border px-4 font-jost text-sm font-semibold uppercase transition-colors focus-visible:ring-black ${
+                          sizeError ? "border-red-400 text-black/70 hover:border-black" : "border-black/20 text-black/70 hover:border-black hover:text-black"
+                        }`}
+                      >
+                        Custom
+                      </button>
+                    )}
                   </div>
                 </div>
                 )}
