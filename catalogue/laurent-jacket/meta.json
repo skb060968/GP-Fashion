@@ -1,0 +1,16 @@
+{
+  "name": "Laurent Jacket",
+  "category": "menswear",
+  "classification": "outerwear",
+  "collection": "into-the-night",
+  "priceInr": 9990,
+  "sizes": ["S", "M", "L", "XL"],
+  "description": "Ornate Statement Tweed Jacket , Intricately Embellished with sequins\nComponents: Tweed Jacket\nSurface: Sequins and thread work\nFabric: Imported Premium tweed",
+  "bestseller": false,
+  "order": 10,
+  "colors": [{ "slug": "caramel", "name": "Caramel", "hex": "#b57e3f" }, 
+             { "slug": "black", "name": "Black", "hex": "#000000" },
+             { "slug": "black-metallic", "name": "Black Metallic", "hex": "#000000" }],
+  "defaultColor": "caramel",
+  "pattern": { "garment": "bomber" }
+}

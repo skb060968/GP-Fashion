@@ -363,6 +363,81 @@ export const products: Product[] = [
     "defaultColor": null
   },
   {
+    "slug": "laurent-jacket",
+    "name": "Laurent Jacket",
+    "category": "menswear",
+    "classification": "outerwear",
+    "collection": "into-the-night",
+    "releaseDate": "2026-11-25",
+    "description": "Ornate Statement Tweed Jacket , Intricately Embellished with sequins\nComponents: Tweed Jacket\nSurface: Sequins and thread work\nFabric: Imported Premium tweed",
+    "care": null,
+    "price": 999000,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "bestseller": false,
+    "order": 10,
+    "pattern": {
+      "app": "men",
+      "garment": "bomber",
+      "name": "Bomber jacket (rib bands, zip front)",
+      "options": {}
+    },
+    "images": [
+      "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp",
+      "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-1.webp",
+      "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-2.webp",
+      "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-3.webp"
+    ],
+    "coverImage": "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp",
+    "coverThumbnail": "/images/shop/thumbnails/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp",
+    "colors": [
+      {
+        "slug": "caramel",
+        "name": "Caramel",
+        "hex": "#b57e3f",
+        "images": [
+          "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp",
+          "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-1.webp",
+          "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-2.webp",
+          "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-3.webp"
+        ],
+        "coverImage": "/images/shop/items/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/laurent-jacket/caramel/laurent-jacket-caramel-cover.webp"
+      },
+      {
+        "slug": "black",
+        "name": "Black",
+        "hex": "#000000",
+        "images": [
+          "/images/shop/items/laurent-jacket/black/laurent-jacket-black-cover.webp",
+          "/images/shop/items/laurent-jacket/black/laurent-jacket-black-1.webp",
+          "/images/shop/items/laurent-jacket/black/laurent-jacket-black-2.webp",
+          "/images/shop/items/laurent-jacket/black/laurent-jacket-black-3.webp"
+        ],
+        "coverImage": "/images/shop/items/laurent-jacket/black/laurent-jacket-black-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/laurent-jacket/black/laurent-jacket-black-cover.webp"
+      },
+      {
+        "slug": "black-metallic",
+        "name": "Black Metallic",
+        "hex": "#000000",
+        "images": [
+          "/images/shop/items/laurent-jacket/black-metallic/laurent-jacket-black-metallic-cover.webp",
+          "/images/shop/items/laurent-jacket/black-metallic/laurent-jacket-black-metallic-1.webp",
+          "/images/shop/items/laurent-jacket/black-metallic/laurent-jacket-black-metallic-2.webp",
+          "/images/shop/items/laurent-jacket/black-metallic/laurent-jacket-black-metallic-3.webp"
+        ],
+        "coverImage": "/images/shop/items/laurent-jacket/black-metallic/laurent-jacket-black-metallic-cover.webp",
+        "coverThumbnail": "/images/shop/thumbnails/laurent-jacket/black-metallic/laurent-jacket-black-metallic-cover.webp"
+      }
+    ],
+    "defaultColor": "caramel"
+  },
+  {
     "slug": "rib-knit-henley",
     "name": "Rib Knit Henley",
     "category": "menswear",
