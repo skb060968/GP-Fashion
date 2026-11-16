@@ -10,6 +10,7 @@ module.exports = {
       md: "768px",
       twocol: { raw: "(orientation: landscape)" },
       lg: "1024px",
+      wide: { raw: "(orientation: landscape) and (min-width: 1024px)" },
       xl: "1280px",
       "2xl": "1536px",
     },

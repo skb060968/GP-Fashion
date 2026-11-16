@@ -85,6 +85,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   }, [mtmKinds])
 
   useEffect(() => {
+    if (mtmAvailable && new URLSearchParams(window.location.search).get("fit") === "mtm") setMode("mtm")
+  }, [mtmAvailable])
+
+  useEffect(() => {
     if (mode === "mtm" && user && profiles === null) loadProfiles()
   }, [mode, user, profiles, loadProfiles])
 
@@ -238,7 +242,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           <div className="grid grid-cols-1 gap-8 twocol:grid-cols-12 lg:gap-16">
 
-            <div className="pdp-gallery twocol:sticky twocol:top-[calc(var(--nav-h)+1rem)] twocol:col-span-5 twocol:self-start lg:col-span-7">
+            <div className="pdp-gallery twocol:col-span-5 twocol:self-start lg:col-span-7">
               <div className="mx-auto flex max-w-[calc(var(--pdp-img-h)*0.75)] flex-col gap-3 twocol:mx-0 twocol:max-w-none twocol:flex-row-reverse twocol:justify-center">
                 <div className="min-w-0 twocol:w-[min(calc(100%-4.25rem),calc(var(--pdp-img-h)*0.75))] lg:w-[min(calc(100%-5.75rem),calc(var(--pdp-img-h)*0.75))]">
                   <div
@@ -331,7 +335,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
 
             <FadeIn delay={100} className="twocol:col-span-7 lg:col-span-5">
-              <div>
+              <div className="pdp-panel wide:-ml-1 wide:-mt-1 wide:max-h-[var(--pdp-img-h)] wide:overflow-y-auto wide:pb-1 wide:pl-1 wide:pr-4 wide:pt-1 wide:[scrollbar-width:thin]">
                 {breadcrumb("mb-6 hidden twocol:block", true)}
                 {isNew && (
                   <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/70">New in</p>
@@ -434,7 +438,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                       <div className="mt-3 h-16 animate-pulse rounded-lg bg-stone-100" />
                     ) : !user ? (
                       <p className="mt-3 rounded-lg border border-black/10 p-4 font-jost text-sm text-black/70">
-                        <Link href={`/login?next=/shop/${product.slug}`} className="font-semibold text-black underline underline-offset-4">Sign in</Link>{" "}
+                        <Link href={`/login?next=${encodeURIComponent(`/shop/${product.slug}?fit=mtm`)}`} className="font-semibold text-black underline underline-offset-4">Sign in</Link>{" "}
                         to save your measurements and order made to measure.
                       </p>
                     ) : profilesError ? (

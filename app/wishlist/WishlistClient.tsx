@@ -10,6 +10,8 @@ import { formatRupees } from "@/lib/money"
 import FadeIn from "@/components/FadeIn"
 import PageHeading from "@/components/PageHeading"
 import EmptyState from "@/components/EmptyState"
+import { getProduct } from "@/lib/data/categories"
+import { KINDS_FOR_CATEGORY } from "@/lib/measurements/fields"
 
 export default function WishlistClient() {
   const { wishlist } = useWishlist()
@@ -53,6 +55,8 @@ function WishlistCard({ item }: { item: WishlistItem }) {
   const { addToCart } = useCart()
   const [size, setSize] = useState<string>(item.sizes.length === 1 ? item.sizes[0] : "")
   const [added, setAdded] = useState(false)
+  const product = getProduct(item.slug)
+  const mtmAvailable = !!product && KINDS_FOR_CATEGORY[product.category].length > 0
 
   const handleAdd = () => {
     if (!size) return
@@ -132,6 +136,15 @@ function WishlistCard({ item }: { item: WishlistItem }) {
         >
           {added ? "Added to bag" : size ? "Add to bag" : "Select a size"}
         </button>
+
+        {mtmAvailable && (
+          <Link
+            href={`/shop/${item.slug}?fit=mtm`}
+            className="mt-3 text-center font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70 underline underline-offset-4 transition-colors hover:text-black"
+          >
+            Made to measure
+          </Link>
+        )}
       </div>
     </article>
   )

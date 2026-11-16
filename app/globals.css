@@ -53,16 +53,20 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.pdp-gallery {
+.pdp-gallery,
+.pdp-panel {
   --pdp-img-h: max(12rem, calc(100vh - var(--nav-h) - 9.5rem));
 }
 @supports (height: 1svh) {
-  .pdp-gallery { --pdp-img-h: max(12rem, calc(100svh - var(--nav-h) - 9.5rem)); }
+  .pdp-gallery,
+  .pdp-panel { --pdp-img-h: max(12rem, calc(100svh - var(--nav-h) - 9.5rem)); }
 }
 @media (orientation: landscape) {
-  .pdp-gallery { --pdp-img-h: max(12rem, calc(100vh - var(--nav-h) - 2.5rem)); }
+  .pdp-gallery,
+  .pdp-panel { --pdp-img-h: max(12rem, calc(100vh - var(--nav-h) - 2.5rem)); }
   @supports (height: 1svh) {
-    .pdp-gallery { --pdp-img-h: max(12rem, calc(100svh - var(--nav-h) - 2.5rem)); }
+    .pdp-gallery,
+    .pdp-panel { --pdp-img-h: max(12rem, calc(100svh - var(--nav-h) - 2.5rem)); }
   }
 }
 
