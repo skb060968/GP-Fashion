@@ -10,11 +10,12 @@ import FadeIn from "@/components/FadeIn"
 import PageHeading from "@/components/PageHeading"
 import EmptyState from "@/components/EmptyState"
 
-export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
+export default function BagClient({ hiddenSlugs, soldOutSlugs }: { hiddenSlugs: string[]; soldOutSlugs: string[] }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
 
   const hidden = new Set(hiddenSlugs)
-  const unavailableCount = cart.filter((i) => hidden.has(i.slug)).length
+  const soldOut = new Set(soldOutSlugs)
+  const unavailableCount = cart.filter((i) => hidden.has(i.slug) || soldOut.has(i.slug)).length
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0)
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
 
@@ -40,7 +41,9 @@ export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
 
               <ul className="divide-y divide-black/10 lg:col-span-8">
                 {cart.map((item, index) => {
-                  const unavailable = hidden.has(item.slug)
+                  const isHidden = hidden.has(item.slug)
+                  const isSoldOut = !isHidden && soldOut.has(item.slug)
+                  const unavailable = isHidden || isSoldOut
                   const image = (
                     <Image
                       src={item.coverThumbnail}
@@ -54,7 +57,7 @@ export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
                   <li key={cartLineKey(item)} className="py-8 first:pt-0">
                     <FadeIn delay={index * 60}>
                       <div className="flex gap-5 sm:gap-8">
-                        {unavailable ? (
+                        {isHidden ? (
                           <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-stone-100 sm:w-32">{image}</div>
                         ) : (
                           <Link
@@ -69,7 +72,7 @@ export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.12em] sm:text-lg">
-                                {unavailable ? (
+                                {isHidden ? (
                                   <span className="text-black/50">{item.name}</span>
                                 ) : (
                                   <Link href={`/shop/${item.slug}`} className="hover:text-black/60">
@@ -83,7 +86,7 @@ export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
                               </p>
                               {unavailable && (
                                 <p className="mt-2 font-jost text-sm font-semibold text-red-700">
-                                  No longer available. Please remove it to check out.
+                                  {isSoldOut ? "Sold out" : "No longer available"}. Please remove it to check out.
                                 </p>
                               )}
                               {item.profileId && !unavailable && (
@@ -175,7 +178,7 @@ export default function BagClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
                   {unavailableCount > 0 ? (
                     <>
                       <p role="alert" className="mt-6 font-jost text-sm text-red-700">
-                        {unavailableCount === 1 ? "One piece in your bag is" : `${unavailableCount} pieces in your bag are`} no longer available. Remove{" "}
+                        {unavailableCount === 1 ? "One piece in your bag is" : `${unavailableCount} pieces in your bag are`} sold out or no longer available. Remove{" "}
                         {unavailableCount === 1 ? "it" : "them"} to check out.
                       </p>
                       <button type="button" disabled className="btn-solid-dark mt-4 w-full cursor-not-allowed opacity-40 hover:bg-black hover:text-white">

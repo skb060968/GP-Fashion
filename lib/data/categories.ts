@@ -69,14 +69,28 @@ export function getCollections(): Collection[] {
 
 export type CategoryView = { slug: string; title: string; kind: "new-arrivals" | "classification" | "bestsellers" }
 
-export function createCatalog(hiddenSlugs: Iterable<string> = []) {
+export type StoreProduct = Product & { soldOut?: boolean }
+
+export function soldOutLast<T extends object>(items: T[]): T[] {
+  const isOut = (item: T) => (item as { soldOut?: boolean }).soldOut === true
+  if (!items.some(isOut)) return items
+  return [...items.filter((item) => !isOut(item)), ...items.filter(isOut)]
+}
+
+export function createCatalog(hiddenSlugs: Iterable<string> = [], soldOutSlugs: Iterable<string> = []) {
   const hidden: ReadonlySet<string> = new Set(hiddenSlugs)
-  const list = hidden.size ? products.filter((product) => !hidden.has(product.slug)) : products
+  const soldOut: ReadonlySet<string> = new Set([...soldOutSlugs].filter((slug) => !hidden.has(slug)))
+  const visible = hidden.size ? products.filter((product) => !hidden.has(product.slug)) : products
+  const list: StoreProduct[] = soldOut.size
+    ? soldOutLast(visible.map((product) => (soldOut.has(product.slug) ? { ...product, soldOut: true } : product)))
+    : visible
   const bySlug = new Map(list.map((product) => [product.slug, product]))
 
-  const getProduct = (slug: string): Product | undefined => bySlug.get(slug)
+  const getProduct = (slug: string): StoreProduct | undefined => bySlug.get(slug)
 
-  const getCategoryProducts = (category: CategorySlug): Product[] => list.filter((product) => product.category === category)
+  const isSoldOut = (slug: string): boolean => soldOut.has(slug)
+
+  const getCategoryProducts = (category: CategorySlug): StoreProduct[] => list.filter((product) => product.category === category)
 
   const activeCategorySlugs: CategorySlug[] = CATEGORY_SLUGS.filter((category) => getCategoryProducts(category).length > 0)
 
@@ -90,11 +104,11 @@ export function createCatalog(hiddenSlugs: Iterable<string> = []) {
     return classifications.filter((classification) => present.has(classification.slug))
   }
 
-  const getClassificationProducts = (category: CategorySlug, classification: string): Product[] =>
+  const getClassificationProducts = (category: CategorySlug, classification: string): StoreProduct[] =>
     list.filter((product) => product.category === category && product.classification === classification)
 
-  const getRelatedProducts = (product: Product, limit = 4): Product[] => {
-    const others = list.filter((p) => p.slug !== product.slug)
+  const getRelatedProducts = (product: Product, limit = 4): StoreProduct[] => {
+    const others = list.filter((p) => p.slug !== product.slug && !p.soldOut)
     const score = (p: Product) =>
       (p.collection && p.collection === product.collection ? 2 : 0) +
       (p.category === product.category ? 2 : 0) +
@@ -107,7 +121,7 @@ export function createCatalog(hiddenSlugs: Iterable<string> = []) {
       .map((x) => x.p)
   }
 
-  const getNewArrivals = (category: CategorySlug, now: Date = new Date()): Product[] => {
+  const getNewArrivals = (category: CategorySlug, now: Date = new Date()): StoreProduct[] => {
     const pool = getCategoryProducts(category)
     if (pool.length === 0) return []
 
@@ -115,13 +129,13 @@ export function createCatalog(hiddenSlugs: Iterable<string> = []) {
     const byNewest = (a: Product, b: Product) => b.releaseDate.localeCompare(a.releaseDate) || a.order - b.order
 
     const recent = pool.filter((product) => product.releaseDate >= cutoff).sort(byNewest)
-    if (recent.length > 0) return recent
+    if (recent.length > 0) return soldOutLast(recent)
 
     const latest = pool.reduce((max, product) => (product.releaseDate > max ? product.releaseDate : max), pool[0].releaseDate)
-    return pool.filter((product) => product.releaseDate === latest).sort(byNewest)
+    return soldOutLast(pool.filter((product) => product.releaseDate === latest).sort(byNewest))
   }
 
-  const getCollectionProducts = (slug: string): Product[] => list.filter((product) => product.collection === slug)
+  const getCollectionProducts = (slug: string): StoreProduct[] => list.filter((product) => product.collection === slug)
 
   const getCategoryViews = (category: CategorySlug): CategoryView[] => {
     const categoryProducts = getCategoryProducts(category)
@@ -145,8 +159,10 @@ export function createCatalog(hiddenSlugs: Iterable<string> = []) {
 
   return {
     hidden,
+    soldOut,
     products: list,
     getProduct,
+    isSoldOut,
     getCategoryProducts,
     activeCategorySlugs,
     isActiveCategorySlug,

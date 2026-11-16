@@ -6,6 +6,7 @@ import {
   getAllProducts,
   getCategoryProducts,
   getCategoryViews,
+  soldOutLast,
   storefrontNav,
   getClassification,
   getClassifications,
@@ -170,6 +171,54 @@ describe("hidden products", () => {
 
   it("ignores unknown slugs", () => {
     expect(createCatalog(["no-such-piece"]).products).toEqual(all)
+  })
+})
+
+describe("sold-out products", () => {
+  const all = getAllProducts()
+  const category = ACTIVE_CATEGORY_SLUGS.find((c) => getCategoryProducts(c).length > 1)!
+  const target = getCategoryProducts(category)[0]
+
+  it("keeps a sold-out product in every listing, flagged and moved to the end", () => {
+    const catalog = createCatalog([], [target.slug])
+    expect(catalog.products).toHaveLength(all.length)
+    expect(catalog.getProduct(target.slug)?.soldOut).toBe(true)
+    expect(catalog.isSoldOut(target.slug)).toBe(true)
+    const inCategory = catalog.getCategoryProducts(category)
+    expect(inCategory.at(-1)?.slug).toBe(target.slug)
+    expect(inCategory.filter((p) => p.soldOut).map((p) => p.slug)).toEqual([target.slug])
+    const inClass = catalog.getClassificationProducts(category, target.classification)
+    expect(inClass.at(-1)?.slug).toBe(target.slug)
+    if (target.collection) expect(catalog.getCollectionProducts(target.collection).at(-1)?.slug).toBe(target.slug)
+  })
+
+  it("keeps the category in the menu even when all its products are sold out", () => {
+    const catalog = createCatalog([], getCategoryProducts(category).map((p) => p.slug))
+    expect(catalog.activeCategorySlugs).toContain(category)
+    expect(catalog.getCategoryViews(category).length).toBeGreaterThan(0)
+  })
+
+  it("leaves sold-out pieces out of You may also like", () => {
+    const catalog = createCatalog([], [target.slug])
+    for (const product of catalog.products) expect(catalog.getRelatedProducts(product, 10).some((p) => p.slug === target.slug)).toBe(false)
+  })
+
+  it("treats a product that is both hidden and sold out as hidden", () => {
+    const catalog = createCatalog([target.slug], [target.slug])
+    expect(catalog.getProduct(target.slug)).toBeUndefined()
+    expect(catalog.soldOut.has(target.slug)).toBe(false)
+  })
+
+  it("does not flag anything in the full catalogue", () => {
+    createCatalog([], [target.slug])
+    expect(getProduct(target.slug)?.soldOut).toBeUndefined()
+  })
+
+  it("soldOutLast keeps the order within each group", () => {
+    const items = [{ id: 1 }, { id: 2, soldOut: true }, { id: 3 }, { id: 4, soldOut: true }, { id: 5 }]
+    expect(soldOutLast(items).map((i) => i.id)).toEqual([1, 3, 5, 2, 4])
+    const none = [{ id: 1 }, { id: 2 }]
+    expect(soldOutLast(none)).toBe(none)
   })
 })
 

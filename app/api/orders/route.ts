@@ -15,7 +15,7 @@ import { createRateLimiter } from "@/lib/security/rateLimiter";
 import { orderAccessToken } from "@/lib/security/orderAccess";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 import { getProduct } from "@/lib/data/categories";
-import { getHiddenSlugs } from "@/lib/catalog/visibility";
+import { getProductStatusLists } from "@/lib/catalog/visibility";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
@@ -86,7 +86,9 @@ export async function POST(req: Request) {
       : [];
     const profileById = new Map(profiles.map((p) => [p.id, p]));
 
-    const hiddenSlugs = new Set(await getHiddenSlugs());
+    const statusLists = await getProductStatusLists();
+    const hiddenSlugs = new Set(statusLists.hidden);
+    const soldOutSlugs = new Set(statusLists.soldOut);
     const items = [];
     for (const submitted of submittedItems) {
       const product = getProduct(submitted.slug);
@@ -96,6 +98,12 @@ export async function POST(req: Request) {
       if (hiddenSlugs.has(product.slug)) {
         return NextResponse.json(
           { error: `${product.name} is currently unavailable. Please remove it from your bag to continue.`, unavailable: [product.slug] },
+          { status: 400 }
+        );
+      }
+      if (soldOutSlugs.has(product.slug)) {
+        return NextResponse.json(
+          { error: `${product.name} is sold out. Please remove it from your bag to continue.`, unavailable: [product.slug] },
           { status: 400 }
         );
       }

@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react"
 import FadeIn from "@/components/FadeIn"
 import ProductCard from "@/components/ProductCard"
-import type { Product } from "@/lib/data/categories"
+import { soldOutLast, type StoreProduct } from "@/lib/data/categories"
 
 type SortKey = "featured" | "newest" | "price-asc" | "price-desc"
 
@@ -14,8 +14,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "price-desc", label: "Price: high to low" },
 ]
 
-function sortProducts(products: Product[], sort: SortKey): Product[] {
-  if (sort === "featured") return products
+function sortProducts(products: StoreProduct[], sort: SortKey): StoreProduct[] {
+  if (sort === "featured") return soldOutLast(products)
   const sorted = [...products]
   if (sort === "newest") {
     sorted.sort((a, b) => (b.releaseDate ?? "").localeCompare(a.releaseDate ?? "") || a.order - b.order)
@@ -24,14 +24,14 @@ function sortProducts(products: Product[], sort: SortKey): Product[] {
   } else {
     sorted.sort((a, b) => b.price - a.price || a.order - b.order)
   }
-  return sorted
+  return soldOutLast(sorted)
 }
 
 function isSortKey(value: string): value is SortKey {
   return SORT_OPTIONS.some((option) => option.value === value)
 }
 
-export default function SortedProductGrid({ products }: { products: Product[] }) {
+export default function SortedProductGrid({ products }: { products: StoreProduct[] }) {
   const [sort, setSort] = useState<SortKey>("featured")
   const selectId = useId()
   const sorted = useMemo(() => sortProducts(products, sort), [products, sort])

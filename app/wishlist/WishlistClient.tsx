@@ -12,10 +12,12 @@ import PageHeading from "@/components/PageHeading"
 import EmptyState from "@/components/EmptyState"
 import { getProduct } from "@/lib/data/categories"
 import { KINDS_FOR_CATEGORY } from "@/lib/measurements/fields"
+import NotifyMe from "@/components/product/NotifyMe"
 
-export default function WishlistClient({ hiddenSlugs }: { hiddenSlugs: string[] }) {
+export default function WishlistClient({ hiddenSlugs, soldOutSlugs }: { hiddenSlugs: string[]; soldOutSlugs: string[] }) {
   const { wishlist } = useWishlist()
   const hidden = new Set(hiddenSlugs)
+  const soldOut = new Set(soldOutSlugs)
 
   return (
     <div className="bg-white text-black">
@@ -39,7 +41,7 @@ export default function WishlistClient({ hiddenSlugs }: { hiddenSlugs: string[] 
               {wishlist.map((item, index) => (
                 <li key={item.slug}>
                   <FadeIn delay={(index % 4) * 60} className="h-full">
-                    <WishlistCard item={item} unavailable={hidden.has(item.slug)} />
+                    <WishlistCard item={item} unavailable={hidden.has(item.slug)} soldOut={soldOut.has(item.slug)} />
                   </FadeIn>
                 </li>
               ))}
@@ -51,7 +53,7 @@ export default function WishlistClient({ hiddenSlugs }: { hiddenSlugs: string[] 
   )
 }
 
-function WishlistCard({ item, unavailable }: { item: WishlistItem; unavailable: boolean }) {
+function WishlistCard({ item, unavailable, soldOut }: { item: WishlistItem; unavailable: boolean; soldOut: boolean }) {
   const { removeFromWishlist } = useWishlist()
   const { addToCart } = useCart()
   const product = unavailable ? undefined : getProduct(item.slug)
@@ -80,7 +82,7 @@ function WishlistCard({ item, unavailable }: { item: WishlistItem; unavailable: 
     </button>
   )
 
-  if (unavailable) {
+  if (unavailable && !soldOut) {
     return (
       <article className="flex h-full flex-col">
         <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
@@ -97,6 +99,40 @@ function WishlistCard({ item, unavailable }: { item: WishlistItem; unavailable: 
           <h2 className="font-cinzel text-sm font-bold uppercase tracking-[0.12em] text-black/50 sm:text-base">{item.name}</h2>
           <p className="mt-1 font-jost text-sm text-black/50 tabular-nums sm:text-base">{formatRupees(item.price)}</p>
           <p className="mt-4 font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Currently unavailable</p>
+        </div>
+      </article>
+    )
+  }
+
+  if (soldOut) {
+    return (
+      <article className="group flex h-full flex-col">
+        <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
+          <Link href={productHref} className="absolute inset-0">
+            <Image
+              key={color?.slug ?? "item"}
+              src={color ? color.coverImage : item.coverImage ?? item.coverThumbnail}
+              alt={item.name}
+              fill
+              sizes="(max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            />
+          </Link>
+          <span className="pointer-events-none absolute left-2 top-2 bg-black px-2 py-1 font-jost text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+            Sold out
+          </span>
+          {removeButton}
+        </div>
+        <div className="mt-4 flex flex-1 flex-col">
+          <h2 className="font-cinzel text-sm font-bold uppercase tracking-[0.12em] sm:text-base">
+            <Link href={productHref} className="hover:text-black/60">
+              {item.name}
+            </Link>
+          </h2>
+          <p className="mt-1 font-jost text-sm text-black/70 tabular-nums sm:text-base">{formatRupees(item.price)}</p>
+          <div className="mt-4">
+            <NotifyMe slug={item.slug} compact />
+          </div>
         </div>
       </article>
     )

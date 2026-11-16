@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import CategoryListing, { type ListingChip } from "@/components/CategoryListing"
-import { categoryMeta, type CategorySlug } from "@/lib/data/categories"
+import { categoryMeta, soldOutLast, type CategorySlug } from "@/lib/data/categories"
 import { getVisibleCatalog } from "@/lib/catalog/visibility"
 import { getBestsellers } from "@/lib/services/bestsellers"
 
@@ -70,6 +70,7 @@ export default async function CategoryPage({ category, view }: { category: Categ
 
   if (current.kind === "bestsellers") {
     const result = await getBestsellers(products)
+    result.products = soldOutLast(result.products)
     return (
       <CategoryListing
         eyebrow={eyebrow}

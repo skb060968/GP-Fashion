@@ -148,7 +148,7 @@ export const policies: Policy[] = [
     slug: "privacy",
     title: "Privacy Policy",
     description: "How PIYUSH BHOLLA LABEL collects, uses and protects your personal information.",
-    updated: "2026-11-15",
+    updated: "2026-11-16",
     sections: [
       {
         heading: "Who we are",
@@ -165,6 +165,7 @@ export const policies: Policy[] = [
           "When you save measurements: the body measurements and fit notes you enter in your account, for yourself or for family members, including children's measurements entered by a parent or guardian. This is optional and only needed for made-to-measure orders.",
           "When you use the site: items in your bag and wishlist (stored in your browser, and in your account if you are signed in), standard server logs such as IP address and browser type, and a count of the pages you visit. We count page visits with Vercel Web Analytics, which sets no cookies, does not identify you across days or other sites, and receives page addresses without their query strings.",
           "When you contact us: whatever you include in your message.",
+          "When you ask to be told that a sold-out piece is back: your email address and the piece you asked about.",
         ],
       },
       {
@@ -176,6 +177,7 @@ export const policies: Policy[] = [
           "Provide your account, saved addresses, saved measurements, bag and wishlist.",
           "Cut and make made-to-measure garments, and confirm the measurements with you before cutting.",
           "Answer your enquiries and arrange fittings or commissions.",
+          "Send one email when a sold-out piece you asked about is back on sale.",
           "Meet legal and tax obligations.",
         ],
       },
@@ -205,7 +207,7 @@ export const policies: Policy[] = [
       {
         heading: "How long we keep it",
         paragraphs: [
-          "Order records, including name and address, are kept for as long as required for tax and accounting purposes, typically 8 years. Sign-in codes expire after 10 minutes and are deleted within 24 hours. Account sessions expire after 30 days of inactivity. Saved measurements stay in your account until you delete them, which you can do at any time under My Account; a made-to-measure order keeps its own copy of the measurements as part of the order record. If you ask us to delete your account we remove it, along with saved addresses, saved measurements, bag and wishlist, while retaining order records as required by law.",
+          "Order records, including name and address, are kept for as long as required for tax and accounting purposes, typically 8 years. Sign-in codes expire after 10 minutes and are deleted within 24 hours. Account sessions expire after 30 days of inactivity. A request to be told when a sold-out piece is back is deleted as soon as we send that email, or earlier if you ask us. Saved measurements stay in your account until you delete them, which you can do at any time under My Account; a made-to-measure order keeps its own copy of the measurements as part of the order record. If you ask us to delete your account we remove it, along with saved addresses, saved measurements, bag and wishlist, while retaining order records as required by law.",
         ],
       },
       {

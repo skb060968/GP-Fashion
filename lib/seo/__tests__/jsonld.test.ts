@@ -70,6 +70,11 @@ describe("Product JSON-LD", () => {
     });
   });
 
+  it("marks a sold-out product as out of stock", () => {
+    expect(generateProductJsonLd({ ...baseProduct, soldOut: true }).offers.availability).toBe("https://schema.org/OutOfStock");
+    expect(generateProductJsonLd({ ...baseProduct, soldOut: false }).offers.availability).toBe("https://schema.org/InStock");
+  });
+
   it("has absolute, unique images and a category for every catalogue product", () => {
     for (const product of getAllProducts()) {
       const jsonLd = generateProductJsonLd(product);

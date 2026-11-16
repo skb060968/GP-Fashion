@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import BagClient from "./BagClient"
-import { getHiddenSlugs } from "@/lib/catalog/visibility"
+import { getProductStatusLists } from "@/lib/catalog/visibility"
 
 export const metadata: Metadata = {
   title: "Shopping Bag | Piyush Bholla",
@@ -9,5 +9,6 @@ export const metadata: Metadata = {
 }
 
 export default async function BagPage() {
-  return <BagClient hiddenSlugs={await getHiddenSlugs()} />
+  const { hidden, soldOut } = await getProductStatusLists()
+  return <BagClient hiddenSlugs={hidden} soldOutSlugs={soldOut} />
 }

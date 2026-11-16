@@ -2,20 +2,43 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
-import { Eye, EyeOff, ExternalLink, Search, X } from "lucide-react"
+import { Check, ExternalLink, Mail, Search, X } from "lucide-react"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Dialog, EmptyRow, Skeleton, btn, input } from "@/components/admin/ui"
 import { adminFetch } from "@/lib/admin/fetch"
 import { formatRupees } from "@/lib/money"
-import type { AdminProduct, ProductUsage } from "@/lib/admin/products"
+import type { AdminProduct, ProductStatus, ProductUsage } from "@/lib/admin/products"
 
-type Filter = "all" | "live" | "hidden"
+type Filter = "all" | ProductStatus
+
+const STATUS_LABEL: Record<ProductStatus, string> = { AVAILABLE: "Available", SOLD_OUT: "Sold out", HIDDEN: "Hidden" }
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "live", label: "Live" },
-  { key: "hidden", label: "Hidden" },
+  { key: "AVAILABLE", label: "Available" },
+  { key: "SOLD_OUT", label: "Sold out" },
+  { key: "HIDDEN", label: "Hidden" },
 ]
+
+const PILL: Record<ProductStatus, string> = {
+  AVAILABLE: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  SOLD_OUT: "bg-stone-900 text-white ring-stone-900",
+  HIDDEN: "bg-amber-50 text-amber-800 ring-amber-200",
+}
+
+const CONSEQUENCES: Record<Exclude<ProductStatus, "AVAILABLE">, string[]> = {
+  SOLD_OUT: [
+    "It stays on the site with a Sold out label, at the end of listings.",
+    "Add to bag, Buy now and Made to measure are switched off. Customers can ask to be emailed when it is back.",
+    "Bags and wishlists show it as sold out, and it can no longer be ordered.",
+  ],
+  HIDDEN: [
+    "Its page shows Page not found and it disappears from listings and search.",
+    "Bags and wishlists show it as unavailable, and it can no longer be ordered.",
+  ],
+}
+
+type Pending = { product: AdminProduct; to: ProductStatus }
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
@@ -32,9 +55,10 @@ export default function ProductsClient() {
   const [filter, setFilter] = useState<Filter>("all")
   const [search, setSearch] = useState("")
   const [busy, setBusy] = useState<string | null>(null)
-  const [confirming, setConfirming] = useState<AdminProduct | null>(null)
+  const [pending, setPending] = useState<Pending | null>(null)
   const [usage, setUsage] = useState<ProductUsage | null>(null)
   const [usageError, setUsageError] = useState<string | null>(null)
+  const [notifyWaiting, setNotifyWaiting] = useState(true)
 
   const load = useCallback(async () => {
     try {
@@ -51,44 +75,74 @@ export default function ProductsClient() {
 
   const counts = useMemo(() => {
     const list = products ?? []
-    const hidden = list.filter((p) => p.hidden).length
-    return { all: list.length, live: list.length - hidden, hidden }
+    const by = (s: ProductStatus) => list.filter((p) => p.status === s).length
+    return { all: list.length, AVAILABLE: by("AVAILABLE"), SOLD_OUT: by("SOLD_OUT"), HIDDEN: by("HIDDEN") }
   }, [products])
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase()
     return (products ?? [])
-      .filter((p) => (filter === "all" ? true : filter === "hidden" ? p.hidden : !p.hidden))
+      .filter((p) => filter === "all" || p.status === filter)
       .filter((p) => !q || p.name.toLowerCase().includes(q) || p.slug.includes(q))
   }, [products, filter, search])
 
-  const setVisibility = async (product: AdminProduct, hidden: boolean) => {
+  const patchRow = (slug: string, patch: Partial<AdminProduct>) =>
+    setProducts((list) => list?.map((p) => (p.slug === slug ? { ...p, ...patch } : p)) ?? null)
+
+  const applyStatus = async (product: AdminProduct, to: ProductStatus, notify: boolean) => {
     setBusy(product.slug)
     setError(null)
     try {
-      const result = await adminFetch<{ slug: string; hidden: boolean; hiddenAt: string | null }>(
+      const result = await adminFetch<{ slug: string; status: ProductStatus; since: string | null; waiting: number; emailing: number }>(
         `/api/admin/products/${encodeURIComponent(product.slug)}`,
-        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hidden }) }
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: to, notifyWaiting: notify }) }
       )
-      setProducts((list) => list?.map((p) => (p.slug === result.slug ? { ...p, hidden: result.hidden, hiddenAt: result.hiddenAt } : p)) ?? null)
+      patchRow(result.slug, { status: result.status, since: result.since, waiting: result.emailing > 0 ? 0 : result.waiting })
+      const what =
+        result.status === "AVAILABLE" ? "is available again" : result.status === "SOLD_OUT" ? "is marked sold out" : "is hidden"
       setFlash(
-        hidden
-          ? `${product.name} is hidden. The site updates within a few seconds.`
-          : `${product.name} is back on the site. The site updates within a few seconds.`
+        `${product.name} ${what}. The site updates within a few seconds.${
+          result.emailing > 0 ? ` Emailing ${plural(result.emailing, "waiting customer", "waiting customers")} now.` : ""
+        }`
       )
-      setConfirming(null)
+      setPending(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : `Could not update ${product.name}`)
-      setConfirming(null)
+      setPending(null)
     } finally {
       setBusy(null)
     }
   }
 
-  const askToHide = async (product: AdminProduct) => {
-    setConfirming(product)
+  const emailWaiting = async (product: AdminProduct) => {
+    setBusy(product.slug)
+    setError(null)
+    try {
+      const result = await adminFetch<{ emailing: number }>(`/api/admin/products/${encodeURIComponent(product.slug)}/restock-emails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      })
+      patchRow(product.slug, { waiting: 0 })
+      setFlash(`Emailing ${plural(result.emailing, "waiting customer", "waiting customers")} about ${product.name}.`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not start the emails")
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const choose = async (product: AdminProduct, to: ProductStatus) => {
+    if (to === product.status) return
+    if (to === "AVAILABLE" && product.waiting === 0) {
+      applyStatus(product, to, false)
+      return
+    }
+    setPending({ product, to })
+    setNotifyWaiting(true)
     setUsage(null)
     setUsageError(null)
+    if (to === "AVAILABLE") return
     try {
       const data = await adminFetch<{ usage: ProductUsage }>(`/api/admin/products/${encodeURIComponent(product.slug)}`)
       setUsage(data.usage)
@@ -97,39 +151,44 @@ export default function ProductsClient() {
     }
   }
 
-  const action = (p: AdminProduct) =>
-    p.hidden ? (
-      <button type="button" onClick={() => setVisibility(p, false)} disabled={busy === p.slug} className={btn.secondary}>
-        <Eye className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-        {busy === p.slug ? "Saving…" : "Show on site"}
-      </button>
-    ) : (
-      <button type="button" onClick={() => askToHide(p)} disabled={busy === p.slug} className={btn.secondary}>
-        <EyeOff className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-        Hide
-      </button>
-    )
+  const statusSelect = (p: AdminProduct) => (
+    <label className="relative">
+      <span className="sr-only">Status of {p.name}</span>
+      <select
+        value={p.status}
+        disabled={busy === p.slug}
+        onChange={(e) => choose(p, e.target.value as ProductStatus)}
+        className={`${input} h-9 cursor-pointer py-0 pr-8 disabled:cursor-wait disabled:opacity-50`}
+      >
+        {(Object.keys(STATUS_LABEL) as ProductStatus[]).map((s) => (
+          <option key={s} value={s}>
+            {STATUS_LABEL[s]}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 
-  const state = (p: AdminProduct) =>
-    p.hidden ? (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-        Hidden{p.hiddenAt ? ` since ${fmtDate(p.hiddenAt)}` : ""}
-      </span>
-    ) : (
-      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
-        Live
-      </span>
-    )
+  const pill = (p: AdminProduct) => (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${PILL[p.status]}`}>
+      {STATUS_LABEL[p.status]}
+      {p.since ? ` since ${fmtDate(p.since)}` : ""}
+    </span>
+  )
+
+  const dialogTarget = pending?.product
+  const toAvailable = pending?.to === "AVAILABLE"
+  const dialogTitle = !pending ? "" : toAvailable ? `Make ${pending.product.name} available?` : `Mark ${pending.product.name} ${pending.to === "SOLD_OUT" ? "sold out" : "hidden"}?`
 
   return (
     <>
       <AdminPageHeader
         title="Products"
-        description={products ? `${plural(counts.live, "piece", "pieces")} live · ${counts.hidden} hidden` : undefined}
+        description={products ? `${counts.AVAILABLE} available · ${counts.SOLD_OUT} sold out · ${counts.HIDDEN} hidden` : undefined}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex gap-2">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           {FILTERS.map((f) => {
             const active = filter === f.key
             return (
@@ -169,8 +228,8 @@ export default function ProductsClient() {
           </ul>
         ) : shown.length === 0 ? (
           <EmptyRow
-            title={filter === "hidden" && !search ? "No hidden products" : "No products match"}
-            hint={filter === "hidden" && !search ? "Everything in the catalogue is on the site." : "Try another search or filter."}
+            title={filter !== "all" && !search ? `No ${STATUS_LABEL[filter].toLowerCase()} products` : "No products match"}
+            hint={search ? "Try another search or filter." : undefined}
             action={
               search || filter !== "all" ? (
                 <button type="button" onClick={() => { setSearch(""); setFilter("all") }} className={btn.secondary}>
@@ -182,20 +241,30 @@ export default function ProductsClient() {
         ) : (
           <ul className="divide-y divide-black/5 font-jost text-sm">
             {shown.map((p) => (
-              <li key={p.slug} data-slug={p.slug} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:flex-nowrap">
+              <li key={p.slug} data-slug={p.slug} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 md:flex-nowrap">
                 <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded bg-stone-100">
-                  <Image src={p.coverThumbnail} alt="" fill sizes="3rem" className={`object-cover ${p.hidden ? "opacity-50 grayscale" : ""}`} />
+                  <Image src={p.coverThumbnail} alt="" fill sizes="3rem" className={`object-cover ${p.status === "HIDDEN" ? "opacity-50 grayscale" : ""}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="truncate text-xs text-black/55">
                     {p.category} · {p.classification} · <span className="tabular-nums">{formatRupees(p.price)}</span>
                   </p>
+                  {p.waiting > 0 && (
+                    <p className="mt-0.5 text-xs font-medium text-black/70" data-testid="waiting">
+                      {plural(p.waiting, "customer", "customers")} waiting for a restock email
+                    </p>
+                  )}
                 </div>
-                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
-                  {state(p)}
+                <div className="flex w-full flex-wrap items-center justify-between gap-2 md:w-auto md:flex-nowrap md:justify-end">
+                  {pill(p)}
                   <div className="flex items-center gap-1">
-                    {!p.hidden && (
+                    {p.status === "AVAILABLE" && p.waiting > 0 && (
+                      <button type="button" onClick={() => emailWaiting(p)} disabled={busy === p.slug} className={`${btn.secondary} !px-3`}>
+                        <Mail className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Email {p.waiting}
+                      </button>
+                    )}
+                    {p.status !== "HIDDEN" && (
                       <a
                         href={`/shop/${p.slug}`}
                         target="_blank"
@@ -206,7 +275,7 @@ export default function ProductsClient() {
                         <ExternalLink className="h-4 w-4" strokeWidth={1.75} aria-hidden />
                       </a>
                     )}
-                    {action(p)}
+                    {statusSelect(p)}
                   </div>
                 </div>
               </li>
@@ -216,51 +285,76 @@ export default function ProductsClient() {
       </div>
 
       <Dialog
-        open={Boolean(confirming)}
-        onClose={() => busy === null && setConfirming(null)}
-        title={confirming ? `Hide ${confirming.name}?` : ""}
-        description="It leaves the site within a few seconds. You can show it again at any time."
+        open={Boolean(pending)}
+        onClose={() => busy === null && setPending(null)}
+        title={dialogTitle}
+        description={toAvailable ? "It goes back on sale within a few seconds." : "The site updates within a few seconds. You can change it back at any time."}
         footer={
           <>
-            <button type="button" onClick={() => setConfirming(null)} disabled={busy !== null} className={btn.secondary}>
+            <button type="button" onClick={() => setPending(null)} disabled={busy !== null} className={btn.secondary}>
               Cancel
             </button>
             <button
               type="button"
-              onClick={() => confirming && setVisibility(confirming, true)}
-              disabled={busy !== null || (!usage && !usageError)}
-              className={btn.danger}
+              onClick={() => pending && applyStatus(pending.product, pending.to, toAvailable && notifyWaiting)}
+              disabled={busy !== null || (!toAvailable && !usage && !usageError)}
+              className={pending?.to === "HIDDEN" ? btn.danger : btn.primary}
             >
-              {busy ? "Hiding…" : "Hide product"}
+              {busy ? "Saving…" : toAvailable ? "Make available" : pending?.to === "SOLD_OUT" ? "Mark sold out" : "Hide product"}
             </button>
           </>
         }
       >
-        <div className="space-y-4 font-jost text-sm">
-          {usageError ? (
-            <Alert>{usageError}. You can still hide the product.</Alert>
-          ) : !usage ? (
-            <div className="space-y-2" aria-label="Counting bags and wishlists">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-3/5" />
-            </div>
-          ) : (
-            <ul className="space-y-1.5" data-testid="usage">
-              <li>In <strong>{plural(usage.bags, "signed-in customer's bag", "signed-in customers' bags")}</strong></li>
-              <li>In <strong>{plural(usage.wishlists, "wishlist", "wishlists")}</strong></li>
-              <li>
-                <strong>{plural(usage.openOrders, "open order includes", "open orders include")}</strong> it
-                {usage.openOrders > 0 ? ". Those orders are not affected, so the piece is still owed." : "."}
-              </li>
-            </ul>
-          )}
-          <ul className="list-disc space-y-1 pl-5 text-black/65">
-            <li>Its page shows Page not found and it disappears from listings and search.</li>
-            <li>Bags and wishlists show it as unavailable, and it can no longer be ordered.</li>
-            <li>Guests&apos; bags and wishlists are not counted.</li>
-          </ul>
-        </div>
+        {pending && dialogTarget && (
+          <div className="space-y-4 font-jost text-sm">
+            {toAvailable ? (
+              <label className="flex cursor-pointer items-start gap-3 rounded-md border border-black/10 p-3">
+                <span className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={notifyWaiting}
+                    onChange={(e) => setNotifyWaiting(e.target.checked)}
+                    className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-black/30 checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                  />
+                  <Check className="pointer-events-none absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden />
+                </span>
+                <span>
+                  <span className="font-medium">Email the {plural(dialogTarget.waiting, "customer", "customers")} waiting</span>
+                  <span className="mt-0.5 block text-xs text-black/55">
+                    One “{dialogTarget.name} is back” email each. Their requests are then removed.
+                  </span>
+                </span>
+              </label>
+            ) : (
+              <>
+                {usageError ? (
+                  <Alert>{usageError}. You can still continue.</Alert>
+                ) : !usage ? (
+                  <div className="space-y-2" aria-label="Counting bags and wishlists">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-3/5" />
+                  </div>
+                ) : (
+                  <ul className="space-y-1.5" data-testid="usage">
+                    <li>In <strong>{plural(usage.bags, "signed-in customer's bag", "signed-in customers' bags")}</strong></li>
+                    <li>In <strong>{plural(usage.wishlists, "wishlist", "wishlists")}</strong></li>
+                    <li>
+                      <strong>{plural(usage.openOrders, "open order includes", "open orders include")}</strong> it
+                      {usage.openOrders > 0 ? ". Those orders are not affected, so the piece is still owed." : "."}
+                    </li>
+                  </ul>
+                )}
+                <ul className="list-disc space-y-1 pl-5 text-black/65">
+                  {CONSEQUENCES[pending.to as Exclude<ProductStatus, "AVAILABLE">].map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                  <li>Guests&apos; bags and wishlists are not counted.</li>
+                </ul>
+              </>
+            )}
+          </div>
+        )}
       </Dialog>
     </>
   )

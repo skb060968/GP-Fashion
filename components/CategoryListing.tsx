@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react"
 import FadeIn from "@/components/FadeIn"
 import SortedProductGrid from "@/components/SortedProductGrid"
 import EmptyState from "@/components/EmptyState"
-import type { Product } from "@/lib/data/categories"
+import type { StoreProduct } from "@/lib/data/categories"
 
 export interface ListingChip {
   label: string
@@ -23,7 +23,7 @@ interface CategoryListingProps {
   chips?: ListingChip[]
 
   note?: string
-  products: Product[]
+  products: StoreProduct[]
   emptyMessage?: string
 }
 

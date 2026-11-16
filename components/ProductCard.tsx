@@ -2,10 +2,10 @@ import Image from "next/image"
 import Link from "next/link"
 import WishlistButton from "@/components/WishlistButton"
 import { formatRupees } from "@/lib/money"
-import { isNewProduct, type Product } from "@/lib/data/categories"
+import { isNewProduct, type StoreProduct } from "@/lib/data/categories"
 
 interface ProductCardProps {
-  product: Product
+  product: StoreProduct
   priority?: boolean
 }
 
@@ -38,10 +38,16 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             />
           )}
         </Link>
-        {isNew && (
-          <span className="pointer-events-none absolute left-2 top-2 bg-white px-2 py-1 font-jost text-[10px] font-semibold uppercase tracking-[0.2em] text-black">
-            New in
+        {product.soldOut ? (
+          <span className="pointer-events-none absolute left-2 top-2 bg-black px-2 py-1 font-jost text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+            Sold out
           </span>
+        ) : (
+          isNew && (
+            <span className="pointer-events-none absolute left-2 top-2 bg-white px-2 py-1 font-jost text-[10px] font-semibold uppercase tracking-[0.2em] text-black">
+              New in
+            </span>
+          )
         )}
         <WishlistButton
           item={{

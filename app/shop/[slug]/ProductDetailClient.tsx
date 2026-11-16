@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation"
 import { Check, ChevronLeft, ChevronRight, Maximize2, Share2 } from "lucide-react"
 import { formatRupees } from "@/lib/money"
 import { useCart } from "@/context/CartContext"
-import { categoryMeta, getClassification, getCollection, isNewProduct, type Product } from "@/lib/data/categories"
+import { categoryMeta, getClassification, getCollection, isNewProduct, type StoreProduct } from "@/lib/data/categories"
+import NotifyMe from "@/components/product/NotifyMe"
 import WishlistButton from "@/components/WishlistButton"
 import SizeGuide from "@/components/SizeGuide"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
@@ -48,7 +49,7 @@ function splitDescription(description: string) {
 
 type FitMode = "standard" | "mtm"
 
-export default function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
+export default function ProductDetailClient({ product, related }: { product: StoreProduct; related: StoreProduct[] }) {
   const router = useRouter()
   const { addToCart } = useCart()
   const { user, ready } = useUser()
@@ -63,8 +64,9 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const buyRef = useRef<HTMLDivElement>(null)
 
+  const soldOut = product.soldOut === true
   const mtmKinds = KINDS_FOR_CATEGORY[product.category]
-  const mtmAvailable = mtmKinds.length > 0
+  const mtmAvailable = !soldOut && mtmKinds.length > 0
   const [mode, setMode] = useState<FitMode>("standard")
   const [profiles, setProfiles] = useState<ProfileDTO[] | null>(null)
   const [profilesError, setProfilesError] = useState("")
@@ -236,7 +238,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
     "flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black shadow-md backdrop-blur transition hover:bg-white focus-visible:ring-black sm:h-11 sm:w-11"
 
   return (
-    <div className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-black [@media(orientation:landscape)_and_(min-width:1024px)]:pb-0">
+    <div className={`bg-white text-black ${soldOut ? "" : "pb-[calc(6rem+env(safe-area-inset-bottom))] [@media(orientation:landscape)_and_(min-width:1024px)]:pb-0"}`}>
       <section className={`pt-4 sm:pt-6 ${related.length > 0 ? "pb-16 lg:pb-24" : "pb-20 lg:pb-32"}`}>
         <div className="container-max">
 
@@ -339,8 +341,10 @@ export default function ProductDetailClient({ product, related }: { product: Pro
             <FadeIn delay={100} className="twocol:col-span-7 lg:col-span-5">
               <div className="pdp-panel wide:-ml-1 wide:-mt-1 wide:max-h-[var(--pdp-img-h)] wide:overflow-y-auto wide:pb-1 wide:pl-1 wide:pr-4 wide:pt-1 wide:[scrollbar-width:thin]">
                 {breadcrumb("mb-6 hidden twocol:block", true)}
-                {isNew && (
-                  <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/70">New in</p>
+                {soldOut ? (
+                  <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black">Sold out</p>
+                ) : (
+                  isNew && <p className="mb-2 font-jost text-xs font-semibold uppercase tracking-[0.25em] text-black/70">New in</p>
                 )}
                 <div className="flex items-start justify-between gap-4">
                   <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em] sm:text-3xl">{product.name}</h1>
@@ -429,7 +433,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                   </div>
                 )}
 
-                {mode === "mtm" ? (
+                {soldOut ? null : mode === "mtm" ? (
                   <div id="size-picker" className="mt-6">
                     <div className="flex items-baseline justify-between gap-4">
                       <span className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">Measurements</span>
@@ -540,6 +544,26 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                 </div>
                 )}
 
+                {soldOut ? (
+                  <div className="mt-8 flex flex-col gap-5">
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full border border-black/15 bg-stone-100 px-10 py-3.5 font-jost text-sm font-semibold uppercase tracking-[0.2em] text-black/55 sm:px-12 sm:py-4 sm:text-base"
+                    >
+                      Sold out
+                    </button>
+                    <NotifyMe slug={product.slug} />
+                    {related.length > 0 && (
+                      <a
+                        href="#related-heading"
+                        className="self-start font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70 underline underline-offset-4 transition-colors hover:text-black"
+                      >
+                        Shop similar pieces
+                      </a>
+                    )}
+                  </div>
+                ) : (
                 <div ref={buyRef} className="mt-8 flex flex-col gap-3">
                   <button type="button" onClick={() => add()} className="btn-solid-dark w-full">
                     {added ? (
@@ -552,6 +576,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
                     Buy now
                   </button>
                 </div>
+                )}
 
                 <div className="mt-10 border-y border-black/10">
                   {(prose || collection) && (
@@ -648,7 +673,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
         </section>
       )}
 
-      <StickyBuyBar name={product.name} price={product.price} added={added} onAdd={() => add()} targetRef={buyRef} />
+      {!soldOut && <StickyBuyBar name={product.name} price={product.price} added={added} onAdd={() => add()} targetRef={buyRef} />}
 
       {lightbox !== null && (
         <ImageLightbox images={gallery} startIndex={lightbox} alt={product.name} onClose={() => setLightbox(null)} />

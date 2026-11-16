@@ -236,6 +236,21 @@ model HiddenProduct {
   hiddenAt DateTime @default(now())
 }
 
+model SoldOutProduct {
+  slug      String   @id
+  soldOutAt DateTime @default(now())
+}
+
+model RestockRequest {
+  id        String   @id @default(cuid())
+  slug      String
+  email     String
+  createdAt DateTime @default(now())
+
+  @@unique([slug, email])
+  @@index([slug])
+}
+
 model AdminSession {
   id          String   @id @default(cuid())
   tokenHash   String   @unique

@@ -10,7 +10,7 @@ export function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-export function generateProductJsonLd(product: Product) {
+export function generateProductJsonLd(product: Product & { soldOut?: boolean }) {
   const url = absoluteUrl(`/shop/${product.slug}`);
   const images = [
     product.coverImage,
@@ -35,7 +35,7 @@ export function generateProductJsonLd(product: Product) {
       url,
       price: product.price / 100,
       priceCurrency: "INR" as const,
-      availability: "https://schema.org/InStock" as const,
+      availability: product.soldOut ? ("https://schema.org/OutOfStock" as const) : ("https://schema.org/InStock" as const),
       itemCondition: "https://schema.org/NewCondition" as const,
       seller: { "@type": "Organization" as const, name: BRAND },
     },

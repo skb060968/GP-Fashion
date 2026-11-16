@@ -9,13 +9,13 @@ import {
   categoryMeta,
   sizeOptionsByCategory,
   type CategorySlug,
-  type Product,
+  type StoreProduct,
 } from "@/lib/data/categories"
 import ProductCard from "@/components/ProductCard"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 
-export default function ShopClient({ products, categories }: { products: Product[]; categories: CategorySlug[] }) {
+export default function ShopClient({ products, categories }: { products: StoreProduct[]; categories: CategorySlug[] }) {
   const router = useRouter()
   const sp = useSearchParams()
 

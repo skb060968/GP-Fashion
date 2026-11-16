@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import { z } from "zod"
-import { prisma } from "@/lib/prisma"
 import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth"
 import { getProduct } from "@/lib/data/categories"
-import { productUsage } from "@/lib/admin/products"
+import { PRODUCT_STATUSES, productUsage, setProductStatus, waitingCount } from "@/lib/admin/products"
 import { refreshStorefront } from "@/lib/catalog/visibility"
+import { sendRestockEmails } from "@/lib/catalog/restock"
 
 type Params = { params: Promise<{ slug: string }> }
 
-const bodySchema = z.object({ hidden: z.boolean() })
+const bodySchema = z.object({ status: z.enum(PRODUCT_STATUSES), notifyWaiting: z.boolean().optional() })
 
 export async function GET(req: NextRequest, { params }: Params) {
   const denied = await requireAdmin(req)
@@ -37,17 +37,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
   try {
-    let hiddenAt: string | null = null
-    if (parsed.data.hidden) {
-      const row = await prisma.hiddenProduct.upsert({ where: { slug }, create: { slug }, update: {} })
-      hiddenAt = row.hiddenAt.toISOString()
-    } else {
-      await prisma.hiddenProduct.deleteMany({ where: { slug } })
-    }
+    const result = await setProductStatus(slug, parsed.data.status)
     refreshStorefront()
-    return NextResponse.json({ slug, hidden: parsed.data.hidden, hiddenAt })
+    const waiting = await waitingCount(slug)
+    const emailing = result.status === "AVAILABLE" && parsed.data.notifyWaiting ? waiting : 0
+    if (emailing > 0) after(() => sendRestockEmails(slug))
+    return NextResponse.json({ slug, ...result, waiting, emailing })
   } catch (error) {
-    console.error("ADMIN PRODUCT VISIBILITY ERROR:", error)
+    console.error("ADMIN PRODUCT STATUS ERROR:", error)
     return NextResponse.json({ error: `Could not update ${product.name}` }, { status: 500 })
   }
 }
