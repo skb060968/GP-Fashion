@@ -108,14 +108,12 @@ export function createCatalog(hiddenSlugs: Iterable<string> = [], soldOutSlugs: 
     list.filter((product) => product.category === category && product.classification === classification)
 
   const getRelatedProducts = (product: Product, limit = 4): StoreProduct[] => {
-    const others = list.filter((p) => p.slug !== product.slug && !p.soldOut)
+    const others = list.filter((p) => p.slug !== product.slug && !p.soldOut && p.category === product.category)
     const score = (p: Product) =>
       (p.collection && p.collection === product.collection ? 2 : 0) +
-      (p.category === product.category ? 2 : 0) +
       (p.classification === product.classification ? 1 : 0)
     return others
       .map((p) => ({ p, s: score(p) }))
-      .filter((x) => x.s > 0)
       .sort((a, b) => b.s - a.s || a.p.order - b.p.order || a.p.name.localeCompare(b.p.name))
       .slice(0, limit)
       .map((x) => x.p)

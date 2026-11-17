@@ -4,7 +4,7 @@ import Link from "next/link"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import EmptyState from "@/components/EmptyState"
-import { Layers } from "lucide-react"
+import { ArrowRight, Layers } from "lucide-react"
 import { getCollections } from "@/lib/data/categories"
 import { getVisibleCatalog } from "@/lib/catalog/visibility"
 
@@ -61,9 +61,15 @@ export default async function CollectionsPage() {
                             {c.name}
                           </h2>
                           {c.description && <p className="mt-3 font-jost text-base leading-relaxed text-black/70">{c.description}</p>}
-                          <p className="mt-3 font-jost text-sm uppercase tracking-[0.2em] text-black/60">
-                            {count} {count === 1 ? "piece" : "pieces"}
-                          </p>
+                          <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 font-jost text-sm uppercase tracking-[0.2em]">
+                            <span className="text-black/60">
+                              {count} {count === 1 ? "piece" : "pieces"}
+                            </span>
+                            <span className="inline-flex items-center gap-2 font-semibold text-black underline decoration-black/40 underline-offset-[6px] transition-colors group-hover:decoration-black">
+                              View collection
+                              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={1.75} aria-hidden />
+                            </span>
+                          </div>
                         </div>
                       </Link>
                     </FadeIn>
