@@ -33,6 +33,8 @@ const PATTERNS_FILE = path.join(ROOT, "measureapp/patterns.json")
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
+const GST_RATE = 18
+const HSN_CODES = ["6203", "6204", "6205", "6206"]
 
 const RESERVED_VIEWS = ["new-arrivals", "bestsellers"]
 
@@ -150,6 +152,15 @@ function readMeta(slug, dir, taxonomy, collections) {
   if (meta.collection !== undefined && meta.collection !== null && !collections.has(meta.collection))
     fail(`${slug}: "collection" "${meta.collection}" has no folder under catalogue/_collections/`)
   if (!Number.isInteger(meta.priceInr) || meta.priceInr <= 0) fail(`${slug}: "priceInr" must be a whole number of rupees`)
+  if (!HSN_CODES.includes(meta.hsn)) fail(`${slug}: "hsn" must be one of ${HSN_CODES.join(", ")}`)
+  if (meta.gstRate !== undefined && meta.gstRate !== GST_RATE) fail(`${slug}: "gstRate" must be ${GST_RATE}`)
+  const gstPaise = Math.round((meta.priceInr * 100 * GST_RATE) / (100 + GST_RATE))
+  const basePaise = meta.priceInr * 100 - gstPaise
+  const rupees = (p) => (p / 100).toFixed(2)
+  if (meta.basePriceInr !== undefined && Math.round(meta.basePriceInr * 100) !== basePaise)
+    fail(`${slug}: "basePriceInr" should be ${rupees(basePaise)} for a price of ${meta.priceInr} (GST ${rupees(gstPaise)})`)
+  if (meta.gstInr !== undefined && Math.round(meta.gstInr * 100) !== gstPaise)
+    fail(`${slug}: "gstInr" should be ${rupees(gstPaise)} for a price of ${meta.priceInr}`)
   if (!Array.isArray(meta.sizes) || meta.sizes.length === 0) fail(`${slug}: "sizes" must be a non-empty array`)
   const allowedSizes = SIZE_OPTIONS_BY_CATEGORY[meta.category]
   const sizes = meta.sizes.map((size) => typeof size === "string" ? size.normalize("NFKC").trim().replace(/\s+/g, " ").toUpperCase() : size)
@@ -216,6 +227,7 @@ function readMeta(slug, dir, taxonomy, collections) {
     description: (meta.description || "").trim(),
     care: (meta.care || "").trim() || null,
     price: meta.priceInr * 100,
+    hsn: meta.hsn,
     sizes: allowedSizes.filter((size) => sizes.includes(size)),
     bestseller: meta.bestseller === true,
     order: meta.order ?? 1000,
@@ -302,6 +314,7 @@ async function buildProduct(slug, taxonomy, collections) {
     description: meta.description,
     care: meta.care,
     price: meta.price,
+    hsn: meta.hsn,
     sizes: meta.sizes,
     bestseller: meta.bestseller,
     order: meta.order,
@@ -405,6 +418,7 @@ export interface Product {
   description: string
   care: string | null
   price: number
+  hsn: string
   sizes: string[]
   bestseller: boolean
   order: number

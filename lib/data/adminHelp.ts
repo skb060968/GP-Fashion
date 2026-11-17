@@ -101,7 +101,7 @@ export const adminHelpTopics: HelpTopic[] = [
             "Confirm a referenced collection has a matching folder under catalogue/_collections/.",
             "Run npm run catalogue -- --force and review every ok, warning, and rm line.",
           ] },
-          { type: "code", label: "Example catalogue/silk-gown/meta.json", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\", \"XXL\", \"XXXL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"bestseller\": false,\n  \"order\": 10,\n  \"colors\": [],\n  \"defaultColor\": \"\"\n}" },
+          { type: "code", label: "Example catalogue/silk-gown/meta.json", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"hsn\": \"6204\",\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\", \"XXL\", \"XXXL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"bestseller\": false,\n  \"order\": 10,\n  \"colors\": [],\n  \"defaultColor\": \"\"\n}" },
           { type: "note", tone: "info", text: "priceInr is entered as whole rupees. The generator converts it to paise internally. If the product belongs to a collection, it inherits that collection's releaseDate unless the product supplies its own." },
           { type: "note", tone: "info", text: "You can keep one meta.json template for every product. Leave colors as an empty array and defaultColor as an empty string for a standard single-colour product; fill them in to offer colour variants. See the Product colour variants topic." },
         ],
@@ -115,7 +115,9 @@ export const adminHelpTopics: HelpTopic[] = [
             ["classification", "Required", "Exact slug from taxonomy.json"],
             ["collection", "Optional", "Collection folder slug or null"],
             ["releaseDate", "Conditional", "YYYY-MM-DD when not inheriting from a collection"],
-            ["priceInr", "Required", "Positive whole rupees"],
+            ["priceInr", "Required", "Positive whole rupees, GST included"],
+            ["hsn", "Required", "6203 men's suits, blazers and trousers; 6204 women's suits, dresses and skirts; 6205 men's shirts; 6206 women's blouses and shirts (all woven)"],
+            ["basePriceInr, gstRate, gstInr", "Optional", "For reference. GST is 18%. If present they must match the price; the build stops and shows the correct values otherwise"],
             ["sizes", "Required", "One or more sizes valid for the category"],
             ["description", "Optional", "Product-page copy"],
             ["bestseller", "Optional", "true or false; defaults to false"],
@@ -172,7 +174,7 @@ export const adminHelpTopics: HelpTopic[] = [
             "Add a colors array and a defaultColor to meta.json.",
             "Run npm run catalogue -- --force and confirm the ok line reports the colour count.",
           ] },
-          { type: "code", label: "Example catalogue/silk-gown/meta.json with colours", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"order\": 10,\n  \"colors\": [\n    { \"slug\": \"black\", \"name\": \"Noir Black\", \"hex\": \"#1a1a1a\" },\n    { \"slug\": \"ivory\", \"name\": \"Ivory\", \"hex\": \"#f5f1e6\" }\n  ],\n  \"defaultColor\": \"black\"\n}" },
+          { type: "code", label: "Example catalogue/silk-gown/meta.json with colours", code: "{\n  \"name\": \"Silk Gown\",\n  \"category\": \"womenswear\",\n  \"classification\": \"partywear\",\n  \"collection\": \"spring-2027\",\n  \"priceInr\": 19990,\n  \"hsn\": \"6204\",\n  \"sizes\": [\"S\", \"M\", \"L\", \"XL\"],\n  \"description\": \"A fluid silk gown from the Spring 2027 collection.\",\n  \"order\": 10,\n  \"colors\": [\n    { \"slug\": \"black\", \"name\": \"Noir Black\", \"hex\": \"#1a1a1a\" },\n    { \"slug\": \"ivory\", \"name\": \"Ivory\", \"hex\": \"#f5f1e6\" }\n  ],\n  \"defaultColor\": \"black\"\n}" },
           { type: "note", tone: "info", text: "By default each colour reads from a subfolder named after its slug. Add a folder value to a colour if the subfolder name differs from the slug." },
         ],
       },
@@ -394,6 +396,48 @@ export const adminHelpTopics: HelpTopic[] = [
     ],
   },
   {
+    id: "gst-invoices",
+    title: "GST and tax invoices",
+    summary: "How prices include GST, when the order confirmation and the tax invoice are issued, and what to change once the GSTIN arrives.",
+    keywords: ["gst", "gstin", "tax invoice", "hsn", "cgst", "sgst", "igst", "invoice number", "place of supply"],
+    sections: [
+      {
+        title: "Prices and tax",
+        blocks: [
+          { type: "list", items: [
+            "Every price on the site includes GST at 18%. The customer pays the price shown; nothing is added at checkout.",
+            "The tax inside a price is price × 18 ÷ 118. For ₹9,990 that is ₹1,523.90 GST on a taxable value of ₹8,466.10.",
+            "Delivery in Delhi is charged CGST 9% + SGST 9%. Delivery to any other state is charged IGST 18%. The state comes from the dropdown at checkout.",
+            "A coupon discount is shared across the items in proportion to their price, and GST is worked out on what is left.",
+          ] },
+        ],
+      },
+      {
+        title: "Order confirmation and tax invoice",
+        blocks: [
+          { type: "list", items: [
+            "When an order is placed the customer gets an order confirmation. It shows the total and the GST included, and says it is not a tax invoice.",
+            "Marking an order Shipped issues the tax invoice. It takes the next number in the financial-year series, for example PBL/26-27/0001, and is dated that day.",
+            "From then on the same links show the tax invoice: the order page, track order, the customer's account, the PDF download, and the shipped email.",
+            "Orders cancelled before shipping never get an invoice number, so the series has no gaps.",
+            "Business buyers can add a GSTIN and business name at checkout. Both appear on the tax invoice.",
+          ] },
+        ],
+      },
+      {
+        title: "When the GSTIN arrives",
+        blocks: [
+          { type: "steps", items: [
+            "Open lib/data/business.ts.",
+            "Replace the placeholder gstin with the real GSTIN, and replace the addressLines with the registered address exactly as on the GST certificate.",
+            "Commit and deploy. Invoices issued from then on carry the real GSTIN and are no longer marked Specimen.",
+          ] },
+          { type: "note", tone: "warning", text: "While the GSTIN is a placeholder, every tax invoice is marked Specimen, and the order page warns before you mark an order shipped. Do not ship real orders until the real GSTIN is in place." },
+        ],
+      },
+    ],
+  },
+  {
     id: "made-to-measure",
     title: "Made-to-measure orders",
     summary: "Confirm customer measurements before cutting, correct them on the order, and load them into Measurements.",
@@ -469,7 +513,8 @@ export const adminHelpTopics: HelpTopic[] = [
             "Maximum uses and expiry are optional. Coupons can be paused without deleting them.",
             "States shown in admin are Active, Paused, Expired, and Used up.",
           ] },
-          { type: "note", tone: "warning", text: "Current backend limitation: a fixed discount is not automatically capped at the subtotal and can create a negative stored order amount if configured incorrectly. Set a minimum order at least as large as the fixed discount. Maximum-use validation and increment are also non-atomic, so concurrent checkouts can exceed the limit; treat maxUses as best-effort until this backend behavior is hardened." },
+          { type: "note", tone: "info", text: "A discount is taken off the GST-inclusive price, and GST on the invoice is worked out on what the customer actually pays. A fixed discount larger than the order is capped at the order value." },
+          { type: "note", tone: "warning", text: "Current backend limitation: maximum-use validation and increment are also non-atomic, so concurrent checkouts can exceed the limit; treat maxUses as best-effort until this backend behavior is hardened." },
         ],
       },
     ],

@@ -5,32 +5,9 @@ import { useParams, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Download, Printer } from "lucide-react"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
-import { paymentLabel, statusLabel } from "@/lib/orders/labels"
-import { content } from "@/lib/data"
-import { isSnapshot } from "@/lib/measurements/fields"
-
-type Order = {
-  orderCode: string
-  amount: number
-  discount: number
-  couponCode: string | null
-  paymentMethod: string
-  status: string
-  createdAt: string
-  address: {
-    fullName: string
-    phone: string
-    email: string | null
-    addressLine1: string
-    addressLine2: string | null
-    city: string
-    state: string
-    pincode: string
-  } | null
-  items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; measurements?: unknown }[]
-}
+import { orderDocument, type DocumentOrder } from "@/lib/orders/orderDocument"
 
 export default function InvoicePage() {
   return (
@@ -40,14 +17,16 @@ export default function InvoicePage() {
   )
 }
 
+const TH = "py-3 pr-4 font-semibold"
+const TD = "py-3 pr-4 align-top"
+
 function InvoiceContent() {
   const { orderId } = useParams<{ orderId: string }>()
 
   const token = useSearchParams().get("t")
   const query = token ? `?t=${token}` : ""
-  const [order, setOrder] = useState<Order | null>(null)
+  const [order, setOrder] = useState<DocumentOrder | null>(null)
   const [loading, setLoading] = useState(true)
-  const { contact } = content
 
   useEffect(() => {
     fetch(`/api/orders/${orderId}${query}`, { credentials: "same-origin" })
@@ -57,25 +36,28 @@ function InvoiceContent() {
       .finally(() => setLoading(false))
   }, [orderId, query])
 
+  const doc = order ? orderDocument(order) : null
+  const fileName = doc?.fileName
+
   useEffect(() => {
-    if (order) document.title = `Invoice-${order.orderCode}`
+    if (fileName) document.title = fileName
     return () => {
       document.title = "Piyush Bholla"
     }
-  }, [order])
+  }, [fileName])
 
   if (loading) {
     return (
       <p className="py-40 text-center font-jost text-black/60" aria-live="polite">
-        Loading invoice…
+        Loading…
       </p>
     )
   }
 
-  if (!order) {
+  if (!doc) {
     return (
       <div className="mx-auto max-w-md px-4 py-32 text-center">
-        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.04em]">Invoice not available</h1>
+        <h1 className="font-cinzel text-xl font-bold uppercase tracking-[0.04em]">Document not available</h1>
         <p className="mt-4 font-jost text-black/65">
           We couldn&apos;t find that order, or you need to verify it first. Track the order with your mobile number, or sign in to the account that placed it.
         </p>
@@ -87,14 +69,14 @@ function InvoiceContent() {
     )
   }
 
-  const subtotal = order.amount + order.discount
+  const isInvoice = doc.kind === "tax-invoice"
 
   return (
     <div className="bg-white text-black">
       <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20 print:p-0">
         <div className="container-max">
 
-          <div className="mx-auto mb-8 flex max-w-3xl flex-col items-center gap-4 print:hidden sm:flex-row sm:justify-between">
+          <div className="mx-auto mb-8 flex max-w-4xl flex-col items-center gap-4 print:hidden sm:flex-row sm:justify-between">
             <Link
               href="/track-order"
               className="font-jost text-sm text-black/60 underline-offset-4 transition-colors hover:text-black hover:underline"
@@ -106,134 +88,222 @@ function InvoiceContent() {
                 <Printer className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
                 Print
               </button>
-              <a href={`/api/invoice/${order.orderCode}.pdf${query}`} download className="btn-solid-dark">
+              <a href={`/api/invoice/${doc.orderCode}.pdf${query}`} download className="btn-solid-dark">
                 <Download className="mr-3 h-4 w-4" strokeWidth={1.5} aria-hidden />
                 Download PDF
               </a>
             </div>
           </div>
 
-          <article className="invoice-card mx-auto max-w-3xl border border-black/10 bg-white p-8 sm:p-12 print:border-0 print:p-0">
+          <article className="invoice-card mx-auto max-w-4xl border border-black/10 bg-white p-6 sm:p-12 print:border-0 print:p-0">
 
             <header className="flex flex-col items-start justify-between gap-8 border-b border-black/10 pb-8 sm:flex-row sm:items-center">
               <div className="flex flex-col items-center">
-                <Image
-                  src="/images/brand/logo-mark.png"
-                  alt=""
-                  width={213}
-                  height={320}
-                  priority
-                  className="h-14 w-auto"
-                />
-                <span className="mt-2 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.04em]">
-                  Piyush Bholla
-                </span>
+                <Image src="/images/brand/logo-mark.png" alt="" width={213} height={320} priority className="h-14 w-auto" />
+                <span className="mt-2 whitespace-nowrap font-cinzel text-base font-bold uppercase tracking-[0.04em]">Piyush Bholla</span>
               </div>
               <div className="font-jost sm:text-right">
-                <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em]">Invoice</h1>
+                <h1 className="font-cinzel text-2xl font-bold uppercase tracking-[0.04em]">{doc.title}</h1>
                 <p className="mt-2 text-sm text-black/60">
-                  No. <span className="font-semibold text-black">{order.orderCode}</span>
+                  {doc.numberLabel} <span className="font-semibold text-black">{doc.number}</span>
                 </p>
-                <p className="text-sm text-black/60">Date {formatDateDDMMYYYY(order.createdAt)}</p>
+                <p className="text-sm text-black/60">Date {formatDateDDMMYYYY(doc.date)}</p>
+                {isInvoice && (
+                  <p className="text-sm text-black/60">
+                    Order {doc.orderCode} · placed {formatDateDDMMYYYY(doc.orderDate)}
+                  </p>
+                )}
               </div>
             </header>
 
+            {doc.specimen && (
+              <p role="note" className="mt-6 border border-amber-600 bg-amber-50 p-3 text-center font-jost text-sm font-semibold text-amber-900">
+                Specimen. The seller GSTIN is a placeholder, so this document is not valid for tax purposes.
+              </p>
+            )}
+
             <div className="grid grid-cols-1 gap-8 py-8 font-jost text-sm sm:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Billed to</p>
-                {order.address && (
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">{isInvoice ? "Billed and shipped to" : "Shipping to"}</p>
+                {doc.buyer && (
                   <address className="mt-3 not-italic leading-relaxed text-black/75">
-                    <span className="font-semibold text-black">{order.address.fullName}</span>
+                    <span className="font-semibold text-black">{doc.buyer.name}</span>
+                    {doc.buyer.attention && <><br />Attn. {doc.buyer.attention}</>}
+                    {doc.buyer.lines.map((l) => (
+                      <span key={l}><br />{l}</span>
+                    ))}
                     <br />
-                    {order.address.addressLine1}
-                    {order.address.addressLine2 ? `, ${order.address.addressLine2}` : ""}
-                    <br />
-                    {order.address.city}, {order.address.state} {order.address.pincode}
-                    <br />
-                    <span className="text-black/60">{order.address.phone}</span>
-                    {order.address.email && (
-                      <>
-                        <br />
-                        <span className="text-black/60">{order.address.email}</span>
-                      </>
-                    )}
+                    <span className="text-black/60">{doc.buyer.phone}</span>
+                    {doc.buyer.email && <><br /><span className="text-black/60">{doc.buyer.email}</span></>}
+                    {doc.buyer.gstin && <><br />GSTIN <span className="font-semibold text-black">{doc.buyer.gstin}</span></>}
                   </address>
+                )}
+                {isInvoice && (
+                  <p className="mt-4 text-black/75">
+                    <span className="text-black/60">Place of supply</span> {doc.placeOfSupply}
+                  </p>
                 )}
               </div>
               <div className="sm:text-right">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">From</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">{isInvoice ? "Sold by" : "From"}</p>
                 <address className="mt-3 not-italic leading-relaxed text-black/75">
-                  <span className="font-semibold text-black">Piyush Bholla Label</span>
+                  <span className="font-semibold text-black">{doc.seller.name}</span>
+                  {doc.seller.addressLines.map((l) => (
+                    <span key={l}><br />{l}</span>
+                  ))}
                   <br />
-                  {contact.location}
+                  State {doc.seller.state}
                   <br />
-                  <span className="text-black/60">{contact.email}</span>
+                  GSTIN <span className="font-semibold text-black">{doc.seller.gstin}</span>
                   <br />
-                  <span className="text-black/60">{contact.phone}</span>
+                  <span className="text-black/60">{doc.seller.email} · {doc.seller.phone}</span>
                 </address>
                 <dl className="mt-5 space-y-1 text-black/75">
                   <div className="flex justify-between gap-6 sm:justify-end">
                     <dt className="text-black/60">Payment</dt>
-                    <dd>{paymentLabel(order.paymentMethod)}</dd>
+                    <dd>{doc.payment}</dd>
                   </div>
-                  <div className="flex justify-between gap-6 sm:justify-end">
-                    <dt className="text-black/60">Status</dt>
-                    <dd>{statusLabel(order.status)}</dd>
-                  </div>
+                  {!isInvoice && (
+                    <div className="flex justify-between gap-6 sm:justify-end">
+                      <dt className="text-black/60">Status</dt>
+                      <dd>{doc.status}</dd>
+                    </div>
+                  )}
                 </dl>
               </div>
             </div>
 
-            <table className="w-full border-t border-black/10 font-jost text-sm">
-              <thead>
-                <tr className="text-left text-xs font-semibold uppercase tracking-[0.15em] text-black/60">
-                  <th scope="col" className="py-3 pr-4 font-semibold">Item</th>
-                  <th scope="col" className="py-3 pr-4 font-semibold">Size</th>
-                  <th scope="col" className="py-3 pr-4 text-right font-semibold">Price</th>
-                  <th scope="col" className="py-3 pr-4 text-right font-semibold">Qty</th>
-                  <th scope="col" className="py-3 text-right font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-black/10 border-y border-black/10">
-                {order.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="py-3 pr-4 font-semibold">
-                      {item.name}
-                      {item.color && <span className="block font-normal text-black/60">{item.color}</span>}
-                    </td>
-                    <td className="py-3 pr-4 text-black/70">{isSnapshot(item.measurements) ? "Made to measure" : item.size}</td>
-                    <td className="py-3 pr-4 text-right tabular-nums text-black/70">{formatRupees(item.price)}</td>
-                    <td className="py-3 pr-4 text-right tabular-nums text-black/70">{item.quantity}</td>
-                    <td className="py-3 text-right tabular-nums">{formatRupees(item.price * item.quantity)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              {isInvoice ? (
+                <table className="w-full min-w-[40rem] border-t border-black/10 font-jost text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-[0.12em] text-black/60">
+                      <th scope="col" className={TH}>Item</th>
+                      <th scope="col" className={TH}>HSN</th>
+                      <th scope="col" className={`${TH} text-right`}>Qty</th>
+                      <th scope="col" className={`${TH} text-right`}>Taxable value</th>
+                      {doc.taxColumns.map((c) => (
+                        <th key={c} scope="col" className={`${TH} text-right`}>{c}</th>
+                      ))}
+                      <th scope="col" className="py-3 text-right font-semibold">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/10 border-y border-black/10">
+                    {doc.lines.map((l) => (
+                      <tr key={l.id}>
+                        <td className={`${TD} font-semibold`}>
+                          {l.name}
+                          <span className="block font-normal text-black/60">{l.detail}</span>
+                        </td>
+                        <td className={`${TD} tabular-nums text-black/70`}>{l.hsn}</td>
+                        <td className={`${TD} text-right tabular-nums text-black/70`}>{l.quantity}</td>
+                        <td className={`${TD} text-right tabular-nums`}>{formatRupeesExact(l.taxable)}</td>
+                        {l.taxParts.map((t, i) => (
+                          <td key={i} className={`${TD} text-right tabular-nums text-black/70`}>{formatRupeesExact(t)}</td>
+                        ))}
+                        <td className="py-3 text-right align-top tabular-nums">{formatRupeesExact(l.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="w-full border-t border-black/10 font-jost text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-[0.15em] text-black/60">
+                      <th scope="col" className={TH}>Item</th>
+                      <th scope="col" className={TH}>Size</th>
+                      <th scope="col" className={`${TH} text-right`}>Price</th>
+                      <th scope="col" className={`${TH} text-right`}>Qty</th>
+                      <th scope="col" className="py-3 text-right font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/10 border-y border-black/10">
+                    {doc.lines.map((l) => (
+                      <tr key={l.id}>
+                        <td className={`${TD} font-semibold`}>
+                          {l.name}
+                          {l.color && <span className="block font-normal text-black/60">{l.color}</span>}
+                        </td>
+                        <td className={`${TD} text-black/70`}>{l.sizeLabel}</td>
+                        <td className={`${TD} text-right tabular-nums text-black/70`}>{formatRupees(l.unitPrice)}</td>
+                        <td className={`${TD} text-right tabular-nums text-black/70`}>{l.quantity}</td>
+                        <td className="py-3 text-right align-top tabular-nums">{formatRupees(l.gross)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
-            <dl className="ml-auto mt-6 max-w-xs space-y-2 font-jost text-sm text-black/70">
-              <div className="flex justify-between">
-                <dt>Subtotal</dt>
-                <dd className="tabular-nums text-black">{formatRupees(subtotal)}</dd>
-              </div>
-              {order.discount > 0 && (
-                <div className="flex justify-between">
-                  <dt>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt>
-                  <dd className="tabular-nums text-black">−{formatRupees(order.discount)}</dd>
-                </div>
+            <dl className="ml-auto mt-6 max-w-sm space-y-2 font-jost text-sm text-black/70">
+              {isInvoice ? (
+                <>
+                  <div className="flex justify-between">
+                    <dt>Taxable value</dt>
+                    <dd className="tabular-nums text-black">{formatRupeesExact(doc.totals.taxableValue)}</dd>
+                  </div>
+                  {doc.totals.taxParts.map((t) => (
+                    <div key={t.label} className="flex justify-between">
+                      <dt>{t.label}</dt>
+                      <dd className="tabular-nums text-black">{formatRupeesExact(t.value)}</dd>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <dt>Subtotal</dt>
+                    <dd className="tabular-nums text-black">{formatRupees(doc.totals.subtotal)}</dd>
+                  </div>
+                  {doc.totals.discount > 0 && (
+                    <div className="flex justify-between">
+                      <dt>Discount{doc.totals.couponCode ? ` (${doc.totals.couponCode})` : ""}</dt>
+                      <dd className="tabular-nums text-black">−{formatRupeesExact(doc.totals.discount)}</dd>
+                    </div>
+                  )}
+                </>
               )}
               <div className="flex justify-between">
                 <dt>Shipping</dt>
                 <dd className="text-black/60">Complimentary</dd>
               </div>
               <div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold text-black">
-                <dt className="uppercase tracking-[0.15em]">Total</dt>
-                <dd className="tabular-nums">{formatRupees(order.amount)}</dd>
+                <dt className="uppercase tracking-[0.15em]">{isInvoice ? "Invoice total" : "Total"}</dt>
+                <dd className="tabular-nums">{formatRupeesExact(doc.totals.total)}</dd>
               </div>
+              {isInvoice ? (
+                <>
+                  {doc.totals.discount > 0 && (
+                    <p className="text-right text-xs text-black/60">
+                      After a discount of {formatRupeesExact(doc.totals.discount)}{doc.totals.couponCode ? ` (${doc.totals.couponCode})` : ""}
+                    </p>
+                  )}
+                  <p className="text-right text-xs text-black/60">{doc.totals.inWords}</p>
+                </>
+              ) : (
+                <p className="text-right text-xs text-black/60">Includes GST {formatRupeesExact(doc.totals.tax)}</p>
+              )}
             </dl>
+
+            {isInvoice ? (
+              <div className="mt-10 flex flex-col gap-8 font-jost text-xs leading-relaxed text-black/60 sm:flex-row sm:items-end sm:justify-between">
+                <p className="max-w-md">
+                  Tax payable on reverse charge: No. Prices on the website include GST; the taxable value is the price paid less the GST shown.
+                </p>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-black">For {doc.seller.name}</p>
+                  <p className="mt-8 border-t border-black/10 pt-1">Authorised signatory</p>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-10 font-jost text-sm text-black/70">
+                This is not a tax invoice. Your GST tax invoice is issued when your order ships.
+              </p>
+            )}
 
             <footer className="mt-12 border-t border-black/10 pt-6 text-center font-jost text-xs leading-relaxed text-black/60">
               <p>Thank you for shopping with Piyush Bholla.</p>
-              <p>This invoice is generated electronically and does not require a signature.</p>
+              <p>This document is generated electronically.</p>
             </footer>
           </article>
         </div>

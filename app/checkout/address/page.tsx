@@ -10,20 +10,23 @@ import OrderSummary from "@/components/checkout/OrderSummary"
 import Field from "@/components/checkout/Field"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
-import { ADDRESS_STORAGE_KEY, type CheckoutAddress as AddressForm } from "@/lib/checkout"
+import { ADDRESS_STORAGE_KEY, canonicalState, type CheckoutAddress as AddressForm } from "@/lib/checkout"
 import { useUser } from "@/context/UserContext"
 import type { SavedAddress } from "@/components/account/AddressForm"
+import StateSelect from "@/components/checkout/StateSelect"
+import { gstinError, normaliseGstin } from "@/lib/gst/gstin"
 import { Check } from "lucide-react"
 
-const fromSaved = (a: SavedAddress, email: string): AddressForm => ({
+const fromSaved = (a: SavedAddress, email: string, business: Pick<AddressForm, "businessName" | "gstin">): AddressForm => ({
   fullName: a.fullName,
   phone: a.phone,
   email,
   addressLine1: a.addressLine1,
   addressLine2: a.addressLine2 ?? "",
   city: a.city,
-  state: a.state,
+  state: canonicalState(a.state),
   pincode: a.pincode,
+  ...business,
 })
 
 const EMPTY: AddressForm = {
@@ -35,6 +38,8 @@ const EMPTY: AddressForm = {
   city: "",
   state: "",
   pincode: "",
+  businessName: "",
+  gstin: "",
 }
 
 export default function AddressPage() {
@@ -49,11 +54,16 @@ export default function AddressPage() {
   const [saved, setSaved] = useState<SavedAddress[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [saveToBook, setSaveToBook] = useState(true)
+  const [needsGst, setNeedsGst] = useState(false)
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(ADDRESS_STORAGE_KEY)
-      if (stored) setForm({ ...EMPTY, ...JSON.parse(stored) })
+      if (stored) {
+        const parsed = { ...EMPTY, ...JSON.parse(stored) } as AddressForm
+        setForm({ ...parsed, state: canonicalState(parsed.state) })
+        if (parsed.gstin) setNeedsGst(true)
+      }
     } catch {
 
     }
@@ -76,7 +86,7 @@ export default function AddressPage() {
           if (alreadyTyped) return { ...prev, email: prev.email || user.email }
           if (def) {
             setSelectedId(def.id)
-            return fromSaved(def, user.email)
+            return fromSaved(def, user.email, { businessName: prev.businessName, gstin: prev.gstin })
           }
           return { ...prev, email: user.email, fullName: prev.fullName || user.name || "", phone: prev.phone || user.phone || "" }
         })
@@ -87,10 +97,10 @@ export default function AddressPage() {
   const applySaved = (a: SavedAddress) => {
     setSelectedId(a.id)
     setErrors({})
-    setForm(fromSaved(a, user?.email ?? form.email))
+    setForm(fromSaved(a, user?.email ?? form.email, { businessName: form.businessName, gstin: form.gstin }))
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) {
@@ -105,13 +115,26 @@ export default function AddressPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = Object.fromEntries(
-      Object.entries(form).map(([k, v]) => [k, v.trim()])
+      Object.entries(form).map(([k, v]) => [k, (v ?? "").trim()])
     ) as AddressForm
+    if (needsGst) {
+      trimmed.gstin = normaliseGstin(trimmed.gstin ?? "")
+    } else {
+      trimmed.businessName = ""
+      trimmed.gstin = ""
+    }
 
     const result = validateAddress(trimmed)
-    if (!result.valid) {
-      setErrors(result.errors)
-      const first = Object.keys(result.errors)[0]
+    const found: Record<string, string> = { ...result.errors }
+    if (!found.state && !canonicalState(trimmed.state)) found.state = "Choose your state from the list"
+    if (needsGst) {
+      if ((trimmed.businessName ?? "").length < 2) found.businessName = "Enter the business name as registered for GST"
+      const gstErr = gstinError(trimmed.gstin ?? "")
+      if (gstErr) found.gstin = gstErr
+    }
+    if (Object.keys(found).length > 0) {
+      setErrors(found)
+      const first = Object.keys(found)[0]
       document.getElementById(`field-${first}`)?.focus()
       return
     }
@@ -119,8 +142,10 @@ export default function AddressPage() {
     localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(trimmed))
 
     if (user && saveToBook && !selectedId) {
-      const { email, ...book } = trimmed
+      const { email, businessName, gstin, ...book } = trimmed
       void email
+      void businessName
+      void gstin
       fetch("/api/account/addresses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -273,14 +298,7 @@ export default function AddressPage() {
                       onChange={handleChange}
                       error={errors.city}
                     />
-                    <Field
-                      label="State"
-                      name="state"
-                      autoComplete="address-level1"
-                      value={form.state}
-                      onChange={handleChange}
-                      error={errors.state}
-                    />
+                    <StateSelect value={form.state} onChange={handleChange} error={errors.state} />
                     <Field
                       label="Pincode"
                       name="pincode"
@@ -292,6 +310,53 @@ export default function AddressPage() {
                       error={errors.pincode}
                     />
                   </div>
+                </fieldset>
+
+                <fieldset className="space-y-5">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={needsGst}
+                        onChange={(e) => {
+                          setNeedsGst(e.target.checked)
+                          setErrors(({ businessName, gstin, ...rest }) => {
+                            void businessName
+                            void gstin
+                            return rest
+                          })
+                        }}
+                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-black/30 transition-colors checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                      />
+                      <Check className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden />
+                    </span>
+                    <span className="font-jost text-sm text-black/80">
+                      Buying for a business? Add your GSTIN to the tax invoice
+                    </span>
+                  </label>
+                  {needsGst && (
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <Field
+                        label="Business name"
+                        name="businessName"
+                        autoComplete="organization"
+                        value={form.businessName ?? ""}
+                        onChange={handleChange}
+                        error={errors.businessName}
+                        hint="As registered for GST"
+                      />
+                      <Field
+                        label="GSTIN"
+                        name="gstin"
+                        autoCapitalize="characters"
+                        maxLength={15}
+                        value={form.gstin ?? ""}
+                        onChange={handleChange}
+                        error={errors.gstin}
+                        hint="15 characters, e.g. 07AAAAA0000A1Z5"
+                      />
+                    </div>
+                  )}
                 </fieldset>
 
                 {user && selectedId === null && (

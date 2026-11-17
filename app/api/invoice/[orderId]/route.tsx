@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { prisma } from "@/lib/prisma"
 import InvoiceDocument from "@/lib/pdf/InvoiceDocument"
+import { orderDocument } from "@/lib/orders/orderDocument"
 import { canReadOrder } from "@/lib/security/orderAccess"
 
 export const runtime = "nodejs"
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ orderId
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Invoice-${order.orderCode}.pdf"`,
+        "Content-Disposition": `attachment; filename="${orderDocument(order).fileName}.pdf"`,
         "Content-Length": String(pdf.byteLength),
         "Cache-Control": "private, no-store",
       },

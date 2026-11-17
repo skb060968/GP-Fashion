@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Check } from "lucide-react"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
 import CheckoutSteps from "@/components/checkout/CheckoutSteps"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
@@ -18,6 +18,9 @@ type Order = {
   amount: number
   discount: number
   couponCode: string | null
+  cgst?: number
+  sgst?: number
+  igst?: number
   paymentMethod: string
   status: string
   createdAt: string
@@ -168,6 +171,11 @@ function SuccessContent() {
                       <dt className="uppercase tracking-[0.15em]">Total</dt>
                       <dd className="tabular-nums">{formatRupees(order.amount)}</dd>
                     </div>
+                    {typeof order.cgst === "number" && (
+                      <p className="text-right text-xs text-black/60">
+                        Includes GST {formatRupeesExact(order.cgst + (order.sgst ?? 0) + (order.igst ?? 0))}. Your tax invoice is issued when the order ships.
+                      </p>
+                    )}
                   </dl>
 
                   {order.address && (
@@ -188,7 +196,7 @@ function SuccessContent() {
 
               <FadeIn delay={200} className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
                 <a href={invoiceHref(order.orderCode)} download className="btn-outline-dark w-full sm:w-auto">
-                  Download invoice
+                  Order confirmation
                 </a>
                 <Link href={user ? "/account" : "/track-order"} className="btn-outline-dark w-full sm:w-auto">
                   {user ? "My orders" : "Track order"}

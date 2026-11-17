@@ -19,6 +19,19 @@ model Order {
   updatedAt     DateTime        @default(now()) @updatedAt
   notes         String?
 
+  subtotal      Int
+  taxableValue  Int
+  cgst          Int
+  sgst          Int
+  igst          Int
+  placeOfSupply String
+  buyerGstin    String?
+  buyerName     String?
+
+  invoiceNumber String?   @unique
+  invoiceDate   DateTime?
+  sellerGstin   String?
+
   razorpayPaymentId  String?
   razorpayOrderId    String?
 
@@ -154,6 +167,7 @@ model Address {
   addressLine2 String?
   city         String
   state        String
+  stateCode    String
   pincode      String
 
   order        Order    @relation(fields: [orderId], references: [id])
@@ -169,6 +183,12 @@ model OrderItem {
   price          Int
   quantity       Int     @default(1)
   coverThumbnail String
+
+  hsn            String
+  gstRate        Int
+  discount       Int
+  taxableValue   Int
+  taxAmount      Int
 
   pattern                 Json?
   measurements            Json?
@@ -229,6 +249,11 @@ model Coupon {
   expiresAt      DateTime?
   isActive       Boolean      @default(true)
   createdAt      DateTime     @default(now())
+}
+
+model InvoiceCounter {
+  financialYear String @id
+  last          Int
 }
 
 model HiddenProduct {

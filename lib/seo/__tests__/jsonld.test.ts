@@ -21,6 +21,7 @@ const baseProduct: Product = {
   releaseDate: "2026-01-01",
   description: "Silk crepe\n\nBias cut",
   price: 1250000,
+  hsn: "6204",
   sizes: ["S", "M"],
   bestseller: false,
   order: 1,

@@ -33,8 +33,10 @@ function copyFor(order: OrderEmailData, site: string): Copy {
       return {
         subject: statusEmailSubject("SHIPPED", code),
         title: `On its way`,
-        body: `Good news, ${name}. Your order has left us and is on its way to the address below.`,
-        cta: track,
+        body: `Good news, ${name}. Your order has left us and is on its way to the address below.${order.invoiceNumber ? ` Your tax invoice ${order.invoiceNumber} is ready to view and download.` : ""}`,
+        cta: order.invoiceNumber && order.accessToken
+          ? { text: "View tax invoice", href: `${site}/invoice/${code}?t=${order.accessToken}` }
+          : track,
       }
     case "DELIVERED":
       return {

@@ -15,6 +15,8 @@ export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | nu
     orderCode: order.orderCode,
     amount: order.amount,
     discount: order.discount,
+    gst: order.cgst + order.sgst + order.igst,
+    invoiceNumber: order.invoiceNumber,
     status: order.status,
     createdAt: order.createdAt,
     paymentMethod: order.paymentMethod,

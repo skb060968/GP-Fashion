@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
       status: true,
       paymentMethod: true,
       createdAt: true,
+      invoiceNumber: true,
       history: { select: { status: true }, orderBy: { changedAt: "asc" } },
       items: {
         select: {

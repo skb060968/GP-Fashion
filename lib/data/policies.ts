@@ -80,7 +80,7 @@ export const policies: Policy[] = [
     slug: "terms",
     title: "Terms & Conditions",
     description: "Terms of sale and use of the PIYUSH BHOLLA LABEL website.",
-    updated: "2026-11-06",
+    updated: "2026-11-17",
     sections: [
       {
         heading: "About us",
@@ -91,7 +91,7 @@ export const policies: Policy[] = [
       {
         heading: "Products and prices",
         paragraphs: [
-          "All prices are in Indian Rupees and include applicable taxes. Shipping within India is complimentary. We take care to show colours and details accurately, but screens vary and each piece is finished by hand, so slight variations from the photographs are normal.",
+          "All prices are in Indian Rupees and include GST. Shipping within India is complimentary. You receive an order confirmation when you order and a GST tax invoice when your order is dispatched. If you buy for a business, you can add your GSTIN at checkout and it will appear on the tax invoice. We take care to show colours and details accurately, but screens vary and each piece is finished by hand, so slight variations from the photographs are normal.",
           "We may change prices and withdraw pieces at any time. A price change does not affect an order that has already been confirmed.",
         ],
       },
@@ -148,7 +148,7 @@ export const policies: Policy[] = [
     slug: "privacy",
     title: "Privacy Policy",
     description: "How PIYUSH BHOLLA LABEL collects, uses and protects your personal information.",
-    updated: "2026-11-16",
+    updated: "2026-11-17",
     sections: [
       {
         heading: "Who we are",
@@ -160,7 +160,7 @@ export const policies: Policy[] = [
         heading: "What we collect",
         paragraphs: ["We collect only what is needed to run the store:"],
         bullets: [
-          "When you order: your name, phone number, email address and delivery address, the items ordered, and the UPI transaction reference you provide.",
+          "When you order: your name, phone number, email address and delivery address, the items ordered, and the UPI transaction reference you provide. If you buy for a business, also the business name and GSTIN you enter for the tax invoice.",
           "When you create an account: your email address, and optionally your name, phone number and saved addresses. We never store a password; you sign in with a one-time code.",
           "When you save measurements: the body measurements and fit notes you enter in your account, for yourself or for family members, including children's measurements entered by a parent or guardian. This is optional and only needed for made-to-measure orders.",
           "When you use the site: items in your bag and wishlist (stored in your browser, and in your account if you are signed in), standard server logs such as IP address and browser type, and a count of the pages you visit. We count page visits with Vercel Web Analytics, which sets no cookies, does not identify you across days or other sites, and receives page addresses without their query strings.",

@@ -27,6 +27,7 @@ interface OrderData {
   status: string
   amount: number
   createdAt: string
+  invoiceNumber: string | null
 
   accessToken: string
   history: { status: string }[]
@@ -222,7 +223,7 @@ export default function TrackOrderClient() {
 
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Link href={`/invoice/${order.orderCode}?t=${order.accessToken}`} className="btn-outline-dark w-full sm:w-auto">
-                    View invoice
+                    {order.invoiceNumber ? "View tax invoice" : "View order confirmation"}
                   </Link>
                   <a href={`/api/invoice/${order.orderCode}.pdf?t=${order.accessToken}`} download className="btn-solid-dark w-full sm:w-auto">
                     Download PDF

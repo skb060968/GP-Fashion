@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
 import { PERSON_KINDS } from "@/lib/measurements/fields";
+import { gstinError, normaliseGstin } from "@/lib/gst/gstin";
 
 export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
 
@@ -40,9 +41,21 @@ export const measurementProfileSchema = z.object({
   guardianConsent: z.boolean().optional(),
 });
 
+export const businessBuyerSchema = z.object({
+  name: z.string().trim().min(2, "Enter the business name as registered for GST").max(100, "Business name is too long"),
+  gstin: z
+    .string()
+    .transform(normaliseGstin)
+    .superRefine((value, ctx) => {
+      const error = gstinError(value);
+      if (error) ctx.addIssue({ code: "custom", message: error });
+    }),
+});
+
 export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
+  business: businessBuyerSchema.optional(),
   amount: z.number().int().positive(),
   paymentMethod: z.enum(["UPI_MANUAL", "COD", "RAZORPAY"]),
   couponCode: z.string().optional(),

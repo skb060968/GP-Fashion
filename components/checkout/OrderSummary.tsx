@@ -3,7 +3,8 @@
 import Image from "next/image"
 import type { ReactNode } from "react"
 import { cartLineKey, useCart } from "@/context/CartContext"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
+import { includedGst } from "@/lib/gst/tax"
 import { itemSizeLabel } from "@/lib/measurements/fields"
 
 interface OrderSummaryProps {
@@ -20,6 +21,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0)
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
   const total = Math.max(0, subtotal - discount)
+  const gst = includedGst(cart, discount)
 
   return (
     <aside className="card-elevated p-6 sm:p-8 lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
@@ -77,6 +79,7 @@ export default function OrderSummary({ discount = 0, children, footer }: OrderSu
         <span className="text-sm font-semibold uppercase tracking-[0.15em]">Total</span>
         <span className="text-lg font-semibold tabular-nums">{formatRupees(total)}</span>
       </div>
+      <p className="mt-1 text-right font-jost text-xs text-black/60">Includes GST {formatRupeesExact(gst)}</p>
 
       {footer && <div className="mt-8">{footer}</div>}
     </aside>

@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import Field from "@/components/checkout/Field"
+import StateSelect from "@/components/checkout/StateSelect"
+import { canonicalState } from "@/lib/checkout"
 
 export type SavedAddress = {
   id: string
@@ -50,7 +52,7 @@ export default function AddressForm({
           addressLine1: initial.addressLine1,
           addressLine2: initial.addressLine2 ?? "",
           city: initial.city,
-          state: initial.state,
+          state: canonicalState(initial.state),
           pincode: initial.pincode,
         }
       : EMPTY
@@ -59,7 +61,7 @@ export default function AddressForm({
   const [general, setGeneral] = useState("")
   const [saving, setSaving] = useState(false)
 
-  const set = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const set = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((f) => ({ ...f, [name]: value }))
     setErrors((er) => ({ ...er, [name]: "" }))
@@ -67,6 +69,10 @@ export default function AddressForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!canonicalState(form.state)) {
+      setErrors((er) => ({ ...er, state: "Choose your state from the list" }))
+      return
+    }
     setSaving(true)
     setGeneral("")
     try {
@@ -100,7 +106,7 @@ export default function AddressForm({
       <Field label="Apartment, landmark" name="addressLine2" autoComplete="address-line2" value={form.addressLine2} onChange={set} error={errors.addressLine2} optional />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <Field label="City" name="city" autoComplete="address-level2" value={form.city} onChange={set} error={errors.city} />
-        <Field label="State" name="state" autoComplete="address-level1" value={form.state} onChange={set} error={errors.state} />
+        <StateSelect value={form.state} onChange={set} error={errors.state} />
         <Field label="Pincode" name="pincode" inputMode="numeric" maxLength={6} autoComplete="postal-code" value={form.pincode} onChange={set} error={errors.pincode} />
       </div>
       {general && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 font-jost text-sm text-red-800">{general}</p>}

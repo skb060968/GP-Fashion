@@ -1,7 +1,7 @@
 
 
 import { contact } from "@/lib/data/contact"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
 import { formatDateDDMMYYYY } from "@/lib/date"
 import { paymentLabel, statusLabel } from "@/lib/orders/labels"
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
@@ -138,6 +138,7 @@ export function itemsTable(order: OrderEmailData) {
       ${totalRow("Shipping", "Complimentary")}
       <tr><td colspan="2" style="padding-top:10px;"><div style="height:1px;background:${RULE};line-height:1px;font-size:0;">&nbsp;</div></td></tr>
       ${totalRow("Total", formatRupees(order.amount), true)}
+      ${order.gst ? `<tr><td colspan="2" align="right" style="padding:4px 0 0;font:400 12px/1.4 ${SANS};color:${MUTED};">Includes GST ${formatRupeesExact(order.gst)}</td></tr>` : ""}
     </table>`
 }
 

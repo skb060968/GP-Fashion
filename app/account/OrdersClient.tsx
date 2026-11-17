@@ -17,6 +17,7 @@ type Order = {
   status: string
   paymentMethod: string
   createdAt: string
+  invoiceNumber: string | null
   history: { status: string }[]
   items: {
     id: string
@@ -140,7 +141,7 @@ export default function OrdersClient() {
 
                 <footer className="flex flex-wrap gap-3 border-t border-black/10 px-6 py-4">
                   <Link href={`/invoice/${o.orderCode}`} className="btn-outline-dark !px-5 !py-2 !text-xs">
-                    Invoice
+                    {o.invoiceNumber ? "Tax invoice" : "Order confirmation"}
                   </Link>
                   <a href={`/api/invoice/${o.orderCode}.pdf`} download className="btn-outline-dark !px-5 !py-2 !text-xs">
                     Download PDF

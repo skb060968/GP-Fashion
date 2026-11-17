@@ -4,6 +4,8 @@ import { OrderStatus } from "@prisma/client";
 import { transitionFor } from "../orders/transitions";
 import { isSnapshot, validateMeasurements } from "../measurements/fields";
 import { Prisma } from "@prisma/client";
+import { financialYear } from "../gst/tax";
+import { business, formatInvoiceNumber } from "../data/business";
 
 export class MeasurementsNotConfirmedError extends Error {
   constructor(public count: number) {
@@ -91,7 +93,22 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
       if (unconfirmed > 0) throw new MeasurementsNotConfirmedError(unconfirmed);
     }
 
-    await tx.order.update({ where: { id: current.id }, data: { status: newStatus } });
+    let invoice: { invoiceNumber: string; invoiceDate: Date; sellerGstin: string } | null = null;
+    if (newStatus === OrderStatus.SHIPPED) {
+      const existing = await tx.order.findUnique({ where: { id: current.id }, select: { invoiceNumber: true } });
+      if (!existing?.invoiceNumber) {
+        const now = new Date();
+        const fy = financialYear(now);
+        const counter = await tx.invoiceCounter.upsert({
+          where: { financialYear: fy },
+          create: { financialYear: fy, last: 1 },
+          update: { last: { increment: 1 } },
+        });
+        invoice = { invoiceNumber: formatInvoiceNumber(fy, counter.last), invoiceDate: now, sellerGstin: business.gstin };
+      }
+    }
+
+    await tx.order.update({ where: { id: current.id }, data: { status: newStatus, ...(invoice ?? {}) } });
     await tx.statusHistory.create({
       data: { status: newStatus, orderId: current.id, note: cleanNote },
     });
@@ -117,6 +134,10 @@ export function buildOrderEmailData(order: {
   orderCode: string;
   amount: number;
   discount: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  invoiceNumber?: string | null;
   status: string;
   createdAt: Date;
   paymentMethod: string;
@@ -127,6 +148,8 @@ export function buildOrderEmailData(order: {
     orderCode: order.orderCode,
     amount: order.amount,
     discount: order.discount ?? undefined,
+    gst: (order.cgst ?? 0) + (order.sgst ?? 0) + (order.igst ?? 0),
+    invoiceNumber: order.invoiceNumber ?? null,
     status: order.status,
     createdAt: order.createdAt,
     paymentMethod: order.paymentMethod,

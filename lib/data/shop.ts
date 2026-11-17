@@ -62,6 +62,7 @@ export interface Product {
   description: string
   care: string | null
   price: number
+  hsn: string
   sizes: string[]
   bestseller: boolean
   order: number
@@ -170,6 +171,7 @@ export const products: Product[] = [
     "description": "Classic Dagger Collar Shirt in Solid Satin Crepe, Featuring a Sleek Minimalist Silhouette\nComponents: Shirt\nSurface: Plain / No Embellishment\nFabric: Satin Crepe",
     "care": null,
     "price": 499000,
+    "hsn": "6205",
     "sizes": [
       "S",
       "M",
@@ -259,6 +261,7 @@ export const products: Product[] = [
     "description": "Contemporary Statement Blazer in Ivory and Midnight Blue, Featuring Bold Abstract Patterns with Dual Sequin Embellishments\nComponents: Blazer\nSurface: Dual Sequin Embellishment\nFabric: Sequin Net Lycra",
     "care": null,
     "price": 1499000,
+    "hsn": "6203",
     "sizes": [
       "S",
       "M",
@@ -297,6 +300,7 @@ export const products: Product[] = [
     "description": "Ornate Statement Shirt in Champagne and Black, Intricately Embellished with Baroque-Inspired Motifs\nComponents: Shirt\nSurface: Intricate Thread Embroidery, Sequin and Bead Embellishments\nFabric: imported organza and satin crepe",
     "care": null,
     "price": 999000,
+    "hsn": "6205",
     "sizes": [
       "S",
       "M",
@@ -334,6 +338,7 @@ export const products: Product[] = [
     "description": "Elegant Lace Sequin Shirt Featuring Intricate Lace Detailing and All-Over Sequin Embellishments\nComponents: Shirt\nSurface: Lace Detailing with Sequin Embellishment\nFabric: Lace and Sequin Fabric",
     "care": null,
     "price": 1099000,
+    "hsn": "6205",
     "sizes": [
       "S",
       "M",
@@ -372,6 +377,7 @@ export const products: Product[] = [
     "description": "Ornate Statement Tweed Jacket , Intricately Embellished with sequins\nComponents: Tweed Jacket\nSurface: Sequins and thread work\nFabric: Imported Premium tweed",
     "care": null,
     "price": 999000,
+    "hsn": "6203",
     "sizes": [
       "S",
       "M",
@@ -447,6 +453,7 @@ export const products: Product[] = [
     "description": "Ribbed Velvet Henley Top Featuring a Contemporary Zip-Front Neckline\nComponents: Henley Top\nSurface: Ribbed Texture\nFabric: Rib Knit Velvet",
     "care": null,
     "price": 599000,
+    "hsn": "6205",
     "sizes": [
       "S",
       "M",
@@ -483,6 +490,7 @@ export const products: Product[] = [
     "description": "Statement Sequin Bomber Jacket Featuring a Luxurious Fur Collar and All-Over Sequin Embellishments\nComponents: Bomber Jacket\nSurface: All-Over Sequin Embellishment\nFabric: Sequin Fabric with Fur Collar",
     "care": null,
     "price": 999000,
+    "hsn": "6203",
     "sizes": [
       "S",
       "M",
@@ -517,6 +525,7 @@ export const products: Product[] = [
     "description": "Glamorous Dual Sequin Net Lycra Dress Featuring All-Over Shimmering Embellishments and a Contemporary Statement Silhouette\nComponents: Dress\nSurface: Dual Sequin Embellishment\nFabric: Sequin Net Lycra",
     "care": null,
     "price": 1599000,
+    "hsn": "6204",
     "sizes": [
       "S",
       "M",
@@ -555,6 +564,7 @@ export const products: Product[] = [
     "description": "Ornate Statement dress in Champagne and Black, Intricately Embellished with Baroque-Inspired Motifs\nComponents: Dress\nSurface:  Intricate Thread Embroidery, Sequin and Bead Embellishments\nFabric:  Imported Organza and Satin Crepe",
     "care": null,
     "price": 999000,
+    "hsn": "6204",
     "sizes": [
       "S",
       "M",
@@ -594,6 +604,7 @@ export const products: Product[] = [
     "description": "Elegant Velvet Gown in a Rich Luxurious Finish, Featuring a Sophisticated Silhouette and Timeless Eveningwear Appeal\nComponents: Gown\nSurface: Plain Velvet\nFabric: Velvet",
     "care": null,
     "price": 1199000,
+    "hsn": "6204",
     "sizes": [
       "S",
       "M",
@@ -630,6 +641,7 @@ export const products: Product[] = [
     "description": "Elegant Printed Crepe Dress Featuring Intricate Embroidery and Delicate Surface Detailing\nComponents: Dress\nSurface: Printed with Intricate Thread Embroidery\nFabric: Crepe",
     "care": null,
     "price": 1499000,
+    "hsn": "6204",
     "sizes": [
       "S",
       "M",

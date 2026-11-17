@@ -4,7 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Minus, Plus, ShoppingBag, X } from "lucide-react"
 import { cartLineKey, useCart } from "@/context/CartContext"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
+import { includedGst } from "@/lib/gst/tax"
 import { MTM_LEAD_TIME, itemSizeLabel } from "@/lib/measurements/fields"
 import FadeIn from "@/components/FadeIn"
 import PageHeading from "@/components/PageHeading"
@@ -166,7 +167,7 @@ export default function BagClient({ hiddenSlugs, soldOutSlugs }: { hiddenSlugs: 
                     </div>
                     <div className="flex justify-between">
                       <dt>Shipping</dt>
-                      <dd className="text-black/60">Calculated at checkout</dd>
+                      <dd className="text-black/60">Complimentary in India</dd>
                     </div>
                   </dl>
 
@@ -174,6 +175,7 @@ export default function BagClient({ hiddenSlugs, soldOutSlugs }: { hiddenSlugs: 
                     <span className="text-base font-semibold uppercase tracking-[0.15em]">Total</span>
                     <span className="text-lg font-semibold tabular-nums">{formatRupees(subtotal)}</span>
                   </div>
+                  <p className="mt-1 text-right font-jost text-xs text-black/60">Includes GST {formatRupeesExact(includedGst(cart))}</p>
 
                   {unavailableCount > 0 ? (
                     <>

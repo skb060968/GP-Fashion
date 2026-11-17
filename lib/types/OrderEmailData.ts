@@ -3,6 +3,9 @@ export type OrderEmailData = {
   orderCode: string;
   amount: number;
   discount?: number;
+  gst?: number;
+  invoiceNumber?: string | null;
+  accessToken?: string;
   status: string;
   createdAt: Date;
   paymentMethod: string;

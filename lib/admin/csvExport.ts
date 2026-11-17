@@ -2,6 +2,7 @@
 
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels";
 import { isSnapshot } from "@/lib/measurements/fields";
+import { placeOfSupplyLabel } from "@/lib/gst/states";
 
 export interface CsvOrderItem {
   name: string;
@@ -31,6 +32,15 @@ export interface CsvOrder {
   status: string;
   createdAt: Date | string;
   items: CsvOrderItem[];
+  invoiceNumber?: string | null;
+  invoiceDate?: Date | string | null;
+  placeOfSupply?: string | null;
+  buyerGstin?: string | null;
+  buyerName?: string | null;
+  taxableValue?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
 }
 
 export const CSV_COLUMNS = [
@@ -50,6 +60,15 @@ export const CSV_COLUMNS = [
   "discount",
   "couponCode",
   "total",
+  "invoiceNumber",
+  "invoiceDate",
+  "placeOfSupply",
+  "buyerGstin",
+  "buyerName",
+  "taxableValue",
+  "cgst",
+  "sgst",
+  "igst",
 ] as const;
 
 export function escapeCsvField(value: string): string {
@@ -112,6 +131,15 @@ export function ordersToCsv(orders: CsvOrder[]): string {
       formatCsvMoney(o.discount),
       o.couponCode ?? "",
       formatCsvMoney(o.amount),
+      o.invoiceNumber ?? "",
+      o.invoiceDate ? formatCsvDate(o.invoiceDate) : "",
+      o.placeOfSupply ? placeOfSupplyLabel(o.placeOfSupply) : "",
+      o.buyerGstin ?? "",
+      o.buyerName ?? "",
+      typeof o.taxableValue === "number" ? formatCsvMoney(o.taxableValue) : "",
+      typeof o.cgst === "number" ? formatCsvMoney(o.cgst) : "",
+      typeof o.sgst === "number" ? formatCsvMoney(o.sgst) : "",
+      typeof o.igst === "number" ? formatCsvMoney(o.igst) : "",
     ];
     return fields.map(escapeCsvField).join(",");
   });

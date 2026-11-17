@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       status: order.status,
       amount: order.amount,
       createdAt: order.createdAt,
+      invoiceNumber: order.invoiceNumber,
 
       accessToken: orderAccessToken(order.orderCode),
       history: order.history,

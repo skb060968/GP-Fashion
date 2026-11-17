@@ -13,6 +13,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth";
 import { adminOrderPatchSchema } from "@/lib/validation/schemas";
+import { orderAccessToken } from "@/lib/security/orderAccess";
 import { sendMail } from "@/lib/mailer";
 import { orderStatusEmailCustomer } from "@/lib/emails/orderStatusEmailCustomer";
 
@@ -102,7 +103,7 @@ export async function PATCH(
 
     const to = updatedOrder.address?.email;
     if (notifyCustomer && to) {
-      const emailData = buildOrderEmailData(updatedOrder);
+      const emailData = { ...buildOrderEmailData(updatedOrder), accessToken: orderAccessToken(updatedOrder.orderCode) };
       const code = updatedOrder.orderCode;
       after(async () => {
         try {

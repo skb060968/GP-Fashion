@@ -5,7 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { ArrowLeft, Copy, Download, ExternalLink, Mail, MessageCircle, Phone, Ruler } from "lucide-react"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
+import { business, gstinIsPlaceholder } from "@/lib/data/business"
+import { placeOfSupplyLabel } from "@/lib/gst/states"
 import { adminStatusLabel, paymentLabel } from "@/lib/orders/labels"
 import { allowedTransitions, type Transition } from "@/lib/orders/transitions"
 import StatusBadge from "@/components/StatusBadge"
@@ -23,6 +25,16 @@ type Order = {
   amount: number
   discount: number
   couponCode: string | null
+  subtotal: number
+  taxableValue: number
+  cgst: number
+  sgst: number
+  igst: number
+  placeOfSupply: string
+  buyerGstin: string | null
+  buyerName: string | null
+  invoiceNumber: string | null
+  invoiceDate: string | null
   paymentMethod: string
   status: string
   notes: string | null
@@ -184,7 +196,7 @@ export default function AdminOrderDetailClient() {
           <>
             <StatusBadge status={order.status} size="md" />
             <a href={`/invoice/${order.orderCode}`} target="_blank" rel="noopener" className={btn.secondary}>
-              <ExternalLink className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Invoice
+              <ExternalLink className="h-4 w-4" strokeWidth={1.75} aria-hidden /> {order.invoiceNumber ? "Tax invoice" : "Order confirmation"}
             </a>
             <a href={`/api/invoice/${order.orderCode}.pdf`} download className={btn.secondary}>
               <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden /> PDF
@@ -227,6 +239,16 @@ export default function AdminOrderDetailClient() {
             {unconfirmedMtm > 0 && ["UNDER_VERIFICATION", "VERIFIED"].includes(order.status) && (
               <p className="mt-4 rounded-md bg-amber-50 p-3 font-jost text-sm text-amber-900">
                 Confirm the measurements for {unconfirmedMtm} made-to-measure {unconfirmedMtm === 1 ? "item" : "items"} with the customer before cutting. Processing can start once they are confirmed.
+              </p>
+            )}
+            {transitions.some((t) => t.to === "SHIPPED") && !order.invoiceNumber && (
+              <p className="mt-4 rounded-md bg-stone-100 p-3 font-jost text-sm text-black/75">
+                Marking this order shipped issues the next tax invoice number.
+                {gstinIsPlaceholder() && (
+                  <strong className="mt-1 block text-amber-900">
+                    The seller GSTIN is still a placeholder, so the invoice will be marked Specimen. Add the real GSTIN in lib/data/business.ts before shipping real orders.
+                  </strong>
+                )}
               </p>
             )}
             {order.status === "UNDER_VERIFICATION" && order.paymentMethod === "UPI_MANUAL" && (
@@ -299,6 +321,45 @@ export default function AdminOrderDetailClient() {
               <div className="flex justify-between border-t border-black/10 pt-2 text-base font-semibold">
                 <dt>Total</dt>
                 <dd className="tabular-nums">{formatRupees(order.amount)}</dd>
+              </div>
+              <div className="flex justify-between pt-2 text-black/65">
+                <dt>Taxable value</dt>
+                <dd className="tabular-nums text-black">{formatRupeesExact(order.taxableValue)}</dd>
+              </div>
+              {order.placeOfSupply !== business.stateCode ? (
+                <div className="flex justify-between text-black/65">
+                  <dt>IGST 18%</dt>
+                  <dd className="tabular-nums text-black">{formatRupeesExact(order.igst)}</dd>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between text-black/65">
+                    <dt>CGST 9%</dt>
+                    <dd className="tabular-nums text-black">{formatRupeesExact(order.cgst)}</dd>
+                  </div>
+                  <div className="flex justify-between text-black/65">
+                    <dt>SGST 9%</dt>
+                    <dd className="tabular-nums text-black">{formatRupeesExact(order.sgst)}</dd>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between text-black/65">
+                <dt>Place of supply</dt>
+                <dd className="text-black">{placeOfSupplyLabel(order.placeOfSupply)}</dd>
+              </div>
+              {order.buyerGstin && (
+                <div className="flex justify-between gap-4 text-black/65">
+                  <dt>Buyer GSTIN</dt>
+                  <dd className="text-right text-black">{order.buyerGstin}{order.buyerName ? ` · ${order.buyerName}` : ""}</dd>
+                </div>
+              )}
+              <div className="flex justify-between text-black/65">
+                <dt>Tax invoice</dt>
+                <dd className="text-black">
+                  {order.invoiceNumber
+                    ? `${order.invoiceNumber} · ${new Date(order.invoiceDate ?? order.updatedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
+                    : "Issued when marked shipped"}
+                </dd>
               </div>
             </dl>
           </Card>

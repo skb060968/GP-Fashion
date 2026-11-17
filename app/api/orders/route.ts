@@ -16,6 +16,9 @@ import { orderAccessToken } from "@/lib/security/orderAccess";
 import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 import { getProduct } from "@/lib/data/categories";
 import { getProductStatusLists } from "@/lib/catalog/visibility";
+import { findState } from "@/lib/gst/states";
+import { GST_RATE, computeOrderTax } from "@/lib/gst/tax";
+import { business as seller } from "@/lib/data/business";
 
 const orderRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, maxRequests: 10 });
 
@@ -68,7 +71,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items: submittedItems, address, amount: submittedSubtotal, paymentMethod, couponCode, acceptMadeToMeasure } = result.data;
+    const { items: submittedItems, address, business: buyerBusiness, amount: submittedSubtotal, paymentMethod, couponCode, acceptMadeToMeasure } = result.data;
+
+    const deliveryState = findState(address.state);
+    if (!deliveryState) {
+      return NextResponse.json({ errors: { "address.state": "Choose your state from the list" } }, { status: 400 });
+    }
 
     const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
 
@@ -153,6 +161,7 @@ export async function POST(req: Request) {
         coverThumbnail,
         measurements,
         pattern: product.pattern,
+        hsn: product.hsn,
       });
     }
 
@@ -171,11 +180,17 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      discount = couponResult.discountAmount!;
+      discount = Math.min(couponResult.discountAmount!, subtotal);
       validCoupon = true;
     }
 
-    const finalAmount = subtotal - discount;
+    const tax = computeOrderTax(
+      items.map((item) => ({ price: item.price, quantity: item.quantity, rate: GST_RATE })),
+      discount,
+      seller.stateCode,
+      deliveryState.code
+    );
+    const finalAmount = tax.total;
 
     const year = new Date().getFullYear();
     const orderCode = await generateOrderCode(year);
@@ -186,7 +201,15 @@ export async function POST(req: Request) {
         orderCode,
         userId: sessionUser?.id ?? null,
         amount: finalAmount,
-        discount,
+        discount: tax.discount,
+        subtotal: tax.subtotal,
+        taxableValue: tax.taxableValue,
+        cgst: tax.cgst,
+        sgst: tax.sgst,
+        igst: tax.igst,
+        placeOfSupply: deliveryState.code,
+        buyerGstin: buyerBusiness?.gstin ?? null,
+        buyerName: buyerBusiness?.name ?? null,
         paymentMethod: paymentMethod as PaymentMethod,
         status: OrderStatus.UNDER_VERIFICATION,
         couponCode: validCoupon ? couponCode : null,
@@ -199,13 +222,14 @@ export async function POST(req: Request) {
             addressLine1: address.addressLine1,
             addressLine2: address.addressLine2 || null,
             city: address.city,
-            state: address.state,
+            state: deliveryState.name,
+            stateCode: deliveryState.code,
             pincode: address.pincode,
           },
         },
 
         items: {
-          create: items.map((item) => ({
+          create: items.map((item, i) => ({
             name: item.name,
             slug: item.slug,
             size: item.size,
@@ -213,6 +237,11 @@ export async function POST(req: Request) {
             price: item.price,
             quantity: item.quantity ?? 1,
             coverThumbnail: item.coverThumbnail,
+            hsn: item.hsn,
+            gstRate: tax.lines[i].rate,
+            discount: tax.lines[i].discount,
+            taxableValue: tax.lines[i].taxable,
+            taxAmount: tax.lines[i].tax,
             ...(item.measurements ? { measurements: item.measurements as unknown as Prisma.InputJsonValue } : {}),
             ...(item.pattern ? { pattern: item.pattern as unknown as Prisma.InputJsonValue } : {}),
           })),
