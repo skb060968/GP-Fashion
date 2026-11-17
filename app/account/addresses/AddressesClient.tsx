@@ -73,13 +73,8 @@ export default function AddressesClient() {
             title="No saved addresses"
             description="Save an address and we'll fill it in for you at checkout."
             ctaLabel="Add address"
-            ctaHref="#"
+            onCtaClick={() => setEditing("new")}
           />
-          <div className="-mt-20 flex justify-center pb-10">
-            <button type="button" onClick={() => setEditing("new")} className="btn-outline-dark">
-              Add address
-            </button>
-          </div>
         </div>
       ) : (
         <div className="space-y-4">

@@ -80,6 +80,7 @@ export default function PaymentPage() {
       const data = await res.json()
       if (data.valid) {
         setCoupon({ code, discount: data.discountAmount ?? 0 })
+        setConfirmed(false)
       } else {
         setCoupon(null)
         setCouponError(COUPON_ERROR_MESSAGES[data.error] ?? "That code isn't valid.")
@@ -94,6 +95,7 @@ export default function PaymentPage() {
 
   const removeCoupon = () => {
     setCoupon(null)
+    setConfirmed(false)
     setCouponInput("")
     setCouponError("")
   }
@@ -211,6 +213,68 @@ export default function PaymentPage() {
                     </p>
                   )}
                 </address>
+              </FadeIn>
+
+              <FadeIn delay={60}>
+                <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">
+                  <label htmlFor="promo-code">Promo code</label>
+                </h2>
+                {coupon ? (
+                  <div className="mt-4 flex items-center justify-between rounded-lg border border-black bg-black/[0.03] px-4 py-3 font-jost text-sm">
+                    <span>
+                      <span className="font-semibold tracking-wide">{coupon.code}</span>
+                      <span className="ml-2 text-black/60">−{formatRupees(coupon.discount)}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-black/60 underline-offset-4 hover:text-black hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      applyCoupon()
+                    }}
+                    className="mt-4 flex gap-2"
+                  >
+                    <input
+                      id="promo-code"
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase())
+                        setCouponError("")
+                      }}
+                      placeholder="Have a code? Enter it here"
+                      aria-invalid={Boolean(couponError)}
+                      aria-describedby={couponError ? "promo-code-error" : undefined}
+                      className={`min-w-0 flex-1 rounded-lg border bg-white px-4 py-3 font-jost text-sm uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal placeholder:text-black/35 focus:outline-none focus:ring-1 ${
+                        couponError
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                          : "border-black/15 focus:border-black focus:ring-black"
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!couponInput.trim() || couponLoading}
+                      className="btn-outline-dark !px-6 !py-3 !text-xs disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-black"
+                    >
+                      {couponLoading ? "…" : "Apply"}
+                    </button>
+                  </form>
+                )}
+                {couponError && (
+                  <p id="promo-code-error" role="alert" className="mt-2 font-jost text-xs text-red-600">
+                    {couponError}
+                  </p>
+                )}
+                {!coupon && (
+                  <p className="mt-2 font-jost text-xs text-black/60">Apply your code before you pay, so the amount on the QR code is correct.</p>
+                )}
               </FadeIn>
 
               <FadeIn delay={80}>
@@ -358,66 +422,7 @@ export default function PaymentPage() {
                     )}
                   </>
                 }
-              >
-
-                <div>
-                  <p className="font-jost text-xs font-semibold uppercase tracking-[0.15em] text-black/70">
-                    Promo code
-                  </p>
-                  {coupon ? (
-                    <div className="mt-2 flex items-center justify-between rounded-lg border border-black bg-black/[0.03] px-4 py-3 font-jost text-sm">
-                      <span>
-                        <span className="font-semibold tracking-wide">{coupon.code}</span>
-                        <span className="ml-2 text-black/60">−{formatRupees(coupon.discount)}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={removeCoupon}
-                        className="text-black/60 underline-offset-4 hover:text-black hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        applyCoupon()
-                      }}
-                      className="mt-2 flex gap-2"
-                    >
-                      <input
-                        type="text"
-                        value={couponInput}
-                        onChange={(e) => {
-                          setCouponInput(e.target.value.toUpperCase())
-                          setCouponError("")
-                        }}
-                        placeholder="Enter code"
-                        aria-label="Promo code"
-                        aria-invalid={Boolean(couponError)}
-                        className={`min-w-0 flex-1 rounded-lg border bg-white px-4 py-2.5 font-jost text-sm uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal placeholder:text-black/35 focus:outline-none focus:ring-1 ${
-                          couponError
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                            : "border-black/15 focus:border-black focus:ring-black"
-                        }`}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!couponInput.trim() || couponLoading}
-                        className="btn-outline-dark !px-5 !py-2.5 !text-xs disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-black"
-                      >
-                        {couponLoading ? "…" : "Apply"}
-                      </button>
-                    </form>
-                  )}
-                  {couponError && (
-                    <p role="alert" className="mt-2 font-jost text-xs text-red-600">
-                      {couponError}
-                    </p>
-                  )}
-                </div>
-              </OrderSummary>
+              />
             </FadeIn>
           </div>
         </div>
