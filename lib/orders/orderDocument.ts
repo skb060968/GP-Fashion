@@ -106,6 +106,7 @@ export function orderDocument(order: DocumentOrder) {
     status: statusLabel(order.status),
     seller: {
       name: business.legalName,
+      tradeName: business.tradeName,
       addressLines: business.addressLines,
       gstin: sellerGstin,
       state: placeOfSupplyLabel(business.stateCode),

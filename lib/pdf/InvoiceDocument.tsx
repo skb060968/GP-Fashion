@@ -315,8 +315,8 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
           <View style={s.notes} wrap={false}>
             <Text style={s.noteText}>Tax payable on reverse charge: No. Prices on the website include GST; the taxable value is the price paid less the GST shown.</Text>
             <View style={s.sign}>
-              <Text style={s.strong}>For {d.seller.name}</Text>
-              <Text style={s.signLine}>Authorised signatory</Text>
+              <Text style={s.strong}>For {d.seller.tradeName}</Text>
+              <Text style={[s.muted, { marginTop: 4, textAlign: "right", fontSize: 8.5 }]}>This is a computer-generated invoice and does not need a signature.</Text>
             </View>
           </View>
         ) : (

@@ -3,7 +3,8 @@ import { contact } from "./contact"
 export const GSTIN_PLACEHOLDER = "07XXXXXXXXXX1ZX"
 
 export const business = {
-  legalName: "Piyush Bholla Label",
+  legalName: "Piyush Bholla",
+  tradeName: "Piyush Bholla Label",
   addressLines: ["N-37A, Vijay Vihar, Uttam Nagar", "Delhi 110059"],
   state: "Delhi",
   stateCode: "07",

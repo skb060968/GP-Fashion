@@ -291,8 +291,8 @@ function InvoiceContent() {
                   Tax payable on reverse charge: No. Prices on the website include GST; the taxable value is the price paid less the GST shown.
                 </p>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-black">For {doc.seller.name}</p>
-                  <p className="mt-8 border-t border-black/10 pt-1">Authorised signatory</p>
+                  <p className="text-sm font-semibold text-black">For {doc.seller.tradeName}</p>
+                  <p className="mt-1">This is a computer-generated invoice and does not need a signature.</p>
                 </div>
               </div>
             ) : (
