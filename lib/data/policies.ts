@@ -17,7 +17,7 @@ export interface Policy {
   sections: PolicySection[]
 }
 
-const BUSINESS = `${business.legalName}, trading as ${business.tradeName.toUpperCase()}`
+const BUSINESS = `${business.tradeName.toUpperCase()} (Proprietor: ${business.legalName})`
 const LOCATION = `${sellerAddress}, India (GSTIN ${business.gstin})`
 const EMAIL = contact.email
 const GRIEVANCE = business.grievanceOfficer

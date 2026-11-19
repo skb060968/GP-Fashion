@@ -69,7 +69,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Business details</h3>
                   <p className="mt-2">
-                    <span className="font-semibold text-black">{business.legalName}</span>, trading as {business.tradeName}
+                    <span className="font-semibold text-black">{business.tradeName}</span> (Proprietor: {business.legalName})
                     <br />
                     {sellerAddress}
                     <br />
