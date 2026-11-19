@@ -102,6 +102,7 @@ const csvOrderArb: fc.Arbitrary<CsvOrder> = fc.record({
   discount: fc.integer({ min: 0, max: 100_000 }),
   couponCode: fc.option(fc.constantFrom("WELCOME10", "FEST-25"), { nil: null }),
   paymentMethod: fc.constantFrom("UPI_MANUAL", "COD", "RAZORPAY"),
+  paymentReference: fc.option(fc.constantFrom("412345678901", "T2611190930"), { nil: null }),
   status: fc.constantFrom(...ORDER_STATUSES),
   createdAt: fc.date({ min: new Date("2024-01-01"), max: new Date("2026-12-31"), noInvalidDate: true }),
   items: fc.array(csvOrderItemArb, { minLength: 1, maxLength: 5 }),
@@ -123,6 +124,7 @@ describe("CSV export", () => {
           expect(r.placedAt).toBe(formatCsvDate(o.createdAt));
           expect(r.status).toBe(adminStatusLabel(o.status));
           expect(r.paymentMethod).toBe(paymentLabel(o.paymentMethod));
+          expect(r.paymentReference).toBe(o.paymentReference ?? "");
           expect(r.customerName).toBe(a.fullName);
           expect(r.phone).toBe(a.phone);
           expect(r.email).toBe(a.email ?? "");

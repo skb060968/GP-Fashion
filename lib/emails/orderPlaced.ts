@@ -59,7 +59,7 @@ export function orderPlacedEmailAdmin(order: OrderEmailData) {
 
   const action = isManual
     ? paragraph(
-        `Customer has confirmed a UPI payment of <strong>${formatRupees(order.amount)}</strong>. Check the account for a matching credit, then verify or reject the order in the admin.`
+        `Customer has confirmed a UPI payment of <strong>${formatRupees(order.amount)}</strong>${order.paymentReference ? ` with UPI reference <strong>${escapeHtml(order.paymentReference)}</strong>` : " (no UPI reference given)"}. Check the account for a matching credit, then verify or reject the order in the admin.`
       )
     : paragraph(`Paid via ${escapeHtml(paymentLabel(order.paymentMethod))}. Ready to process.`)
 

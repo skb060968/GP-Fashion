@@ -12,7 +12,15 @@ export const business = {
   email: contact.email,
   phone: contact.phone,
   invoicePrefix: "PBL",
+  grievanceOfficer: {
+    name: "Piyush Bholla",
+    designation: "Proprietor",
+    email: "piyushbhollalabel@gmail.com",
+    phone: "+91 9821818352",
+  },
 }
+
+export const sellerAddress = business.addressLines.join(", ")
 
 export const gstinIsPlaceholder = () => business.gstin === GSTIN_PLACEHOLDER
 

@@ -13,6 +13,7 @@ export const footer = {
     { label: "Shipping & Returns", href: "/policies/shipping-returns" },
     { label: "Terms", href: "/policies/terms" },
     { label: "Privacy", href: "/policies/privacy" },
+    { label: "Grievance Officer", href: "/contact#grievance-officer" },
   ],
 
   servicesHeading: "Services",

@@ -29,6 +29,7 @@ export interface CsvOrder {
   discount: number;
   couponCode?: string | null;
   paymentMethod: string;
+  paymentReference?: string | null;
   status: string;
   createdAt: Date | string;
   items: CsvOrderItem[];
@@ -48,6 +49,7 @@ export const CSV_COLUMNS = [
   "placedAt",
   "status",
   "paymentMethod",
+  "paymentReference",
   "customerName",
   "phone",
   "email",
@@ -119,6 +121,7 @@ export function ordersToCsv(orders: CsvOrder[]): string {
       formatCsvDate(o.createdAt),
       adminStatusLabel(o.status),
       paymentLabel(o.paymentMethod),
+      o.paymentReference ?? "",
       a?.fullName ?? "",
       a?.phone ?? "",
       a?.email ?? "",

@@ -36,6 +36,7 @@ type Order = {
   invoiceNumber: string | null
   invoiceDate: string | null
   paymentMethod: string
+  paymentReference: string | null
   status: string
   notes: string | null
   createdAt: string
@@ -254,6 +255,11 @@ export default function AdminOrderDetailClient() {
             {order.status === "UNDER_VERIFICATION" && order.paymentMethod === "UPI_MANUAL" && (
               <p className="mt-4 rounded-md bg-amber-50 p-3 font-jost text-sm text-amber-900">
                 Look for a UPI credit of <strong>{formatRupees(order.amount)}</strong> from <strong>{a?.fullName}</strong> around {fmtDateTime(order.createdAt)} before verifying.
+                {order.paymentReference ? (
+                  <> The customer gave the UPI reference <strong className="tabular-nums">{order.paymentReference}</strong>.</>
+                ) : (
+                  <> The customer did not enter a UPI reference.</>
+                )}
               </p>
             )}
           </Card>
@@ -438,6 +444,21 @@ export default function AdminOrderDetailClient() {
                 <dt className="text-black/60">Amount</dt>
                 <dd className="font-semibold tabular-nums">{formatRupees(order.amount)}</dd>
               </div>
+              {order.paymentMethod === "UPI_MANUAL" && (
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-black/60">UPI reference</dt>
+                  {order.paymentReference ? (
+                    <dd className="flex items-center gap-1 font-mono text-xs">
+                      {order.paymentReference}
+                      <button type="button" onClick={() => copy(order.paymentReference!, "UPI reference")} aria-label="Copy UPI reference" className="rounded p-1 hover:bg-black/5">
+                        <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                    </dd>
+                  ) : (
+                    <dd className="text-black/50">Not given</dd>
+                  )}
+                </div>
+              )}
               {order.razorpayPaymentId && (
                 <div className="flex items-center justify-between gap-2">
                   <dt className="text-black/60">Razorpay</dt>

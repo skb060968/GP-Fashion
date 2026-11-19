@@ -1,6 +1,7 @@
 
 
 import { contact } from "./contact"
+import { business, sellerAddress } from "./business"
 
 export interface PolicySection {
   heading: string
@@ -16,17 +17,29 @@ export interface Policy {
   sections: PolicySection[]
 }
 
-const BUSINESS = "PIYUSH BHOLLA LABEL"
-const LOCATION = "New Delhi, India"
+const BUSINESS = `${business.legalName}, trading as ${business.tradeName.toUpperCase()}`
+const LOCATION = `${sellerAddress}, India (GSTIN ${business.gstin})`
 const EMAIL = contact.email
+const GRIEVANCE = business.grievanceOfficer
+const GRIEVANCE_TEXT = `Our grievance officer is ${GRIEVANCE.name}, ${GRIEVANCE.designation}. Email ${GRIEVANCE.email} or call ${GRIEVANCE.phone}. We acknowledge every complaint within 48 hours and resolve it within one month of receiving it.`
+
+const CANCELLATION = [
+  "You can cancel an order free of charge at any time before it is dispatched. Email us or WhatsApp the studio with your order number and we refund the full amount to the original payment method.",
+  "A made-to-measure piece can be cancelled free of charge until we start cutting it, which happens only after you have confirmed your measurements with us. Once cutting has started, a made-to-measure order cannot be cancelled. Bespoke commissions follow the cancellation terms we agree with you in writing.",
+  "Once an order has been dispatched it can no longer be cancelled; the exchange terms below apply instead.",
+]
 
 export const policies: Policy[] = [
   {
     slug: "shipping-returns",
     title: "Shipping & Returns",
-    description: "Dispatch times, delivery, exchanges and made-to-measure orders at PIYUSH BHOLLA LABEL.",
-    updated: "2026-11-15",
+    description: "Dispatch times, delivery, cancellations, exchanges and made-to-measure orders at PIYUSH BHOLLA LABEL.",
+    updated: "2026-11-19",
     sections: [
+      {
+        heading: "Cancellations",
+        paragraphs: CANCELLATION,
+      },
       {
         heading: "Dispatch",
         paragraphs: [
@@ -71,8 +84,12 @@ export const policies: Policy[] = [
       {
         heading: "Refunds",
         paragraphs: [
-          "Where a refund is agreed, it is issued to the original payment method within 7 working days of the piece reaching us. We will email you when it is processed.",
+          "Where a refund is agreed, it is issued to the original payment method within 7 working days of the piece reaching us, or of your cancellation if the order had not been dispatched. We will email you when it is processed.",
         ],
+      },
+      {
+        heading: "Complaints",
+        paragraphs: [GRIEVANCE_TEXT],
       },
     ],
   },
@@ -80,7 +97,7 @@ export const policies: Policy[] = [
     slug: "terms",
     title: "Terms & Conditions",
     description: "Terms of sale and use of the PIYUSH BHOLLA LABEL website.",
-    updated: "2026-11-17",
+    updated: "2026-11-19",
     sections: [
       {
         heading: "About us",
@@ -99,8 +116,12 @@ export const policies: Policy[] = [
         heading: "Orders and payment",
         paragraphs: [
           "An order is placed when you complete checkout and is confirmed when we verify your payment. Until then we may decline or cancel an order, for example if payment cannot be verified, a piece is unavailable, or there is an error in the listing. If we cancel after payment, we refund in full.",
-          "Payment is currently by UPI. You pay to our UPI ID or QR code and enter the transaction reference at checkout; we confirm receipt by email, normally within one working day. Please do not send payment for an order you have not placed.",
+          "Payment is currently by UPI. You pay to our UPI QR code and can enter the UPI transaction reference (UTR) at checkout, which helps us match your payment quickly; we confirm receipt by email, normally within one working day. Please do not send payment for an order you have not placed.",
         ],
+      },
+      {
+        heading: "Cancellations",
+        paragraphs: [...CANCELLATION.slice(0, 2), "Cancellation and refund details are also set out in our Shipping & Returns policy."],
       },
       {
         heading: "Delivery and exchanges",
@@ -142,13 +163,17 @@ export const policies: Policy[] = [
           `These terms are governed by the laws of India. Any dispute will be subject to the jurisdiction of the courts of New Delhi. If something has gone wrong, please write to ${EMAIL} first; we aim to resolve every issue directly.`,
         ],
       },
+      {
+        heading: "Grievance officer",
+        paragraphs: [GRIEVANCE_TEXT],
+      },
     ],
   },
   {
     slug: "privacy",
     title: "Privacy Policy",
     description: "How PIYUSH BHOLLA LABEL collects, uses and protects your personal information.",
-    updated: "2026-11-17",
+    updated: "2026-11-19",
     sections: [
       {
         heading: "Who we are",
@@ -199,6 +224,12 @@ export const policies: Policy[] = [
         ],
       },
       {
+        heading: "Where your data is stored",
+        paragraphs: [
+          "The website and its database run on cloud servers operated by our hosting and database providers. Some of these servers are outside India, including in Singapore, so your information may be stored and processed there. We use only providers that protect it with encryption and access controls, and we do not transfer personal data to any country that the Government of India has restricted.",
+        ],
+      },
+      {
         heading: "Cookies",
         paragraphs: [
           "We use a small number of strictly necessary cookies: one to keep you signed in to your account, and one for the admin area. We do not use advertising or tracking cookies. We count page visits with Vercel Web Analytics, which sets no cookies, does not identify you across days or other sites, and receives page addresses without their query strings. Your bag, wishlist and checkout address are kept in your browser's local storage so they survive a page reload.",
@@ -213,13 +244,14 @@ export const policies: Policy[] = [
       {
         heading: "Your rights",
         paragraphs: [
-          `You can ask to see, correct or delete the personal information we hold about you, or withdraw consent where processing is based on consent, by emailing ${EMAIL}. We respond within 30 days. You may also raise a grievance with us at the same address; if it is not resolved, you have the right to complain to the Data Protection Board of India.`,
+          `You can ask to see, correct or delete the personal information we hold about you, or withdraw consent where processing is based on consent, by emailing ${EMAIL}. We respond within 30 days.`,
+          `For questions or complaints about your personal data, contact ${GRIEVANCE.name}, ${GRIEVANCE.designation}, at ${GRIEVANCE.email} or ${GRIEVANCE.phone}. If your complaint is not resolved, you have the right to complain to the Data Protection Board of India.`,
         ],
       },
       {
         heading: "Security",
         paragraphs: [
-          "Data is transmitted over HTTPS and stored with access limited to the people who run the store. Sign-in tokens are stored only as one-way hashes. No system is perfectly secure, so please contact us at once if you suspect your account has been accessed by someone else.",
+          "Data is transmitted over HTTPS and stored with access limited to the people who run the store. Sign-in tokens are stored only as one-way hashes. No system is perfectly secure, so please contact us at once if you suspect your account has been accessed by someone else. If a breach affects your personal data, we will tell you and the Data Protection Board of India as the law requires.",
         ],
       },
       {

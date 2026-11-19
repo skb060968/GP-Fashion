@@ -13,6 +13,7 @@ import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
 import { ADDRESS_STORAGE_KEY, type CheckoutAddress as Address } from "@/lib/checkout"
 import { MTM_LEAD_TIME } from "@/lib/measurements/fields"
+import { PAYMENT_REFERENCE_ERROR, PAYMENT_REFERENCE_RE, normalisePaymentReference } from "@/lib/payments/reference"
 
 type PaymentMethod = "UPI_MANUAL" | "RAZORPAY"
 
@@ -37,6 +38,10 @@ export default function PaymentPage() {
   const [orderError, setOrderError] = useState("")
   const [reviewBag, setReviewBag] = useState(false)
 
+  const [paymentRef, setPaymentRef] = useState("")
+  const cleanRef = normalisePaymentReference(paymentRef)
+  const refInvalid = cleanRef !== "" && !PAYMENT_REFERENCE_RE.test(cleanRef)
+
   const [couponInput, setCouponInput] = useState("")
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null)
   const [couponError, setCouponError] = useState("")
@@ -46,7 +51,7 @@ export default function PaymentPage() {
   const total = Math.max(0, subtotal - (coupon?.discount ?? 0))
   const hasMadeToMeasure = cart.some((i) => i.profileId)
   const [mtmAccepted, setMtmAccepted] = useState(false)
-  const canPlace = confirmed && (!hasMadeToMeasure || mtmAccepted)
+  const canPlace = confirmed && !refInvalid && (!hasMadeToMeasure || mtmAccepted)
 
   useEffect(() => {
     try {
@@ -117,6 +122,7 @@ export default function PaymentPage() {
             ...(address.gstin ? { business: { name: address.businessName ?? "", gstin: address.gstin } } : {}),
             amount: subtotal,
             paymentMethod: "UPI_MANUAL",
+            ...(cleanRef ? { paymentReference: cleanRef } : {}),
             ...(coupon ? { couponCode: coupon.code } : {}),
             ...(hasMadeToMeasure ? { acceptMadeToMeasure: mtmAccepted } : {}),
           }),
@@ -334,7 +340,34 @@ export default function PaymentPage() {
                     </div>
                   </div>
 
-                  <label className="mt-8 flex cursor-pointer items-start gap-3 border-t border-black/10 pt-6">
+                  <div className="mt-8 border-t border-black/10 pt-6">
+                    <label htmlFor="payment-ref" className="flex items-baseline justify-between font-jost">
+                      <span className="text-xs font-semibold uppercase tracking-[0.15em] text-black/70">UPI transaction reference (UTR)</span>
+                      <span className="text-xs text-black/40">Optional</span>
+                    </label>
+                    <input
+                      id="payment-ref"
+                      type="text"
+                      inputMode="text"
+                      autoComplete="off"
+                      maxLength={40}
+                      value={paymentRef}
+                      onChange={(e) => setPaymentRef(e.target.value)}
+                      placeholder="e.g. 412345678901"
+                      aria-invalid={refInvalid}
+                      aria-describedby="payment-ref-hint"
+                      className={`mt-2 w-full rounded-lg border bg-white px-4 py-3 font-jost text-sm tracking-wide text-black placeholder:text-black/35 focus:outline-none focus:ring-1 ${
+                        refInvalid ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-black/15 focus:border-black focus:ring-black"
+                      }`}
+                    />
+                    <p id="payment-ref-hint" role={refInvalid ? "alert" : undefined} className={`mt-1.5 font-jost text-xs ${refInvalid ? "text-red-600" : "text-black/60"}`}>
+                      {refInvalid
+                        ? PAYMENT_REFERENCE_ERROR
+                        : "Shown in your UPI app after paying, usually a 12-digit number. It helps us confirm your payment faster."}
+                    </p>
+                  </div>
+
+                  <label className="mt-6 flex cursor-pointer items-start gap-3">
                     <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
                       <input
                         type="checkbox"
@@ -409,7 +442,11 @@ export default function PaymentPage() {
                     >
                       {placing ? "Placing order…" : "Place order"}
                     </button>
-                    {!confirmed ? (
+                    {refInvalid ? (
+                      <p className="mt-3 text-center font-jost text-xs text-black/60">
+                        Check the UPI transaction reference above, or leave it empty.
+                      </p>
+                    ) : !confirmed ? (
                       <p className="mt-3 text-center font-jost text-xs text-black/60">
                         Confirm your UPI payment above to continue.
                       </p>

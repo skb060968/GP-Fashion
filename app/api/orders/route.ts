@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items: submittedItems, address, business: buyerBusiness, amount: submittedSubtotal, paymentMethod, couponCode, acceptMadeToMeasure } = result.data;
+    const { items: submittedItems, address, business: buyerBusiness, amount: submittedSubtotal, paymentMethod, paymentReference, couponCode, acceptMadeToMeasure } = result.data;
 
     const deliveryState = findState(address.state);
     if (!deliveryState) {
@@ -211,6 +211,7 @@ export async function POST(req: Request) {
         buyerGstin: buyerBusiness?.gstin ?? null,
         buyerName: buyerBusiness?.name ?? null,
         paymentMethod: paymentMethod as PaymentMethod,
+        paymentReference: paymentReference || null,
         status: OrderStatus.UNDER_VERIFICATION,
         couponCode: validCoupon ? couponCode : null,
 

@@ -18,6 +18,7 @@ import ImageLightbox from "@/components/product/ImageLightbox"
 import InfoSection from "@/components/product/InfoSection"
 import StickyBuyBar from "@/components/product/StickyBuyBar"
 import { whatsappHref } from "@/lib/whatsapp"
+import { business, sellerAddress } from "@/lib/data/business"
 import { useUser } from "@/context/UserContext"
 import MeasurementForm from "@/components/account/MeasurementForm"
 import type { ProfileDTO } from "@/lib/measurements/profiles"
@@ -616,7 +617,13 @@ export default function ProductDetailClient({ product, related }: { product: Sto
 
                   <InfoSection title="Details and care">
                     <dl className="space-y-2.5">
-                      {[...facts, { label: "Care", value: care }, { label: "Origin", value: "Designed and made in New Delhi, India" }].map((f) => (
+                      {[
+                        ...facts,
+                        { label: "Care", value: care },
+                        { label: "Origin", value: "Designed and made in Delhi, India" },
+                        { label: "Manufactured by", value: `${business.legalName} (${business.tradeName}), ${sellerAddress}` },
+                        { label: "Customer care", value: `${business.grievanceOfficer.email} · ${business.grievanceOfficer.phone}` },
+                      ].map((f) => (
                         <div key={f.label} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4">
                           <dt className="text-black/60">{f.label}</dt>
                           <dd>{f.value}</dd>

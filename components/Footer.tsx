@@ -4,6 +4,7 @@ import { Instagram, Mail, Phone } from "lucide-react"
 import { content } from "@/lib/data"
 import AnchorLink from "@/components/AnchorLink"
 import type { StorefrontNav } from "@/lib/data/categories"
+import { business, sellerAddress } from "@/lib/data/business"
 
 export default function Footer({ nav }: { nav: StorefrontNav }) {
   const { footer, contact } = content
@@ -104,8 +105,11 @@ export default function Footer({ nav }: { nav: StorefrontNav }) {
               </li>
             ))}
           </ul>
-          <p>© {year} Piyush Bholla. All rights reserved.</p>
+          <p className="text-center sm:text-right">© {year} {business.tradeName}. All rights reserved.</p>
         </div>
+        <p className="mt-4 text-center font-jost text-xs leading-relaxed text-black/50 sm:text-left">
+          {business.legalName}, trading as {business.tradeName} · {sellerAddress} · GSTIN {business.gstin}
+        </p>
       </div>
     </footer>
   )

@@ -14,6 +14,7 @@ model Order {
   discount      Int             @default(0)
   couponCode    String?
   paymentMethod PaymentMethod
+  paymentReference String?
   status        OrderStatus
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @default(now()) @updatedAt

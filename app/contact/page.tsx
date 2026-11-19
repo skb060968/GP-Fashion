@@ -5,6 +5,7 @@ import { content } from "@/lib/data"
 import FadeIn from "@/components/FadeIn"
 import WhatsAppIcon from "@/components/WhatsAppIcon"
 import { whatsappHref } from "@/lib/whatsapp"
+import { business, sellerAddress } from "@/lib/data/business"
 
 const SITE_URL = process.env.SITE_URL || "https://gpfashion.in"
 
@@ -62,6 +63,32 @@ export default function ContactPage() {
                 <Info icon={WhatsAppIcon} label="WhatsApp" value="Chat with the studio" href={whatsappHref("Hello, I have a question about PIYUSH BHOLLA LABEL.")} external />
                 <Info icon={MapPin} label="Location" value={contact.location} />
                 <Info icon={Clock} label="Availability" value={contact.availability} />
+              </div>
+
+              <div id="business-details" className="scroll-mt-28 grid grid-cols-1 gap-6 border-t border-black/10 pt-8 font-jost text-sm leading-relaxed text-black/75 sm:grid-cols-2">
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Business details</h3>
+                  <p className="mt-2">
+                    <span className="font-semibold text-black">{business.legalName}</span>, trading as {business.tradeName}
+                    <br />
+                    {sellerAddress}
+                    <br />
+                    GSTIN {business.gstin}
+                  </p>
+                </div>
+                <div id="grievance-officer" className="scroll-mt-28">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">Grievance officer</h3>
+                  <p className="mt-2">
+                    <span className="font-semibold text-black">{business.grievanceOfficer.name}</span>, {business.grievanceOfficer.designation}
+                    <br />
+                    <a href={`mailto:${business.grievanceOfficer.email}`} className="underline underline-offset-4 hover:text-black">{business.grievanceOfficer.email}</a>
+                    <br />
+                    <a href={`tel:${business.grievanceOfficer.phone.replace(/\s/g, "")}`} className="underline underline-offset-4 hover:text-black">{business.grievanceOfficer.phone}</a>
+                  </p>
+                  <p className="mt-2 text-xs text-black/60">
+                    We acknowledge every complaint within 48 hours and resolve it within one month.
+                  </p>
+                </div>
               </div>
             </FadeIn>
 

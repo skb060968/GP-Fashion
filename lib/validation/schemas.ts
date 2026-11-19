@@ -2,6 +2,7 @@ import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
 import { PERSON_KINDS } from "@/lib/measurements/fields";
 import { gstinError, normaliseGstin } from "@/lib/gst/gstin";
+import { PAYMENT_REFERENCE_ERROR, PAYMENT_REFERENCE_RE, normalisePaymentReference } from "@/lib/payments/reference";
 
 export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
 
@@ -58,6 +59,11 @@ export const createOrderSchema = z.object({
   business: businessBuyerSchema.optional(),
   amount: z.number().int().positive(),
   paymentMethod: z.enum(["UPI_MANUAL", "COD", "RAZORPAY"]),
+  paymentReference: z
+    .string()
+    .transform(normalisePaymentReference)
+    .refine((v) => v === "" || PAYMENT_REFERENCE_RE.test(v), PAYMENT_REFERENCE_ERROR)
+    .optional(),
   couponCode: z.string().optional(),
   acceptMadeToMeasure: z.boolean().optional(),
 });

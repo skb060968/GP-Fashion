@@ -373,7 +373,7 @@ export const adminHelpTopics: HelpTopic[] = [
         blocks: [
           { type: "steps", items: [
             "Open Admin → Orders or select an Awaiting verification card from the dashboard.",
-            "Open the order and compare amount, customer, approximate time, and any transaction information with the actual UPI credit.",
+            "Open the order and compare amount, customer, approximate time, and the UPI reference (UTR) with the actual UPI credit. Customers can enter the UTR at checkout; it is optional, so the order page shows Not given when they skipped it. It also appears in the new-order email and the CSV export.",
             "Select Verify payment only after finding a matching credit. Add the UTR or reconciliation note when available.",
             "If no payment can be matched, select Reject payment and explain the reason. The customer can later send proof and the order can return to verification.",
             "Move verified work to Processing when preparation begins, then Shipped and Delivered as fulfilment progresses.",
