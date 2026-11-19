@@ -621,7 +621,7 @@ export default function ProductDetailClient({ product, related }: { product: Sto
                         ...facts,
                         { label: "Care", value: care },
                         { label: "Origin", value: "Designed and made in Delhi, India" },
-                        { label: "Manufactured by", value: `${business.legalName} (${business.tradeName}), ${sellerAddress}` },
+                        { label: "Manufactured by", value: `${business.tradeName}, ${sellerAddress}` },
                         { label: "Customer care", value: `${business.grievanceOfficer.email} · ${business.grievanceOfficer.phone}` },
                       ].map((f) => (
                         <div key={f.label} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4">

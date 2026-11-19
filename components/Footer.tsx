@@ -108,7 +108,7 @@ export default function Footer({ nav }: { nav: StorefrontNav }) {
           <p className="text-center sm:text-right">© {year} {business.tradeName}. All rights reserved.</p>
         </div>
         <p className="mt-4 text-center font-jost text-xs leading-relaxed text-black/50 sm:text-left">
-          {business.legalName}, trading as {business.tradeName} · {sellerAddress} · GSTIN {business.gstin}
+          {business.tradeName} · {sellerAddress} · GSTIN {business.gstin}
         </p>
       </div>
     </footer>
