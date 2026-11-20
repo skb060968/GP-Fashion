@@ -21,6 +21,12 @@ export type DocumentOrder = {
   invoiceNumber: string | null
   invoiceDate: Date | string | null
   sellerGstin: string | null
+  sellerLegalName?: string | null
+  sellerTradeName?: string | null
+  sellerAddress?: string | null
+  sellerStateCode?: string | null
+  sellerEmail?: string | null
+  sellerPhone?: string | null
   paymentMethod: string
   status: string
   createdAt: Date | string
@@ -68,7 +74,8 @@ export type DocumentLine = {
 
 export function orderDocument(order: DocumentOrder) {
   const isInvoice = Boolean(order.invoiceNumber)
-  const intraState = order.placeOfSupply === business.stateCode
+  const sellerStateCode = order.sellerStateCode ?? business.stateCode
+  const intraState = order.placeOfSupply === sellerStateCode
   const rate = order.items[0]?.gstRate ?? GST_RATE
   const sellerGstin = order.sellerGstin ?? business.gstin
   const tax = order.cgst + order.sgst + order.igst
@@ -105,13 +112,13 @@ export function orderDocument(order: DocumentOrder) {
     payment: paymentLabel(order.paymentMethod),
     status: statusLabel(order.status),
     seller: {
-      name: business.legalName,
-      tradeName: business.tradeName,
-      addressLines: business.addressLines,
+      name: order.sellerLegalName ?? business.legalName,
+      tradeName: order.sellerTradeName ?? business.tradeName,
+      addressLines: order.sellerAddress ? order.sellerAddress.split("\n") : business.addressLines,
       gstin: sellerGstin,
-      state: placeOfSupplyLabel(business.stateCode),
-      email: business.email,
-      phone: business.phone,
+      state: placeOfSupplyLabel(sellerStateCode),
+      email: order.sellerEmail ?? business.email,
+      phone: order.sellerPhone ?? business.phone,
     },
     buyer: order.address
       ? {

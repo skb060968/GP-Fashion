@@ -5,7 +5,7 @@ import { transitionFor } from "../orders/transitions";
 import { isSnapshot, validateMeasurements } from "../measurements/fields";
 import { Prisma } from "@prisma/client";
 import { financialYear } from "../gst/tax";
-import { business, formatInvoiceNumber } from "../data/business";
+import { business, formatInvoiceNumber, sellerSnapshot } from "../data/business";
 
 export class MeasurementsNotConfirmedError extends Error {
   constructor(public count: number) {
@@ -93,7 +93,7 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
       if (unconfirmed > 0) throw new MeasurementsNotConfirmedError(unconfirmed);
     }
 
-    let invoice: { invoiceNumber: string; invoiceDate: Date; sellerGstin: string } | null = null;
+    let invoice: ({ invoiceNumber: string; invoiceDate: Date } & ReturnType<typeof sellerSnapshot>) | null = null;
     if (newStatus === OrderStatus.SHIPPED) {
       const existing = await tx.order.findUnique({ where: { id: current.id }, select: { invoiceNumber: true } });
       if (!existing?.invoiceNumber) {
@@ -104,7 +104,7 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
           create: { financialYear: fy, last: 1 },
           update: { last: { increment: 1 } },
         });
-        invoice = { invoiceNumber: formatInvoiceNumber(fy, counter.last), invoiceDate: now, sellerGstin: business.gstin };
+        invoice = { invoiceNumber: formatInvoiceNumber(fy, counter.last), invoiceDate: now, ...sellerSnapshot() };
       }
     }
 

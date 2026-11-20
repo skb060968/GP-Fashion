@@ -22,6 +22,18 @@ export const business = {
 
 export const sellerAddress = business.addressLines.join(", ")
 
+export function sellerSnapshot() {
+  return {
+    sellerGstin: business.gstin,
+    sellerLegalName: business.legalName,
+    sellerTradeName: business.tradeName,
+    sellerAddress: business.addressLines.join("\n"),
+    sellerStateCode: business.stateCode,
+    sellerEmail: business.email,
+    sellerPhone: business.phone,
+  }
+}
+
 export const gstinIsPlaceholder = () => business.gstin === GSTIN_PLACEHOLDER
 
 export function formatInvoiceNumber(financialYear: string, sequence: number): string {

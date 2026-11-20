@@ -32,6 +32,12 @@ model Order {
   invoiceNumber String?   @unique
   invoiceDate   DateTime?
   sellerGstin   String?
+  sellerLegalName String?
+  sellerTradeName String?
+  sellerAddress   String?
+  sellerStateCode String?
+  sellerEmail     String?
+  sellerPhone     String?
 
   razorpayPaymentId  String?
   razorpayOrderId    String?
