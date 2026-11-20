@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, ExternalLink, LayoutDashboard, LogOut, Menu, Package, Ruler, Shirt, TicketPercent, X } from "lucide-react"
+import { BookOpen, ExternalLink, FolderArchive, LayoutDashboard, LogOut, Menu, Package, Ruler, Shirt, TicketPercent, X } from "lucide-react"
 
 const NAV = [
   { href: "/admin", label: "Dashboard", Icon: LayoutDashboard, match: (p: string) => p === "/admin" },
@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/products", label: "Products", Icon: Shirt, match: (p: string) => p.startsWith("/admin/products") },
   { href: "/admin/coupons", label: "Coupons", Icon: TicketPercent, match: (p: string) => p.startsWith("/admin/coupons") },
   { href: "/admin/measure", label: "Measurements", Icon: Ruler, match: (p: string) => p.startsWith("/admin/measure") },
+  { href: "/admin/records", label: "Records", Icon: FolderArchive, match: (p: string) => p.startsWith("/admin/records") },
   { href: "/admin/help", label: "Help", Icon: BookOpen, match: (p: string) => p.startsWith("/admin/help") },
 ] as const
 

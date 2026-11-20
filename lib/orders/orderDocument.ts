@@ -72,6 +72,8 @@ export type DocumentLine = {
   amount: number
 }
 
+export const invoiceFileName = (invoiceNumber: string) => `Tax-Invoice-${invoiceNumber.replace(/\//g, "-")}`
+
 export function orderDocument(order: DocumentOrder) {
   const isInvoice = Boolean(order.invoiceNumber)
   const sellerStateCode = order.sellerStateCode ?? business.stateCode
@@ -102,7 +104,7 @@ export function orderDocument(order: DocumentOrder) {
   return {
     kind: isInvoice ? ("tax-invoice" as const) : ("confirmation" as const),
     title: isInvoice ? "Tax invoice" : "Order confirmation",
-    fileName: isInvoice ? `Tax-Invoice-${order.invoiceNumber!.replace(/\//g, "-")}` : `Order-${order.orderCode}`,
+    fileName: isInvoice ? invoiceFileName(order.invoiceNumber!) : `Order-${order.orderCode}`,
     numberLabel: isInvoice ? "Invoice no." : "Order no.",
     number: isInvoice ? order.invoiceNumber! : order.orderCode,
     date: (isInvoice ? order.invoiceDate : order.createdAt) ?? order.createdAt,

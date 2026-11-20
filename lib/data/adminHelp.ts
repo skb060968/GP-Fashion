@@ -435,6 +435,60 @@ export const adminHelpTopics: HelpTopic[] = [
           { type: "note", tone: "warning", text: "While the GSTIN is a placeholder, every tax invoice is marked Specimen, and the order page warns before you mark an order shipped. Do not ship real orders until the real GSTIN is in place." },
         ],
       },
+      {
+        title: "Seller details on each invoice",
+        blocks: [
+          { type: "text", text: "When the invoice is issued, the seller's legal name, trade name, address, state, GSTIN, email and phone are saved with it. Changing lib/data/business.ts later changes new invoices only; every issued invoice keeps the details it was issued with." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "tax-records",
+    title: "Tax records and GSTR-1",
+    summary: "Downloading each quarter's invoices for safe keeping, and preparing the GSTR-1 file for the GST portal.",
+    keywords: ["records", "gstr-1", "gstr1", "return", "quarter", "zip", "google drive", "backup", "retention", "json", "offline"],
+    sections: [
+      {
+        title: "How long to keep records",
+        blocks: [
+          { type: "text", text: "GST law asks for accounts and invoices to be kept for 72 months from the due date of the annual return for the year. The annual return is due on 31 December after the year ends, so the records for FY 2026-27 must be kept until 31 December 2033. Keep them longer while an appeal, audit or notice for that year is open." },
+          { type: "text", text: "Orders and invoices are never deleted by the site. Admin > Records adds a copy outside the database, so the records survive a lost account or a database problem." },
+        ],
+      },
+      {
+        title: "Every quarter",
+        blocks: [
+          { type: "steps", items: [
+            "After the quarter ends, open Admin > Records and choose the financial year and the quarter.",
+            "Read the summary and any notes under it.",
+            "Choose Download invoices. In Chrome or Edge a save window opens: pick the year's folder inside the Google Drive folder on this computer. The ZIP holds every invoice PDF, the invoice register (CSV) and the GSTR-1 file.",
+            "Choose Download GSTR-1 file and upload it on the GST portal (below).",
+          ] },
+          { type: "note", tone: "info", text: "Install Google Drive for desktop once. It keeps a Google Drive folder on the computer in step with Drive, so one save gives a copy in both places. The website itself has no access to Google Drive." },
+        ],
+      },
+      {
+        title: "Filing GSTR-1",
+        blocks: [
+          { type: "steps", items: [
+            "On gst.gov.in open Returns Dashboard, choose the financial year and the quarter, then GSTR-1.",
+            "Choose Prepare Offline, Upload, and select the file. Wait until it shows as processed.",
+            "Choose Prepare Online and check each table against the Records summary.",
+            "Add anything the site does not record: credit notes for refunds, and sales made outside the site.",
+            "Generate the summary and file with EVC.",
+          ] },
+          { type: "table", headers: ["Table", "What the site puts in it"], rows: [
+            ["B2B (4A)", "Invoices to buyers who gave a GSTIN at checkout, one by one"],
+            ["B2C large (5)", "Invoices to other states above ₹1,00,000 without a GSTIN, one by one"],
+            ["B2C small (7)", "All other invoices, added up by state and rate"],
+            ["HSN summary (12)", "Quantity and tax per HSN code, separately for B2B and B2C"],
+            ["Documents issued (13)", "First and last invoice number of the quarter and how many were issued"],
+          ] },
+          { type: "note", tone: "warning", text: "The site does not create credit notes. If an invoiced order is refunded, the invoice stays in the GSTR-1 of the quarter it was issued in, and the credit note goes in the return for the period of the refund. Records lists these orders under the summary." },
+          { type: "note", tone: "info", text: "With no invoices in a quarter there is no file to upload; file a nil GSTR-1 on the portal instead." },
+        ],
+      },
     ],
   },
   {
