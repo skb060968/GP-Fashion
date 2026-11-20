@@ -13,13 +13,13 @@ const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts")
 const LOGO_PATH = path.join(process.cwd(), "public", "images", "brand", "logo-mark.png")
 
 let logoBuffer: Buffer | null = null
-function logo() {
+export function logo() {
   if (!logoBuffer) logoBuffer = readFileSync(LOGO_PATH)
   return { data: logoBuffer, format: "png" as const }
 }
 
 let fontsRegistered = false
-function registerFonts() {
+export function registerFonts() {
   if (fontsRegistered) return
   Font.register({ family: "Cinzel", src: path.join(FONT_DIR, "Cinzel-Bold.ttf"), fontWeight: 700 })
   Font.register({
@@ -39,7 +39,7 @@ const MUTED = "#6b6b6b"
 const FAINT = "#9a9a9a"
 const RULE = "#e5e5e5"
 
-const s = StyleSheet.create({
+export const s = StyleSheet.create({
   page: {
     paddingTop: 44,
     paddingBottom: 64,

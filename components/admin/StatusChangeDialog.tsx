@@ -7,11 +7,20 @@ import { Dialog, btn, input } from "@/components/admin/ui"
 import { adminStatusLabel, statusEmailSubject } from "@/lib/orders/labels"
 import type { Transition } from "@/lib/orders/transitions"
 import { adminFetch } from "@/lib/admin/fetch"
+import { formatRupeesExact } from "@/lib/money"
 
 export type StatusChangeTarget = {
   orderCode: string
   status: string
   customerEmail: string | null
+  credit?: CreditTarget | null
+}
+
+export type CreditTarget = {
+  invoiceNumber: string
+  deadline: string
+  deadlinePassed: boolean
+  items: { id: string; name: string; detail: string; remaining: number; unitAmount: number }[]
 }
 
 export default function StatusChangeDialog<T = unknown>({
@@ -31,13 +40,22 @@ export default function StatusChangeDialog<T = unknown>({
   const [note, setNote] = useState("")
   const [notify, setNotify] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
+  const [reason, setReason] = useState("")
+
+  const credit = transition?.to === "REFUNDED" && target?.credit ? target.credit : null
+  const issuing = Boolean(credit && !credit.deadlinePassed)
+  const creditAmount = credit ? credit.items.reduce((s, i) => s + Math.round(i.unitAmount * (quantities[i.id] ?? 0)), 0) : 0
+  const creditCount = Object.values(quantities).reduce((s, q) => s + q, 0)
 
   useEffect(() => {
     if (open) {
       setNote("")
       setNotify(Boolean(target?.customerEmail))
+      setQuantities(Object.fromEntries((target?.credit?.items ?? []).map((i) => [i.id, i.remaining])))
+      setReason("Goods returned")
     }
-  }, [open, target?.customerEmail])
+  }, [open, target?.customerEmail, target?.credit])
 
   const confirm = async () => {
     if (!target || !transition) return
@@ -46,10 +64,18 @@ export default function StatusChangeDialog<T = unknown>({
       const updated = await adminFetch<T>(`/api/admin/orders/${target.orderCode}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "status", status: transition.to, note: note.trim() || undefined, notifyCustomer: notify }),
+        body: JSON.stringify({
+          action: "status",
+          status: transition.to,
+          note: note.trim() || undefined,
+          notifyCustomer: notify,
+          creditNote: issuing
+            ? { reason: reason.trim(), items: Object.entries(quantities).map(([orderItemId, quantity]) => ({ orderItemId, quantity })) }
+            : undefined,
+        }),
       })
       const emailed = notify && target.customerEmail
-      onDone(updated, `Order ${target.orderCode} marked ${adminStatusLabel(transition.to).toLowerCase()}${emailed ? ". Customer emailed." : "."}`)
+      onDone(updated, `Order ${target.orderCode} marked ${adminStatusLabel(transition.to).toLowerCase()}${issuing ? " and a credit note issued" : ""}${emailed ? ". Customer emailed." : "."}`)
     } catch (e) {
       onError(e instanceof Error ? e.message : "Could not update the order.")
     } finally {
@@ -71,7 +97,7 @@ export default function StatusChangeDialog<T = unknown>({
           <button
             type="button"
             onClick={confirm}
-            disabled={saving || Boolean(transition?.noteRequired && !note.trim())}
+            disabled={saving || Boolean(transition?.noteRequired && !note.trim()) || (issuing && (creditCount === 0 || !reason.trim()))}
             className={`${transition?.intent === "danger" ? btn.danger : btn.primary} disabled:cursor-not-allowed disabled:opacity-40`}
           >
             {saving ? "Saving…" : transition?.label}
@@ -87,6 +113,53 @@ export default function StatusChangeDialog<T = unknown>({
             <span aria-hidden>→</span>
             <StatusBadge status={transition.to} />
           </p>
+          {credit && credit.deadlinePassed && (
+            <p className="rounded-md bg-amber-50 p-3 text-amber-900">
+              The last date for a GST credit note against invoice {credit.invoiceNumber} was {credit.deadline}, so the refund is recorded without one. GST already paid on this invoice is not reduced.
+            </p>
+          )}
+          {issuing && credit && (
+            <div className="space-y-3 rounded-md border border-black/10 p-3">
+              <p>
+                <span className="font-semibold">Credit note</span> against tax invoice {credit.invoiceNumber}. Choose what is refunded.
+              </p>
+              <ul className="space-y-2">
+                {credit.items.map((i) => (
+                  <li key={i.id} className="flex items-center justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{i.name}</span>
+                      <span className="block text-xs text-black/55">{i.detail} · {formatRupeesExact(Math.round(i.unitAmount))} each</span>
+                    </span>
+                    {i.remaining > 0 ? (
+                      <select
+                        aria-label={`Quantity of ${i.name} to credit`}
+                        value={quantities[i.id] ?? 0}
+                        onChange={(e) => setQuantities((q) => ({ ...q, [i.id]: Number(e.target.value) }))}
+                        className={`${input} !py-1.5`}
+                      >
+                        {Array.from({ length: i.remaining + 1 }, (_, n) => (
+                          <option key={n} value={n}>
+                            {n} of {i.remaining}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-xs text-black/50">Already credited</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Reason (on the credit note)</span>
+                <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={200} className={`${input} mt-1.5 w-full`} />
+              </label>
+              <p className="flex justify-between border-t border-black/10 pt-2 font-semibold">
+                <span>Credit note value, GST included</span>
+                <span className="tabular-nums">{formatRupeesExact(creditAmount)}</span>
+              </p>
+              <p className="text-xs text-black/50">The credit note number, date, and the CGST and SGST or IGST are worked out when you confirm.</p>
+            </div>
+          )}
           <label className="block">
             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-black/60">
               History note{transition.noteRequired ? " (required)" : " (optional)"}

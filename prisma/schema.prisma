@@ -48,8 +48,60 @@ model Order {
   address       Address?
   items         OrderItem[]
   history       StatusHistory[]
+  creditNotes   CreditNote[]
 
   @@index([userId])
+}
+
+model CreditNote {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  date            DateTime
+  reason          String
+  amount          Int
+  taxableValue    Int
+  cgst            Int
+  sgst            Int
+  igst            Int
+  placeOfSupply   String
+  buyerGstin      String?
+  buyerName       String?
+  invoiceNumber   String
+  invoiceDate     DateTime
+  invoiceAmount   Int
+  sellerGstin     String
+  sellerLegalName String
+  sellerTradeName String
+  sellerAddress   String
+  sellerStateCode String
+  sellerEmail     String
+  sellerPhone     String
+  createdAt       DateTime @default(now())
+
+  order           Order    @relation(fields: [orderId], references: [id])
+  orderId         String
+  items           CreditNoteItem[]
+
+  @@index([orderId])
+  @@index([date])
+}
+
+model CreditNoteItem {
+  id           String     @id @default(cuid())
+  orderItemId  String
+  name         String
+  size         String
+  color        String?
+  hsn          String
+  gstRate      Int
+  quantity     Int
+  taxableValue Int
+  taxAmount    Int
+
+  creditNote   CreditNote @relation(fields: [creditNoteId], references: [id])
+  creditNoteId String
+
+  @@index([creditNoteId])
 }
 
 model User {

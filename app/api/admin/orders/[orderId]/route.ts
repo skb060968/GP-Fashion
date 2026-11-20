@@ -9,6 +9,8 @@ import {
   MeasurementUpdateError,
   updateItemMeasurements,
   confirmItemMeasurements,
+  CreditNoteError,
+  orderInclude,
 } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireAdminMutation } from "@/lib/security/adminAuth";
@@ -29,7 +31,7 @@ export async function GET(
 
     const order = await prisma.order.findUnique({
       where: { orderCode: orderId },
-      include: { items: true, address: true, history: { orderBy: { changedAt: "asc" } } },
+      include: orderInclude,
     });
 
     if (!order) {
@@ -80,12 +82,15 @@ export async function PATCH(
       }
     }
 
-    const { status, note, notifyCustomer = true } = parsed.data;
+    const { status, note, notifyCustomer = true, creditNote } = parsed.data;
 
     let updatedOrder;
     try {
-      updatedOrder = await updateOrderStatus(orderId, status, note);
+      updatedOrder = await updateOrderStatus(orderId, status, note, creditNote);
     } catch (err) {
+      if (err instanceof CreditNoteError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
       if (err instanceof InvalidTransitionError) {
         return NextResponse.json({ error: err.message }, { status: 409 });
       }

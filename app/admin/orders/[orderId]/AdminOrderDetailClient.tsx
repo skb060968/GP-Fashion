@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -13,7 +13,8 @@ import { allowedTransitions, type Transition } from "@/lib/orders/transitions"
 import StatusBadge from "@/components/StatusBadge"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Card, Skeleton, btn, input } from "@/components/admin/ui"
-import StatusChangeDialog from "@/components/admin/StatusChangeDialog"
+import StatusChangeDialog, { type CreditTarget } from "@/components/admin/StatusChangeDialog"
+import { creditNoteDeadline, creditNoteSlug, remainingQuantities } from "@/lib/gst/creditNote"
 import { adminFetch } from "@/lib/admin/fetch"
 import MeasurementsPanel from "@/components/admin/MeasurementsPanel"
 import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
@@ -66,8 +67,11 @@ type Order = {
     measurements: unknown
     measurementsConfirmedAt: string | null
     measurementsConfirmNote: string | null
+    taxableValue: number
+    taxAmount: number
   }[]
   history: { id: string; status: string; changedAt: string; note: string | null }[]
+  creditNotes: { number: string; date: string; amount: number; reason: string; items: { orderItemId: string; quantity: number }[] }[]
 }
 
 const fmtDateTime = (iso: string) =>
@@ -143,6 +147,28 @@ export default function AdminOrderDetailClient() {
     const t = setTimeout(() => setFlash(null), 4000)
     return () => clearTimeout(t)
   }, [flash])
+
+  const dialogTarget = useMemo(() => {
+    if (!order) return null
+    let credit: CreditTarget | null = null
+    if (order.invoiceNumber) {
+      const deadline = creditNoteDeadline(order.invoiceDate ?? order.updatedAt)
+      const remaining = remainingQuantities(order.items, order.creditNotes.flatMap((c) => c.items))
+      credit = {
+        invoiceNumber: order.invoiceNumber,
+        deadline: new Date(deadline.getTime() - 1).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "long", year: "numeric" }),
+        deadlinePassed: Date.now() >= deadline.getTime(),
+        items: order.items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          detail: `${itemSizeLabel(i)}${i.color ? ` · ${i.color}` : ""}`,
+          remaining: remaining.get(i.id) ?? 0,
+          unitAmount: (i.taxableValue + i.taxAmount) / i.quantity,
+        })),
+      }
+    }
+    return { orderCode: order.orderCode, status: order.status, customerEmail: order.address?.email ?? null, credit }
+  }, [order])
 
   if (loadError) {
     return (
@@ -367,6 +393,18 @@ export default function AdminOrderDetailClient() {
                     : "Issued when marked shipped"}
                 </dd>
               </div>
+              {order.creditNotes.map((c) => (
+                <div key={c.number} className="flex justify-between gap-4 text-black/65">
+                  <dt>Credit note</dt>
+                  <dd className="text-right text-black">
+                    <a href={`/api/credit-note/${creditNoteSlug(c.number)}.pdf`} download className="underline underline-offset-4 hover:text-black/70">
+                      {c.number}
+                    </a>
+                    {` · ${new Date(c.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })} · ${formatRupeesExact(c.amount)}`}
+                    <span className="block text-xs text-black/50">{c.reason}</span>
+                  </dd>
+                </div>
+              ))}
             </dl>
           </Card>
 
@@ -505,7 +543,7 @@ export default function AdminOrderDetailClient() {
       </div>
 
       <StatusChangeDialog<Order>
-        target={pending ? { orderCode: order.orderCode, status: order.status, customerEmail: a?.email ?? null } : null}
+        target={pending ? dialogTarget : null}
         transition={pending}
         onClose={() => setPending(null)}
         onDone={(updated, summary) => {

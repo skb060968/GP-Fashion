@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
       paymentMethod: true,
       createdAt: true,
       invoiceNumber: true,
+      creditNotes: { select: { number: true }, orderBy: { date: "asc" } },
       history: { select: { status: true }, orderBy: { changedAt: "asc" } },
       items: {
         select: {

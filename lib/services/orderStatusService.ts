@@ -6,6 +6,9 @@ import { isSnapshot, validateMeasurements } from "../measurements/fields";
 import { Prisma } from "@prisma/client";
 import { financialYear } from "../gst/tax";
 import { business, formatInvoiceNumber, sellerSnapshot } from "../data/business";
+import { CreditNoteError, creditLines, creditNoteDeadline, creditNoteNumber, creditNoteSlug, creditTotals } from "../gst/creditNote";
+
+export { CreditNoteError };
 
 export class MeasurementsNotConfirmedError extends Error {
   constructor(public count: number) {
@@ -21,7 +24,15 @@ export class MeasurementUpdateError extends Error {
 
 const MEASUREMENT_EDIT_STATUSES: OrderStatus[] = [OrderStatus.UNDER_VERIFICATION, OrderStatus.VERIFIED];
 
-const orderInclude = { items: true, address: true, history: { orderBy: { changedAt: "asc" as const } } };
+export const orderInclude = {
+  items: true,
+  address: true,
+  history: { orderBy: { changedAt: "asc" } },
+  creditNotes: {
+    orderBy: { date: "asc" },
+    select: { number: true, date: true, amount: true, reason: true, items: { select: { orderItemId: true, quantity: true } } },
+  },
+} as const;
 
 async function loadMeasuredItem(orderCode: string, itemId: string) {
   const order = await prisma.order.findUnique({
@@ -72,7 +83,7 @@ export class InvalidTransitionError extends Error {
   }
 }
 
-export async function updateOrderStatus(orderCode: string, newStatus: OrderStatus, note?: string) {
+export async function updateOrderStatus(orderCode: string, newStatus: OrderStatus, note?: string, creditNote?: CreditNoteRequest) {
   return prisma.$transaction(async (tx) => {
     const current = await tx.order.findUnique({ where: { orderCode }, select: { id: true, status: true } });
     if (!current) return null;
@@ -108,16 +119,70 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
       }
     }
 
+    let issued: string | null = null;
+    if (newStatus === OrderStatus.REFUNDED) {
+      issued = await issueCreditNote(tx, current.id, creditNote);
+    }
+
     await tx.order.update({ where: { id: current.id }, data: { status: newStatus, ...(invoice ?? {}) } });
     await tx.statusHistory.create({
-      data: { status: newStatus, orderId: current.id, note: cleanNote },
+      data: { status: newStatus, orderId: current.id, note: issued ? [cleanNote, `Credit note ${issued} issued`].filter(Boolean).join(" · ") : cleanNote },
     });
 
-    return tx.order.findUnique({
-      where: { id: current.id },
-      include: { items: true, address: true, history: { orderBy: { changedAt: "asc" } } },
-    });
+    return tx.order.findUnique({ where: { id: current.id }, include: orderInclude });
   });
+}
+
+export type CreditNoteRequest = { items: { orderItemId: string; quantity: number }[]; reason: string };
+
+async function issueCreditNote(tx: Prisma.TransactionClient, orderId: string, request: CreditNoteRequest | undefined): Promise<string | null> {
+  const order = await tx.order.findUnique({
+    where: { id: orderId },
+    include: { items: true, creditNotes: { include: { items: true } } },
+  });
+  if (!order?.invoiceNumber) return null;
+  const invoiceDate = order.invoiceDate ?? order.updatedAt;
+  const now = new Date();
+  if (now >= creditNoteDeadline(invoiceDate)) return null;
+  if (!request) throw new CreditNoteError("Choose the items to credit: this order has a tax invoice, so refunding it issues a credit note");
+  if (order.sellerGstin !== business.gstin) {
+    throw new CreditNoteError(`Invoice ${order.invoiceNumber} was issued under another GSTIN, so no credit note can be issued against it`, 409);
+  }
+  const reason = request.reason.trim();
+  if (!reason) throw new CreditNoteError("Give a reason for the credit note");
+
+  const lines = creditLines(
+    order.items,
+    order.creditNotes.flatMap((c) => c.items),
+    request.items,
+  );
+  const seller = sellerSnapshot();
+  const totals = creditTotals(lines, order.placeOfSupply === (order.sellerStateCode ?? seller.sellerStateCode));
+  const fy = financialYear(now);
+  const counter = await tx.invoiceCounter.upsert({
+    where: { financialYear: `CN/${fy}` },
+    create: { financialYear: `CN/${fy}`, last: 1 },
+    update: { last: { increment: 1 } },
+  });
+  const number = creditNoteNumber(fy, counter.last);
+  await tx.creditNote.create({
+    data: {
+      number,
+      date: now,
+      reason,
+      ...totals,
+      placeOfSupply: order.placeOfSupply,
+      buyerGstin: order.buyerGstin,
+      buyerName: order.buyerName,
+      invoiceNumber: order.invoiceNumber,
+      invoiceDate,
+      invoiceAmount: order.amount,
+      ...seller,
+      orderId: order.id,
+      items: { create: lines },
+    },
+  });
+  return number;
 }
 
 export async function updateOrderNotes(orderCode: string, notes: string) {
@@ -126,7 +191,7 @@ export async function updateOrderNotes(orderCode: string, notes: string) {
   return prisma.order.update({
     where: { id: exists.id },
     data: { notes: notes.trim() || null },
-    include: { items: true, address: true, history: { orderBy: { changedAt: "asc" } } },
+    include: orderInclude,
   });
 }
 
@@ -143,8 +208,11 @@ export function buildOrderEmailData(order: {
   paymentMethod: string;
   address: { fullName: string; phone: string; email: string | null; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
   items: { name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string; measurements?: unknown }[];
+  creditNotes?: { number: string; amount: number }[];
 }): OrderEmailData {
+  const credit = order.creditNotes?.[order.creditNotes.length - 1];
   return {
+    creditNote: credit ? { number: credit.number, slug: creditNoteSlug(credit.number), amount: credit.amount } : null,
     orderCode: order.orderCode,
     amount: order.amount,
     discount: order.discount ?? undefined,

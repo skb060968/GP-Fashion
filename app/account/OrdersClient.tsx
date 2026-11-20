@@ -10,6 +10,7 @@ import EmptyState from "@/components/EmptyState"
 import FadeIn from "@/components/FadeIn"
 import ReturnTimeline from "@/components/ReturnTimeline"
 import { mtmLabel } from "@/lib/measurements/fields"
+import { creditNoteSlug } from "@/lib/gst/creditNote"
 
 type Order = {
   orderCode: string
@@ -18,6 +19,7 @@ type Order = {
   paymentMethod: string
   createdAt: string
   invoiceNumber: string | null
+  creditNotes: { number: string }[]
   history: { status: string }[]
   items: {
     id: string
@@ -146,6 +148,11 @@ export default function OrdersClient() {
                   <a href={`/api/invoice/${o.orderCode}.pdf`} download className="btn-outline-dark !px-5 !py-2 !text-xs">
                     Download PDF
                   </a>
+                  {o.creditNotes.map((c) => (
+                    <a key={c.number} href={`/api/credit-note/${creditNoteSlug(c.number)}.pdf`} download className="btn-outline-dark !px-5 !py-2 !text-xs">
+                      Credit note {c.number}
+                    </a>
+                  ))}
                 </footer>
               </article>
             </FadeIn>

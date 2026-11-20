@@ -1,7 +1,7 @@
 
 
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
-import { formatRupees } from "@/lib/money"
+import { formatRupees, formatRupeesExact } from "@/lib/money"
 import { statusEmailSubject } from "@/lib/orders/labels"
 import { address, button, heading, itemsTable, orderFacts, orderNumber, paragraph, shell, siteUrl } from "./layout"
 
@@ -91,7 +91,13 @@ function copyFor(order: OrderEmailData, site: string): Copy {
       return {
         subject: statusEmailSubject("REFUNDED", code),
         title: `Refund issued`,
-        body: `${name}, a refund of ${formatRupees(order.amount)} has been issued for this order. Depending on your bank it may take a few working days to appear.`,
+        body: order.creditNote
+          ? `${name}, a refund of ${formatRupeesExact(order.creditNote.amount)} has been issued for this order. Depending on your bank it may take a few working days to appear. Credit note ${order.creditNote.number} against your tax invoice ${order.invoiceNumber} is ready to download.`
+          : `${name}, a refund of ${formatRupees(order.amount)} has been issued for this order. Depending on your bank it may take a few working days to appear.`,
+        cta:
+          order.creditNote && order.accessToken
+            ? { text: "Download credit note", href: `${site}/api/credit-note/${order.creditNote.slug}?t=${order.accessToken}` }
+            : undefined,
       }
     case "UNDER_VERIFICATION":
     default:

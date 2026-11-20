@@ -23,12 +23,20 @@ type RecordsResponse = {
     igst: number
     total: number
     tables: { B2B: number; B2CL: number; B2CS: number }
+    creditNotes: number
+    credited: Totals
+    net: Totals
   }
   warnings: string[]
-  invoices: { orderCode: string; invoiceNumber: string; fileName: string }[]
+  invoices: Doc[]
+  creditNotes: Doc[]
   register: string
+  creditRegister: string | null
   gstr1: Record<string, unknown> | null
 }
+
+type Totals = { taxableValue: number; cgst: number; sgst: number; igst: number; total: number }
+type Doc = { number: string; url: string; fileName: string }
 
 type SaveType = { description: string; accept: Record<string, string[]> }
 type Writable = { write: (data: Blob) => Promise<void>; close: () => Promise<void> }
@@ -111,29 +119,35 @@ export default function RecordsClient() {
     setFlash(null)
     const handle = await pickSaveLocation(zipName, ZIP_TYPE)
     if (handle === "cancelled") return
+    const docs = [...data.invoices.map((d) => ({ ...d, folder: "Invoices" })), ...data.creditNotes.map((d) => ({ ...d, folder: "Credit notes" }))]
     setBusy("zip")
-    setProgress({ done: 0, total: data.invoices.length })
+    setProgress({ done: 0, total: docs.length })
     try {
       const root = zipName.replace(/\.zip$/, "")
       const entries: ZipEntry[] = []
-      const queue = [...data.invoices]
+      const queue = [...docs]
       let done = 0
       const worker = async () => {
-        for (let inv = queue.shift(); inv; inv = queue.shift()) {
-          const res = await fetch(`/api/invoice/${encodeURIComponent(inv.orderCode)}`, { credentials: "same-origin" })
-          if (!res.ok) throw new Error(`Could not get the PDF for ${inv.invoiceNumber} (${res.status})`)
-          entries.push({ name: `${root}/Invoices/${inv.fileName}`, data: new Uint8Array(await res.arrayBuffer()) })
+        for (let doc = queue.shift(); doc; doc = queue.shift()) {
+          const res = await fetch(doc.url, { credentials: "same-origin" })
+          if (!res.ok) throw new Error(`Could not get the PDF for ${doc.number} (${res.status})`)
+          entries.push({ name: `${root}/${doc.folder}/${doc.fileName}`, data: new Uint8Array(await res.arrayBuffer()) })
           done += 1
-          setProgress({ done, total: data.invoices.length })
+          setProgress({ done, total: docs.length })
         }
       }
       await Promise.all([worker(), worker(), worker()])
       entries.sort((a, b) => a.name.localeCompare(b.name))
       const enc = new TextEncoder()
-      entries.push({ name: `${root}/Invoice-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.register}`) })
+      if (data.invoices.length) entries.push({ name: `${root}/Invoice-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.register}`) })
+      if (data.creditRegister) entries.push({ name: `${root}/Credit-note-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.creditRegister}`) })
       if (data.gstr1) entries.push({ name: `${root}/${gstr1Name}`, data: enc.encode(JSON.stringify(data.gstr1)) })
       await writeFile(handle, new Blob([makeZip(entries)], { type: "application/zip" }), zipName)
-      setFlash(`Saved ${zipName}: ${data.invoices.length} ${data.invoices.length === 1 ? "invoice" : "invoices"} and the invoice register${data.gstr1 ? ", with the GSTR-1 file" : ""}.`)
+      const parts = [
+        data.invoices.length ? `${data.invoices.length} ${data.invoices.length === 1 ? "invoice" : "invoices"}` : "",
+        data.creditNotes.length ? `${data.creditNotes.length} ${data.creditNotes.length === 1 ? "credit note" : "credit notes"}` : "",
+      ].filter(Boolean)
+      setFlash(`Saved ${zipName}: ${parts.join(" and ")} with the ${parts.length > 1 ? "registers" : "register"}${data.gstr1 ? " and the GSTR-1 file" : ""}.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not prepare the ZIP file")
     } finally {
@@ -167,7 +181,7 @@ export default function RecordsClient() {
       : data.placeholderGstin
         ? "Add the real GSTIN before preparing GSTR-1."
         : !data.gstr1
-          ? "No invoices in this quarter. File a nil GSTR-1 on the portal instead."
+          ? "No invoices or credit notes in this quarter. File a nil GSTR-1 on the portal instead."
           : `For return period ${data.period.fp!.slice(0, 2)}/${data.period.fp!.slice(2)}.`
 
   return (
@@ -227,6 +241,26 @@ export default function RecordsClient() {
             <p className="font-jost text-sm text-black/60">
               GSTR-1 tables: B2B {s.tables.B2B} · B2C large {s.tables.B2CL} · B2C small {s.tables.B2CS}
             </p>
+            {s.creditNotes > 0 && (
+              <div className="space-y-4 border-t border-black/10 pt-4">
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+                  <Stat label="Credit notes" value={String(s.creditNotes)} />
+                  <Stat label="Taxable credited" value={formatRupeesExact(s.credited.taxableValue)} />
+                  <Stat label="CGST credited" value={formatRupeesExact(s.credited.cgst)} />
+                  <Stat label="SGST credited" value={formatRupeesExact(s.credited.sgst)} />
+                  <Stat label="IGST credited" value={formatRupeesExact(s.credited.igst)} />
+                  <Stat label="Value credited" value={formatRupeesExact(s.credited.total)} />
+                </div>
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+                  <Stat label="Net" value="After credit notes" />
+                  <Stat label="Taxable value" value={formatRupeesExact(s.net.taxableValue)} />
+                  <Stat label="CGST" value={formatRupeesExact(s.net.cgst)} />
+                  <Stat label="SGST" value={formatRupeesExact(s.net.sgst)} />
+                  <Stat label="IGST" value={formatRupeesExact(s.net.igst)} />
+                  <Stat label="Value" value={formatRupeesExact(s.net.total)} />
+                </div>
+              </div>
+            )}
             {!data.finished && (
               <Alert tone="info">This period is not over yet. Invoices issued before it ends will be added; download the final copy after it closes.</Alert>
             )}
@@ -247,19 +281,28 @@ export default function RecordsClient() {
               <FolderArchive className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Invoices (ZIP)
             </div>
             <p className="font-jost text-sm text-black/60">
-              Every tax invoice in the period as a PDF, the invoice register as a spreadsheet (CSV) and, for a quarter, the GSTR-1 file.
+              Every tax invoice and credit note in the period as a PDF, their registers as spreadsheets (CSV) and, for a quarter, the GSTR-1 file.
             </p>
-            <button type="button" className={btn.primary} onClick={downloadZip} disabled={!data || loading || busy !== null || data.invoices.length === 0}>
+            <button
+              type="button"
+              className={btn.primary}
+              onClick={downloadZip}
+              disabled={!data || loading || busy !== null || data.invoices.length + data.creditNotes.length === 0}
+            >
               <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
               {busy === "zip" && progress ? `Preparing ${progress.done} of ${progress.total}…` : "Download invoices"}
             </button>
-            {data && data.invoices.length === 0 && !loading && <p className="font-jost text-xs text-black/50">No invoices in this period.</p>}
+            {data && data.invoices.length + data.creditNotes.length === 0 && !loading && (
+              <p className="font-jost text-xs text-black/50">No invoices or credit notes in this period.</p>
+            )}
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-2 font-jost text-sm font-semibold">
               <FileJson className="h-4 w-4" strokeWidth={1.75} aria-hidden /> GSTR-1 file
             </div>
-            <p className="font-jost text-sm text-black/60">The quarter&apos;s sales, filled in for upload on the GST portal: B2B, B2C large, B2C small, HSN summary and documents issued.</p>
+            <p className="font-jost text-sm text-black/60">
+              The quarter&apos;s sales and credit notes, filled in for upload on the GST portal: B2B, B2C large, B2C small, credit notes, HSN summary and documents issued.
+            </p>
             <button type="button" className={btn.secondary} onClick={downloadGstr1} disabled={!data?.gstr1 || loading || busy !== null}>
               <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
               {busy === "gstr1" ? "Saving…" : "Download GSTR-1 file"}
@@ -286,7 +329,7 @@ export default function RecordsClient() {
           <li>After the quarter ends, download the GSTR-1 file for it.</li>
           <li>On gst.gov.in, sign in and open Returns Dashboard. Choose the financial year and the quarter, then GSTR-1.</li>
           <li>Choose Prepare Offline, then Upload, and select the file. Wait until the status shows it was processed.</li>
-          <li>Choose Prepare Online and check every table against the summary above. Add anything the site does not record, such as credit notes for refunds or sales made outside the site.</li>
+          <li>Choose Prepare Online and check every table against the summary above. Add anything the site does not record, such as sales made outside the site, and anything the notes above ask you to enter by hand.</li>
           <li>Generate the summary, check it again, and file with EVC (the OTP sent to your registered mobile).</li>
         </ol>
         <p className="mt-4 font-jost text-xs text-black/50">The file follows the format the GST portal accepts for upload. The portal checks every entry, so read any error it shows and correct the order before uploading again.</p>

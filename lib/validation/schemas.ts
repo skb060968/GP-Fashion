@@ -68,11 +68,20 @@ export const createOrderSchema = z.object({
   acceptMadeToMeasure: z.boolean().optional(),
 });
 
+export const creditNoteRequestSchema = z.object({
+  items: z
+    .array(z.object({ orderItemId: z.string().min(1).max(40), quantity: z.number().int().min(0).max(100) }))
+    .min(1)
+    .max(50),
+  reason: z.string().trim().min(1, "Give a reason for the credit note").max(200),
+});
+
 export const updateStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),
   note: z.string().max(500).optional(),
 
   notifyCustomer: z.boolean().optional(),
+  creditNote: creditNoteRequestSchema.optional(),
 });
 
 export const updateNotesSchema = z.object({
