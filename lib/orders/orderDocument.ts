@@ -40,6 +40,14 @@ export type DocumentOrder = {
     state: string
     pincode: string
   } | null
+  billingAddress?: {
+    fullName: string
+    addressLine1: string
+    addressLine2: string | null
+    city: string
+    state: string
+    pincode: string
+  } | null
   items: {
     id: string
     name: string
@@ -70,6 +78,36 @@ export type DocumentLine = {
   tax: number
   taxParts: number[]
   amount: number
+}
+
+type PostalAddress = { fullName: string; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string }
+
+export type DocumentParties = {
+  address: (PostalAddress & { phone: string; email: string | null }) | null
+  billingAddress?: PostalAddress | null
+  buyerName: string | null
+  buyerGstin: string | null
+}
+
+const postalLines = (a: PostalAddress) => [[a.addressLine1, a.addressLine2].filter(Boolean).join(", "), `${a.city}, ${a.state} ${a.pincode}`]
+
+export function partiesOf(order: DocumentParties) {
+  const ship = order.address
+  const bill = order.billingAddress ?? ship
+  return {
+    buyer:
+      bill && ship
+        ? {
+            name: order.buyerName ?? bill.fullName,
+            attention: order.buyerName ? bill.fullName : null,
+            lines: postalLines(bill),
+            phone: ship.phone,
+            email: ship.email,
+            gstin: order.buyerGstin,
+          }
+        : null,
+    shipTo: order.billingAddress && ship ? { name: ship.fullName, lines: postalLines(ship), phone: ship.phone } : null,
+  }
 }
 
 export const invoiceFileName = (invoiceNumber: string) => `Tax-Invoice-${invoiceNumber.replace(/\//g, "-")}`
@@ -122,19 +160,7 @@ export function orderDocument(order: DocumentOrder) {
       email: order.sellerEmail ?? business.email,
       phone: order.sellerPhone ?? business.phone,
     },
-    buyer: order.address
-      ? {
-          name: order.buyerName ?? order.address.fullName,
-          attention: order.buyerName ? order.address.fullName : null,
-          lines: [
-            [order.address.addressLine1, order.address.addressLine2].filter(Boolean).join(", "),
-            `${order.address.city}, ${order.address.state} ${order.address.pincode}`,
-          ],
-          phone: order.address.phone,
-          email: order.address.email,
-          gstin: order.buyerGstin,
-        }
-      : null,
+    ...partiesOf(order),
     placeOfSupply: placeOfSupplyLabel(order.placeOfSupply),
     taxColumns: intraState ? [`CGST ${rate / 2}%`, `SGST ${rate / 2}%`] : [`IGST ${rate}%`],
     lines,

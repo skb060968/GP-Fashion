@@ -34,6 +34,14 @@ type Order = {
     state: string
     pincode: string
   } | null
+  billingAddress?: {
+    fullName: string
+    addressLine1: string
+    addressLine2: string | null
+    city: string
+    state: string
+    pincode: string
+  } | null
   items: { id: string; name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string; measurements?: unknown }[]
 }
 
@@ -189,6 +197,19 @@ function SuccessContent() {
                         <br />
                         {order.address.city}, {order.address.state} {order.address.pincode}
                       </address>
+                      {order.billingAddress && (
+                        <>
+                          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.15em] text-black/60">Billing address</p>
+                          <address className="mt-2 not-italic leading-relaxed text-black/75">
+                            <span className="text-black">{order.billingAddress.fullName}</span>
+                            <br />
+                            {order.billingAddress.addressLine1}
+                            {order.billingAddress.addressLine2 ? `, ${order.billingAddress.addressLine2}` : ""}
+                            <br />
+                            {order.billingAddress.city}, {order.billingAddress.state} {order.billingAddress.pincode}
+                          </address>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

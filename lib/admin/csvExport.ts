@@ -25,6 +25,14 @@ export interface CsvOrder {
     state?: string;
     pincode?: string;
   } | null;
+  billingAddress?: {
+    fullName: string;
+    addressLine1: string;
+    addressLine2?: string | null;
+    city: string;
+    state: string;
+    pincode: string;
+  } | null;
   amount: number;
   discount: number;
   couponCode?: string | null;
@@ -71,6 +79,11 @@ export const CSV_COLUMNS = [
   "cgst",
   "sgst",
   "igst",
+  "billingName",
+  "billingAddress",
+  "billingCity",
+  "billingState",
+  "billingPincode",
 ] as const;
 
 export function escapeCsvField(value: string): string {
@@ -115,6 +128,7 @@ export function ordersToCsv(orders: CsvOrder[]): string {
 
   const rows = orders.map((o) => {
     const a = o.address;
+    const b = o.billingAddress;
     const addressLine = [a?.addressLine1, a?.addressLine2].filter(Boolean).join(", ");
     const fields: string[] = [
       o.orderCode,
@@ -143,6 +157,11 @@ export function ordersToCsv(orders: CsvOrder[]): string {
       typeof o.cgst === "number" ? formatCsvMoney(o.cgst) : "",
       typeof o.sgst === "number" ? formatCsvMoney(o.sgst) : "",
       typeof o.igst === "number" ? formatCsvMoney(o.igst) : "",
+      b?.fullName ?? "",
+      b ? [b.addressLine1, b.addressLine2].filter(Boolean).join(", ") : "",
+      b?.city ?? "",
+      b?.state ?? "",
+      b?.pincode ?? "",
     ];
     return fields.map(escapeCsvField).join(",");
   });

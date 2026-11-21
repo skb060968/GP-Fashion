@@ -6,6 +6,7 @@ import { isSnapshot, validateMeasurements } from "../measurements/fields";
 import { Prisma } from "@prisma/client";
 import { financialYear } from "../gst/tax";
 import { business, formatInvoiceNumber, sellerSnapshot } from "../data/business";
+import { emailBilling } from "../emails/sendOrderPlaced";
 import { CreditNoteError, creditLines, creditNoteDeadline, creditNoteNumber, creditNoteSlug, creditTotals } from "../gst/creditNote";
 
 export { CreditNoteError };
@@ -27,6 +28,7 @@ const MEASUREMENT_EDIT_STATUSES: OrderStatus[] = [OrderStatus.UNDER_VERIFICATION
 export const orderInclude = {
   items: true,
   address: true,
+  billingAddress: true,
   history: { orderBy: { changedAt: "asc" } },
   creditNotes: {
     orderBy: { date: "asc" },
@@ -209,9 +211,11 @@ export function buildOrderEmailData(order: {
   address: { fullName: string; phone: string; email: string | null; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
   items: { name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string; measurements?: unknown }[];
   creditNotes?: { number: string; amount: number }[];
+  billingAddress?: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
 }): OrderEmailData {
   const credit = order.creditNotes?.[order.creditNotes.length - 1];
   return {
+    billing: emailBilling(order.billingAddress),
     creditNote: credit ? { number: credit.number, slug: creditNoteSlug(credit.number), amount: credit.amount } : null,
     orderCode: order.orderCode,
     amount: order.amount,

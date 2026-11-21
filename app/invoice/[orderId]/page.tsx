@@ -124,7 +124,9 @@ function InvoiceContent() {
 
             <div className="grid grid-cols-1 gap-8 py-8 font-jost text-sm sm:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">{isInvoice ? "Billed and shipped to" : "Shipping to"}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
+                  {doc.shipTo ? "Billed to" : isInvoice ? "Billed and shipped to" : "Shipping to"}
+                </p>
                 {doc.buyer && (
                   <address className="mt-3 not-italic leading-relaxed text-black/75">
                     <span className="font-semibold text-black">{doc.buyer.name}</span>
@@ -137,6 +139,19 @@ function InvoiceContent() {
                     {doc.buyer.email && <><br /><span className="text-black/60">{doc.buyer.email}</span></>}
                     {doc.buyer.gstin && <><br />GSTIN <span className="font-semibold text-black">{doc.buyer.gstin}</span></>}
                   </address>
+                )}
+                {doc.shipTo && (
+                  <>
+                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">{isInvoice ? "Shipped to" : "Shipping to"}</p>
+                    <address className="mt-3 not-italic leading-relaxed text-black/75">
+                      <span className="font-semibold text-black">{doc.shipTo.name}</span>
+                      {doc.shipTo.lines.map((l) => (
+                        <span key={l}><br />{l}</span>
+                      ))}
+                      <br />
+                      <span className="text-black/60">{doc.shipTo.phone}</span>
+                    </address>
+                  </>
                 )}
                 {isInvoice && (
                   <p className="mt-4 text-black/75">

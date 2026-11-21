@@ -119,6 +119,7 @@ export default function PaymentPage() {
           body: JSON.stringify({
             items: cart,
             address,
+            ...(address.billing ? { billing: address.billing } : {}),
             ...(address.gstin ? { business: { name: address.businessName ?? "", gstin: address.gstin } } : {}),
             amount: subtotal,
             paymentMethod: "UPI_MANUAL",
@@ -213,6 +214,17 @@ export default function PaymentPage() {
                   <p className="mt-2 text-black/60">
                     {address.phone} · {address.email}
                   </p>
+                  {address.billing ? (
+                    <p className="mt-3 border-t border-black/10 pt-3 text-black/60">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.15em]">Billing address</span>
+                      <span className="text-black/75">
+                        {address.billing.fullName}, {address.billing.addressLine1}
+                        {address.billing.addressLine2 ? `, ${address.billing.addressLine2}` : ""}, {address.billing.city}, {address.billing.state} {address.billing.pincode}
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-black/60">Billing address same as shipping</p>
+                  )}
                   {address.gstin && (
                     <p className="mt-2 text-black/60">
                       GST invoice for {address.businessName} · GSTIN {address.gstin}

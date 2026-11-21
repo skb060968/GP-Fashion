@@ -1,12 +1,15 @@
 
 
-import type { Address, Order, OrderItem } from "@prisma/client"
+import type { Address, BillingAddress, Order, OrderItem } from "@prisma/client"
 import { sendMail } from "@/lib/mailer"
 import { isSnapshot } from "@/lib/measurements/fields"
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
 import { orderPlacedEmailAdmin, orderPlacedEmailCustomer } from "./orderPlaced"
 
-type OrderWithRelations = Order & { address: Address | null; items: OrderItem[] }
+type OrderWithRelations = Order & { address: Address | null; billingAddress?: BillingAddress | null; items: OrderItem[] }
+
+export const emailBilling = (b: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null | undefined) =>
+  b ? { fullName: b.fullName, addressLine1: b.addressLine1, addressLine2: b.addressLine2 ?? undefined, city: b.city, state: b.state, pincode: b.pincode } : null
 
 export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | null {
   if (!order.address) return null
@@ -31,6 +34,7 @@ export function toOrderEmailData(order: OrderWithRelations): OrderEmailData | nu
       state: a.state,
       pincode: a.pincode,
     },
+    billing: emailBilling(order.billingAddress),
     items: order.items.map((i) => ({
       name: i.name,
       size: i.size,

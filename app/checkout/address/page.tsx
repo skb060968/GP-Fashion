@@ -4,13 +4,15 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useCart } from "@/context/CartContext"
-import { validateAddress } from "@/lib/validation/addressValidation"
+import { validateAddress, validateBillingAddress } from "@/lib/validation/addressValidation"
+import { findState } from "@/lib/gst/states"
+import { placeOfSupply } from "@/lib/gst/placeOfSupply"
 import CheckoutSteps from "@/components/checkout/CheckoutSteps"
 import OrderSummary from "@/components/checkout/OrderSummary"
 import Field from "@/components/checkout/Field"
 import PageHeading from "@/components/PageHeading"
 import FadeIn from "@/components/FadeIn"
-import { ADDRESS_STORAGE_KEY, canonicalState, type CheckoutAddress as AddressForm } from "@/lib/checkout"
+import { ADDRESS_STORAGE_KEY, EMPTY_BILLING, canonicalState, type BillingFields, type CheckoutAddress as AddressForm } from "@/lib/checkout"
 import { useUser } from "@/context/UserContext"
 import type { SavedAddress } from "@/components/account/AddressForm"
 import StateSelect from "@/components/checkout/StateSelect"
@@ -55,14 +57,20 @@ export default function AddressPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [saveToBook, setSaveToBook] = useState(true)
   const [needsGst, setNeedsGst] = useState(false)
+  const [sameBilling, setSameBilling] = useState(true)
+  const [billing, setBilling] = useState<BillingFields>(EMPTY_BILLING)
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(ADDRESS_STORAGE_KEY)
       if (stored) {
-        const parsed = { ...EMPTY, ...JSON.parse(stored) } as AddressForm
-        setForm({ ...parsed, state: canonicalState(parsed.state) })
-        if (parsed.gstin) setNeedsGst(true)
+        const { billing: storedBilling, ...rest } = { ...EMPTY, ...JSON.parse(stored) } as AddressForm
+        setForm({ ...rest, state: canonicalState(rest.state) })
+        if (rest.gstin) setNeedsGst(true)
+        if (storedBilling) {
+          setSameBilling(false)
+          setBilling({ ...EMPTY_BILLING, ...storedBilling, state: canonicalState(storedBilling.state) })
+        }
       }
     } catch {
 
@@ -103,6 +111,12 @@ export default function AddressPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    if (name === "state" && errors.gstin) {
+      setErrors(({ gstin, ...rest }) => {
+        void gstin
+        return rest
+      })
+    }
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -112,11 +126,45 @@ export default function AddressPage() {
     }
   }
 
+  const clearError = (name: string) => {
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
+  }
+
+  const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setBilling((prev) => ({ ...prev, [name.replace(/^billing\./, "")]: value }))
+    clearError(name)
+    if (name === "billing.state") clearError("gstin")
+  }
+
+  const billingFromSaved = (a: SavedAddress) => {
+    setBilling({
+      fullName: a.fullName,
+      addressLine1: a.addressLine1,
+      addressLine2: a.addressLine2 ?? "",
+      city: a.city,
+      state: canonicalState(a.state),
+      pincode: a.pincode,
+    })
+    setErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith("billing.") && k !== "gstin")))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const { billing: _ignored, ...shippingForm } = form
+    void _ignored
     const trimmed = Object.fromEntries(
-      Object.entries(form).map(([k, v]) => [k, (v ?? "").trim()])
-    ) as AddressForm
+      Object.entries(shippingForm).map(([k, v]) => [k, (v ?? "").trim()])
+    ) as unknown as AddressForm
+    const billingTrimmed = sameBilling
+      ? null
+      : (Object.fromEntries(Object.entries(billing).map(([k, v]) => [k, (v ?? "").trim()])) as unknown as BillingFields)
     if (needsGst) {
       trimmed.gstin = normaliseGstin(trimmed.gstin ?? "")
     } else {
@@ -127,10 +175,21 @@ export default function AddressPage() {
     const result = validateAddress(trimmed)
     const found: Record<string, string> = { ...result.errors }
     if (!found.state && !canonicalState(trimmed.state)) found.state = "Choose your state from the list"
+    if (billingTrimmed) {
+      const b = validateBillingAddress(billingTrimmed)
+      for (const [k, v] of Object.entries(b.errors)) found[`billing.${k}`] = v
+      if (!found["billing.state"] && !canonicalState(billingTrimmed.state)) found["billing.state"] = "Choose the billing state from the list"
+    }
     if (needsGst) {
       if ((trimmed.businessName ?? "").length < 2) found.businessName = "Enter the business name as registered for GST"
       const gstErr = gstinError(trimmed.gstin ?? "")
       if (gstErr) found.gstin = gstErr
+      const shipCode = findState(trimmed.state)?.code
+      const billCode = billingTrimmed ? findState(billingTrimmed.state)?.code : null
+      if (!gstErr && shipCode && (!billingTrimmed || billCode)) {
+        const pos = placeOfSupply({ shippingStateCode: shipCode, billingStateCode: billCode ?? null, gstin: trimmed.gstin })
+        if (!pos.ok) found[pos.field] = pos.message
+      }
     }
     if (Object.keys(found).length > 0) {
       setErrors(found)
@@ -139,7 +198,8 @@ export default function AddressPage() {
       return
     }
 
-    localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(trimmed))
+    const toStore: AddressForm = billingTrimmed ? { ...trimmed, billing: billingTrimmed } : trimmed
+    localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(toStore))
 
     if (user && saveToBook && !selectedId) {
       const { email, businessName, gstin, ...book } = trimmed
@@ -317,6 +377,92 @@ export default function AddressPage() {
                     <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
                       <input
                         type="checkbox"
+                        checked={sameBilling}
+                        onChange={(e) => {
+                          setSameBilling(e.target.checked)
+                          setErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith("billing.") && k !== "gstin")))
+                        }}
+                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-black/30 transition-colors checked:border-black checked:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                      />
+                      <Check className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden />
+                    </span>
+                    <span className="font-jost text-sm text-black/80">Billing address same as shipping</span>
+                  </label>
+                  {!sameBilling && (
+                    <div className="space-y-5">
+                      <h2 className="font-cinzel text-base font-bold uppercase tracking-[0.15em] sm:text-lg">Billing address</h2>
+                      <p className="font-jost text-sm text-black/60">The name and address on your tax invoice. We ship to the address above.</p>
+                      {user && saved.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 font-jost text-sm">
+                          <span className="text-black/60">Fill from a saved address:</span>
+                          {saved.map((a) => (
+                            <button
+                              key={a.id}
+                              type="button"
+                              onClick={() => billingFromSaved(a)}
+                              className="rounded-full border border-black/15 px-3 py-1 transition-colors hover:border-black"
+                            >
+                              {a.label || a.fullName}, {a.city}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <Field
+                        label="Full name"
+                        name="billing.fullName"
+                        autoComplete="billing name"
+                        value={billing.fullName}
+                        onChange={handleBillingChange}
+                        error={errors["billing.fullName"]}
+                      />
+                      <Field
+                        label="Address"
+                        name="billing.addressLine1"
+                        autoComplete="billing address-line1"
+                        placeholder="House no., street, area"
+                        value={billing.addressLine1}
+                        onChange={handleBillingChange}
+                        error={errors["billing.addressLine1"]}
+                      />
+                      <Field
+                        label="Apartment, landmark"
+                        name="billing.addressLine2"
+                        autoComplete="billing address-line2"
+                        optional
+                        value={billing.addressLine2}
+                        onChange={handleBillingChange}
+                        error={errors["billing.addressLine2"]}
+                      />
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                        <Field
+                          label="City"
+                          name="billing.city"
+                          autoComplete="billing address-level2"
+                          value={billing.city}
+                          onChange={handleBillingChange}
+                          error={errors["billing.city"]}
+                        />
+                        <StateSelect name="billing.state" value={billing.state} onChange={handleBillingChange} error={errors["billing.state"]} />
+                        <Field
+                          label="Pincode"
+                          name="billing.pincode"
+                          inputMode="numeric"
+                          autoComplete="billing postal-code"
+                          maxLength={6}
+                          value={billing.pincode}
+                          onChange={handleBillingChange}
+                          error={errors["billing.pincode"]}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </fieldset>
+
+                <fieldset className="space-y-5">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
                         checked={needsGst}
                         onChange={(e) => {
                           setNeedsGst(e.target.checked)
@@ -353,7 +499,7 @@ export default function AddressPage() {
                         value={form.gstin ?? ""}
                         onChange={handleChange}
                         error={errors.gstin}
-                        hint="15 characters, e.g. 07AAAAA0000A1Z5"
+                        hint="15 characters, e.g. 07AAAAA0000A1Z5. The billing address must be in the GSTIN's state"
                       />
                     </div>
                   )}

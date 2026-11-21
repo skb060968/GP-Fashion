@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ number:
     const creditNote = number
       ? await prisma.creditNote.findUnique({
           where: { number },
-          include: { items: true, order: { select: { orderCode: true, userId: true, address: true } } },
+          include: { items: true, order: { select: { orderCode: true, userId: true, address: true, billingAddress: true } } },
         })
       : null
 

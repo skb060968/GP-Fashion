@@ -29,6 +29,15 @@ export const addressSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/, "Invalid pincode. Must be a 6-digit number"),
 });
 
+export const billingAddressSchema = addressSchema.pick({
+  fullName: true,
+  addressLine1: true,
+  addressLine2: true,
+  city: true,
+  state: true,
+  pincode: true,
+});
+
 export const userAddressSchema = addressSchema.omit({ email: true }).extend({
   label: z.string().trim().max(40).optional().or(z.literal("")),
   isDefault: z.boolean().optional(),
@@ -56,6 +65,7 @@ export const businessBuyerSchema = z.object({
 export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   address: addressSchema,
+  billing: billingAddressSchema.optional(),
   business: businessBuyerSchema.optional(),
   amount: z.number().int().positive(),
   paymentMethod: z.enum(["UPI_MANUAL", "COD", "RAZORPAY"]),

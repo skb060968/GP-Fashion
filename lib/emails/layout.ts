@@ -106,6 +106,17 @@ export function address(c: OrderEmailData["customer"], title = "Shipping to") {
     </p>`
 }
 
+export function billingAddress(b: NonNullable<OrderEmailData["billing"]>) {
+  const line2 = b.addressLine2 ? `, ${escapeHtml(b.addressLine2)}` : ""
+  return `
+    ${label("Billing address")}
+    <p style="margin:0;font:400 14px/1.6 ${SANS};color:#333333;">
+      <strong style="color:${INK};">${escapeHtml(b.fullName)}</strong><br>
+      ${escapeHtml(b.addressLine1)}${line2}<br>
+      ${escapeHtml(b.city)}, ${escapeHtml(b.state)} ${escapeHtml(b.pincode)}
+    </p>`
+}
+
 export function itemsTable(order: OrderEmailData) {
   const rows = order.items
     .map(

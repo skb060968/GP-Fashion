@@ -17,6 +17,7 @@ import { validateCoupon, applyCoupon } from "@/lib/services/couponService";
 import { getProduct } from "@/lib/data/categories";
 import { getProductStatusLists } from "@/lib/catalog/visibility";
 import { findState } from "@/lib/gst/states";
+import { placeOfSupply } from "@/lib/gst/placeOfSupply";
 import { GST_RATE, computeOrderTax } from "@/lib/gst/tax";
 import { business as seller } from "@/lib/data/business";
 
@@ -71,11 +72,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const { items: submittedItems, address, business: buyerBusiness, amount: submittedSubtotal, paymentMethod, paymentReference, couponCode, acceptMadeToMeasure } = result.data;
+    const { items: submittedItems, address, billing, business: buyerBusiness, amount: submittedSubtotal, paymentMethod, paymentReference, couponCode, acceptMadeToMeasure } = result.data;
 
     const deliveryState = findState(address.state);
     if (!deliveryState) {
       return NextResponse.json({ errors: { "address.state": "Choose your state from the list" } }, { status: 400 });
+    }
+    const billingState = billing ? findState(billing.state) : null;
+    if (billing && !billingState) {
+      return NextResponse.json({ errors: { "billing.state": "Choose the billing state from the list" } }, { status: 400 });
+    }
+    const supply = placeOfSupply({
+      shippingStateCode: deliveryState.code,
+      billingStateCode: billingState?.code ?? null,
+      gstin: buyerBusiness?.gstin ?? null,
+    });
+    if (!supply.ok) {
+      return NextResponse.json({ errors: { [supply.field]: supply.message } }, { status: 400 });
     }
 
     const sessionUser = await getUserFromRequest(req as NextRequest).catch(() => null);
@@ -188,7 +201,7 @@ export async function POST(req: Request) {
       items.map((item) => ({ price: item.price, quantity: item.quantity, rate: GST_RATE })),
       discount,
       seller.stateCode,
-      deliveryState.code
+      supply.code
     );
     const finalAmount = tax.total;
 
@@ -196,7 +209,7 @@ export async function POST(req: Request) {
     const orderCode = await generateOrderCode(year);
 
     const order = await prisma.order.create({
-      include: { address: true, items: true },
+      include: { address: true, billingAddress: true, items: true },
       data: {
         orderCode,
         userId: sessionUser?.id ?? null,
@@ -207,7 +220,7 @@ export async function POST(req: Request) {
         cgst: tax.cgst,
         sgst: tax.sgst,
         igst: tax.igst,
-        placeOfSupply: deliveryState.code,
+        placeOfSupply: supply.code,
         buyerGstin: buyerBusiness?.gstin ?? null,
         buyerName: buyerBusiness?.name ?? null,
         paymentMethod: paymentMethod as PaymentMethod,
@@ -228,6 +241,22 @@ export async function POST(req: Request) {
             pincode: address.pincode,
           },
         },
+
+        ...(billing && billingState
+          ? {
+              billingAddress: {
+                create: {
+                  fullName: billing.fullName,
+                  addressLine1: billing.addressLine1,
+                  addressLine2: billing.addressLine2 || null,
+                  city: billing.city,
+                  state: billingState.name,
+                  stateCode: billingState.code,
+                  pincode: billing.pincode,
+                },
+              },
+            }
+          : {}),
 
         items: {
           create: items.map((item, i) => ({

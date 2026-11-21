@@ -2,6 +2,7 @@ import { GSTIN_PLACEHOLDER } from "@/lib/data/business"
 import { placeOfSupplyLabel } from "@/lib/gst/states"
 import { creditNoteFileName } from "@/lib/gst/creditNote"
 import { rupeesInWords } from "@/lib/money"
+import { partiesOf } from "./orderDocument"
 
 export type DocumentCreditNote = {
   number: string
@@ -36,6 +37,14 @@ export type DocumentCreditNote = {
       state: string
       pincode: string
     } | null
+    billingAddress?: {
+      fullName: string
+      addressLine1: string
+      addressLine2: string | null
+      city: string
+      state: string
+      pincode: string
+    } | null
   }
   items: {
     id: string
@@ -53,7 +62,6 @@ export type DocumentCreditNote = {
 export function creditNoteDocument(cn: DocumentCreditNote) {
   const intraState = cn.placeOfSupply === cn.sellerStateCode
   const rate = cn.items[0]?.gstRate ?? 18
-  const a = cn.order.address
   return {
     title: "Credit note",
     number: cn.number,
@@ -73,16 +81,7 @@ export function creditNoteDocument(cn: DocumentCreditNote) {
       email: cn.sellerEmail,
       phone: cn.sellerPhone,
     },
-    buyer: a
-      ? {
-          name: cn.buyerName ?? a.fullName,
-          attention: cn.buyerName ? a.fullName : null,
-          lines: [[a.addressLine1, a.addressLine2].filter(Boolean).join(", "), `${a.city}, ${a.state} ${a.pincode}`],
-          phone: a.phone,
-          email: a.email,
-          gstin: cn.buyerGstin,
-        }
-      : null,
+    buyer: partiesOf({ address: cn.order.address, billingAddress: cn.order.billingAddress, buyerName: cn.buyerName, buyerGstin: cn.buyerGstin }).buyer,
     placeOfSupply: placeOfSupplyLabel(cn.placeOfSupply),
     taxColumns: intraState ? [`CGST ${rate / 2}%`, `SGST ${rate / 2}%`] : [`IGST ${rate}%`],
     lines: cn.items.map((it) => {

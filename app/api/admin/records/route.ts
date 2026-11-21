@@ -45,11 +45,11 @@ export async function GET(req: NextRequest) {
     const [orders, notes, earliest] = await Promise.all([
       prisma.order.findMany({
         where: { invoiceNumber: { not: null }, invoiceDate: { gte: period.from, lt: period.to } },
-        include: { address: true, items: true, creditNotes: { select: { number: true }, orderBy: { date: "asc" } } },
+        include: { address: true, billingAddress: true, items: true, creditNotes: { select: { number: true }, orderBy: { date: "asc" } } },
       }),
       prisma.creditNote.findMany({
         where: { date: { gte: period.from, lt: period.to } },
-        include: { items: true, order: { select: { orderCode: true, address: { select: { fullName: true } } } } },
+        include: { items: true, order: { select: { orderCode: true, address: { select: { fullName: true } }, billingAddress: { select: { fullName: true } } } } },
       }),
       prisma.order.findFirst({
         where: { invoiceNumber: { not: null } },
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         placeOfSupply: o.placeOfSupply,
         buyerGstin: o.buyerGstin,
         buyerName: o.buyerName,
-        customerName: o.address?.fullName ?? null,
+        customerName: o.billingAddress?.fullName ?? o.address?.fullName ?? null,
         sellerGstin: o.sellerGstin,
         sellerStateCode: o.sellerStateCode,
         status: o.status,
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         placeOfSupply: c.placeOfSupply,
         buyerGstin: c.buyerGstin,
         buyerName: c.buyerName,
-        customerName: c.order.address?.fullName ?? null,
+        customerName: c.order.billingAddress?.fullName ?? c.order.address?.fullName ?? null,
         sellerGstin: c.sellerGstin,
         sellerStateCode: c.sellerStateCode,
         items: c.items.map(item),

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ orderId
 
     const order = await prisma.order.findUnique({
       where: { orderCode },
-      include: { address: true, items: true },
+      include: { address: true, billingAddress: true, items: true },
     })
 
     if (!order || !(await canReadOrder(req, order.orderCode, { userId: order.userId, email: order.address?.email ?? null }))) {

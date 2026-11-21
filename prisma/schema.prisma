@@ -46,6 +46,7 @@ model Order {
   userId        String?
 
   address       Address?
+  billingAddress BillingAddress?
   items         OrderItem[]
   history       StatusHistory[]
   creditNotes   CreditNote[]
@@ -222,6 +223,20 @@ model Address {
   fullName     String
   phone        String
   email        String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  stateCode    String
+  pincode      String
+
+  order        Order    @relation(fields: [orderId], references: [id])
+  orderId      String   @unique
+}
+
+model BillingAddress {
+  id           String   @id @default(cuid())
+  fullName     String
   addressLine1 String
   addressLine2 String?
   city         String

@@ -54,6 +54,14 @@ type Order = {
     state: string
     pincode: string
   } | null
+  billingAddress: {
+    fullName: string
+    addressLine1: string
+    addressLine2: string | null
+    city: string
+    state: string
+    pincode: string
+  } | null
   items: {
     id: string
     name: string
@@ -441,6 +449,7 @@ export default function AdminOrderDetailClient() {
           >
             {a ? (
               <div className="font-jost text-sm">
+                {order.billingAddress && <p className="mb-1 text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Shipping to</p>}
                 <p className="font-semibold">{a.fullName}</p>
                 <address className="mt-1 not-italic leading-relaxed text-black/70">
                   {a.addressLine1}
@@ -448,6 +457,18 @@ export default function AdminOrderDetailClient() {
                   <br />
                   {a.city}, {a.state} {a.pincode}
                 </address>
+                {order.billingAddress && (
+                  <div className="mt-4 border-t border-black/10 pt-3">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.15em] text-black/50">Billing address</p>
+                    <p className="font-semibold">{order.billingAddress.fullName}</p>
+                    <address className="mt-1 not-italic leading-relaxed text-black/70">
+                      {order.billingAddress.addressLine1}
+                      {order.billingAddress.addressLine2 ? `, ${order.billingAddress.addressLine2}` : ""}
+                      <br />
+                      {order.billingAddress.city}, {order.billingAddress.state} {order.billingAddress.pincode}
+                    </address>
+                  </div>
+                )}
                 <div className="mt-4 space-y-2">
                   <a href={`tel:${a.phone}`} className="flex items-center gap-2 text-black/75 hover:text-black">
                     <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden /> {a.phone}

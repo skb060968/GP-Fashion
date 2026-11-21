@@ -159,7 +159,7 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
 
         <View style={s.parties}>
           <View style={s.party}>
-            <Text style={s.label}>{isInvoice ? "Billed and shipped to" : "Shipping to"}</Text>
+            <Text style={s.label}>{d.shipTo ? "Billed to" : isInvoice ? "Billed and shipped to" : "Shipping to"}</Text>
             {d.buyer && (
               <View style={s.partyBody}>
                 <Text style={s.strong}>{d.buyer.name}</Text>
@@ -168,6 +168,16 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
                 <Text style={s.muted}>{d.buyer.phone}</Text>
                 {d.buyer.email ? <Text style={s.muted}>{d.buyer.email}</Text> : null}
                 {d.buyer.gstin ? <Text style={{ marginTop: 3 }}>GSTIN <Text style={s.strong}>{d.buyer.gstin}</Text></Text> : null}
+              </View>
+            )}
+            {d.shipTo && (
+              <View style={{ marginTop: 10 }}>
+                <Text style={s.label}>{isInvoice ? "Shipped to" : "Shipping to"}</Text>
+                <View style={s.partyBody}>
+                  <Text style={s.strong}>{d.shipTo.name}</Text>
+                  {d.shipTo.lines.map((l) => <Text key={l}>{l}</Text>)}
+                  <Text style={s.muted}>{d.shipTo.phone}</Text>
+                </View>
               </View>
             )}
             {isInvoice && (

@@ -21,6 +21,14 @@ export type OrderEmailData = {
     state: string;
     pincode: string;
   };
+  billing?: {
+    fullName: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  } | null;
   items: {
     name: string;
     size: string;

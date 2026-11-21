@@ -407,7 +407,9 @@ export const adminHelpTopics: HelpTopic[] = [
           { type: "list", items: [
             "Every price on the site includes GST at 18%. The customer pays the price shown; nothing is added at checkout.",
             "The tax inside a price is price × 18 ÷ 118. For ₹9,990 that is ₹1,523.90 GST on a taxable value of ₹8,466.10.",
-            "Delivery in Delhi is charged CGST 9% + SGST 9%. Delivery to any other state is charged IGST 18%. The state comes from the dropdown at checkout.",
+            "The place of supply decides the tax: Delhi is charged CGST 9% + SGST 9%, any other state IGST 18%.",
+            "Without a GSTIN the place of supply is the state of the shipping address. With a GSTIN it is the state the GSTIN is registered in, and checkout asks for a billing address in that state.",
+            "A customer can untick \"Billing address same as shipping\" and give a separate billing address. The tax invoice and credit note then show Billed to (the billing address) and Shipped to (the delivery address); the courier label uses the shipping address.",
             "A coupon discount is shared across the items in proportion to their price, and GST is worked out on what is left.",
           ] },
         ],

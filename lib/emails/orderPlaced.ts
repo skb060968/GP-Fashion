@@ -6,6 +6,7 @@ import { formatRupees } from "@/lib/money"
 import { MTM_LEAD_TIME } from "@/lib/measurements/fields"
 import {
   address,
+  billingAddress,
   BRAND,
   button,
   escapeHtml,
@@ -42,6 +43,7 @@ export function orderPlacedEmailCustomer(order: OrderEmailData) {
       orderFacts(order),
       itemsTable(order),
       address(order.customer),
+      ...(order.billing ? [billingAddress(order.billing)] : []),
       button("Track your order", `${site}/track-order`, "outline"),
     ],
     footerNote: `Questions about your order? Reply to this email or write to us at <a href="mailto:${BRAND.email}" style="color:#666666;">${escapeHtml(BRAND.email)}</a>, quoting order ${escapeHtml(order.orderCode)}.`,
@@ -77,7 +79,8 @@ export function orderPlacedEmailAdmin(order: OrderEmailData) {
       orderNumber(order.orderCode),
       orderFacts(order),
       itemsTable(order),
-      address(order.customer, "Customer"),
+      address(order.customer, "Customer, shipping to"),
+      ...(order.billing ? [billingAddress(order.billing)] : []),
       button("Open in admin", `${site}/admin/orders/${order.orderCode}`),
     ],
   })
