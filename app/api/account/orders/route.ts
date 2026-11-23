@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getUserFromRequest } from "@/lib/security/userSession"
 import { isSnapshot } from "@/lib/measurements/fields"
+import { returnableOrder } from "@/lib/orders/returnableOrder"
+import { describeReturn } from "@/lib/orders/returns"
 
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
@@ -21,7 +23,8 @@ export async function GET(req: NextRequest) {
       createdAt: true,
       invoiceNumber: true,
       creditNotes: { select: { number: true }, orderBy: { date: "asc" } },
-      history: { select: { status: true }, orderBy: { changedAt: "asc" } },
+      returnRequests: { select: { createdAt: true, reason: true, resolution: true, note: true, items: true }, orderBy: { createdAt: "asc" } },
+      history: { select: { status: true, changedAt: true }, orderBy: { changedAt: "asc" } },
       items: {
         select: {
           id: true,
@@ -40,8 +43,11 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.json({
-    orders: orders.map((o) => ({
+    orders: orders.map(({ returnRequests, ...o }) => ({
       ...o,
+      history: o.history.map((h) => ({ status: h.status })),
+      returnable: returnableOrder(o),
+      lastReturn: returnRequests.length ? { ...describeReturn(returnRequests[returnRequests.length - 1]), createdAt: returnRequests[returnRequests.length - 1].createdAt } : null,
       items: o.items.map(({ measurements, measurementsConfirmedAt, ...it }) => ({
         ...it,
         madeToMeasureFor: isSnapshot(measurements) ? measurements.name : null,

@@ -78,6 +78,16 @@ export const createOrderSchema = z.object({
   acceptMadeToMeasure: z.boolean().optional(),
 });
 
+export const returnRequestSchema = z.object({
+  reason: z.enum(["WRONG_SIZE", "OTHER_PIECE", "DAMAGED", "WRONG_ITEM"]),
+  resolution: z.enum(["SIZE", "PIECE", "REFUND"]),
+  note: z.string().trim().max(500, "Keep the note under 500 characters").optional(),
+  items: z
+    .array(z.object({ orderItemId: z.string().min(1).max(40), quantity: z.number().int().min(0).max(100), exchangeSize: sizeLabelSchema.optional() }))
+    .min(1)
+    .max(50),
+});
+
 export const creditNoteRequestSchema = z.object({
   items: z
     .array(z.object({ orderItemId: z.string().min(1).max(40), quantity: z.number().int().min(0).max(100) }))

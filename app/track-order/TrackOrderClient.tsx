@@ -10,6 +10,8 @@ import FadeIn from "@/components/FadeIn"
 import Field from "@/components/checkout/Field"
 import ReturnTimeline from "@/components/ReturnTimeline"
 import { mtmLabel } from "@/lib/measurements/fields"
+import ReturnRequest, { ReturnSummary, type LastReturn } from "@/components/ReturnRequest"
+import type { Returnable } from "@/lib/orders/returns"
 
 interface OrderItem {
   id: string
@@ -31,6 +33,8 @@ interface OrderData {
 
   accessToken: string
   history: { status: string }[]
+  returnable: Returnable | null
+  lastReturn: LastReturn | null
   items: OrderItem[]
 }
 
@@ -41,10 +45,10 @@ export default function TrackOrderClient() {
   const [error, setError] = useState("")
   const [order, setOrder] = useState<OrderData | null>(null)
 
-  async function handleTrack(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleTrack(e?: React.FormEvent, keep = false) {
+    e?.preventDefault()
     setError("")
-    setOrder(null)
+    if (!keep) setOrder(null)
     setLoading(true)
     try {
       const res = await fetch("/api/orders/track", {
@@ -196,6 +200,15 @@ export default function TrackOrderClient() {
                 </div>
 
                 <ReturnTimeline status={order.status} history={historyStatuses} />
+                {order.lastReturn && <ReturnSummary r={order.lastReturn} status={order.status} />}
+                {order.returnable && (
+                  <ReturnRequest
+                    orderCode={order.orderCode}
+                    accessToken={order.accessToken}
+                    returnable={order.returnable}
+                    onDone={() => handleTrack(undefined, true)}
+                  />
+                )}
 
                 <ul className="mt-8 divide-y divide-black/10 border-t border-black/10">
                   {order.items.map((item) => (

@@ -640,7 +640,7 @@ export default function ProductDetailClient({ product, related }: { product: Sto
                       {mtmAvailable && <li>Made to measure is dispatched within {MTM_LEAD_TIME} after we confirm your measurements.</li>}
                       <li>Shipping within India is complimentary and usually takes 2 to 7 working days after dispatch.</li>
                       <li>
-                        Unworn ready-to-wear pieces with tags attached can be exchanged within 7 days of delivery. We do not give refunds, except for damaged or incorrect items.
+                        Unworn ready-to-wear pieces with tags attached can be exchanged within 7 days of delivery: request it from your order in My Account or on Track Order. We do not give refunds, except for damaged or incorrect items.
                       </li>
                       {mtmAvailable && <li>Made-to-measure pieces cannot be returned or exchanged.</li>}
                       <li>We do not offer alterations on any order.</li>

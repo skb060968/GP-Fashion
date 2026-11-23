@@ -3,7 +3,7 @@
 import type { OrderEmailData } from "@/lib/types/OrderEmailData"
 import { formatRupees, formatRupeesExact } from "@/lib/money"
 import { statusEmailSubject } from "@/lib/orders/labels"
-import { address, button, heading, itemsTable, orderFacts, orderNumber, paragraph, shell, siteUrl } from "./layout"
+import { BRAND, address, button, escapeHtml, heading, itemsTable, orderFacts, orderNumber, paragraph, shell, siteUrl } from "./layout"
 
 const firstName = (full: string) => full.trim().split(/\s+/)[0] || "there"
 
@@ -45,13 +45,27 @@ function copyFor(order: OrderEmailData, site: string): Copy {
         body: `${name}, your order has been delivered. We hope you love wearing it. If anything is not as expected, reply to this email and we will put it right.`,
         cta: { text: "Visit the collection", href: site },
       }
-    case "RETURN_REQUESTED":
+    case "RETURN_REQUESTED": {
+      const r = order.returnRequest
+      if (!r) {
+        return {
+          subject: statusEmailSubject("RETURN_REQUESTED", code),
+          title: `Return opened`,
+          body: `${name}, we have recorded your return or exchange request for this order. Please follow the return instructions agreed with the studio. We will write again when the pieces reach us.`,
+          cta: { text: "Contact the studio", href: `${site}/contact` },
+        }
+      }
+      const paid = r.photos ? "We pay the return shipping, as the piece arrived damaged or the wrong item was sent." : "Return shipping is at your cost."
       return {
         subject: statusEmailSubject("RETURN_REQUESTED", code),
-        title: `Return opened`,
-        body: `${name}, we have recorded your return or exchange request for this order. Please follow the return instructions agreed with the studio. We will write again when the pieces reach us.`,
+        title: `Return requested`,
+        body:
+          `${escapeHtml(name)}, we have your request: <strong>${escapeHtml(r.resolution)}</strong> (${escapeHtml(r.reason.toLowerCase())}).<br>${r.items.map(escapeHtml).join("<br>")}<br><br>` +
+          `We will reply within two working days to confirm and tell you how to send the piece back. Keep it unworn, with all tags attached, in its original packaging. ${paid}` +
+          (r.photos ? `<br><br>Please send photos of the piece and its tags by WhatsApp to ${escapeHtml(BRAND.phone)}, or reply to this email with them attached.` : ""),
         cta: { text: "Contact the studio", href: `${site}/contact` },
       }
+    }
     case "RETURN_RECEIVED":
       return {
         subject: statusEmailSubject("RETURN_RECEIVED", code),

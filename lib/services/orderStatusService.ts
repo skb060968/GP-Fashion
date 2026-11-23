@@ -7,6 +7,8 @@ import { Prisma } from "@prisma/client";
 import { financialYear } from "../gst/tax";
 import { business, formatInvoiceNumber, sellerSnapshot } from "../data/business";
 import { emailBilling } from "../emails/sendOrderPlaced";
+import { checkReturnRequest, describeReturn, returnHistoryNote, ReturnRequestError, type ReturnRequestInput } from "../orders/returns";
+import { returnableOrder } from "../orders/returnableOrder";
 import { CreditNoteError, creditLines, creditNoteDeadline, creditNoteNumber, creditNoteSlug, creditTotals } from "../gst/creditNote";
 
 export { CreditNoteError };
@@ -34,7 +36,35 @@ export const orderInclude = {
     orderBy: { date: "asc" },
     select: { number: true, date: true, amount: true, reason: true, items: { select: { orderItemId: true, quantity: true } } },
   },
+  returnRequests: { orderBy: { createdAt: "asc" } },
 } as const;
+
+export async function requestReturn(orderCode: string, input: ReturnRequestInput) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { orderCode },
+      include: { items: true, history: { select: { status: true, changedAt: true } } },
+    });
+    if (!order) return null;
+    if (order.status !== OrderStatus.DELIVERED) {
+      throw new ReturnRequestError(
+        order.status === OrderStatus.RETURN_REQUESTED ? "A return is already open for this order. We will be in touch." : "This order cannot be returned now.",
+        409
+      );
+    }
+    const allowed = returnableOrder(order);
+    if (!allowed) throw new ReturnRequestError("The 7 days for returning this order have passed, or it has no pieces that can be returned.", 409);
+    const items = checkReturnRequest(allowed, input);
+    const record = { reason: input.reason, resolution: input.resolution, note: input.note?.trim() || null, items };
+    const moved = await tx.order.updateMany({ where: { id: order.id, status: OrderStatus.DELIVERED }, data: { status: OrderStatus.RETURN_REQUESTED } });
+    if (moved.count === 0) throw new ReturnRequestError("This order was just updated. Refresh the page and try again.", 409);
+    await tx.returnRequest.create({ data: { ...record, items: items as unknown as Prisma.InputJsonValue, orderId: order.id } });
+    await tx.statusHistory.create({ data: { status: OrderStatus.RETURN_REQUESTED, orderId: order.id, note: returnHistoryNote(record) } });
+    return tx.order.findUnique({ where: { id: order.id }, include: orderInclude });
+  });
+}
+
+export { ReturnRequestError };
 
 async function loadMeasuredItem(orderCode: string, itemId: string) {
   const order = await prisma.order.findUnique({
@@ -212,9 +242,12 @@ export function buildOrderEmailData(order: {
   items: { name: string; size: string; color?: string | null; price: number; quantity: number; coverThumbnail: string; measurements?: unknown }[];
   creditNotes?: { number: string; amount: number }[];
   billingAddress?: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; state: string; pincode: string } | null;
+  returnRequests?: { reason: string; resolution: string; note: string | null; items: unknown }[];
 }): OrderEmailData {
   const credit = order.creditNotes?.[order.creditNotes.length - 1];
+  const lastReturn = order.returnRequests?.[order.returnRequests.length - 1];
   return {
+    returnRequest: lastReturn ? describeReturn(lastReturn) : null,
     billing: emailBilling(order.billingAddress),
     creditNote: credit ? { number: credit.number, slug: creditNoteSlug(credit.number), amount: credit.amount } : null,
     orderCode: order.orderCode,

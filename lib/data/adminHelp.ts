@@ -540,19 +540,25 @@ export const adminHelpTopics: HelpTopic[] = [
     id: "returns-exchanges",
     title: "Returns, exchanges, and refunds",
     summary: "Follow the allowed status path and record external refund or replacement details.",
-    keywords: ["return", "exchange", "refund", "status", "replacement", "courier"],
+    keywords: ["return", "exchange", "refund", "status", "replacement", "courier", "request", "7 days"],
     sections: [
       {
         blocks: [
+          { type: "list", items: [
+            "Customers request an exchange themselves: Request an exchange appears on a delivered order in My Account and on Track Order, until the end of the 7th day after the date the order was marked Delivered. Mark orders Delivered on the day the courier delivers them.",
+            "They choose the pieces and quantities, a reason (wrong size, different piece, damaged, wrong item) and what they want (another size and which one, a different piece, or a refund). A refund can only be chosen for a damaged piece or a wrong item. Made-to-measure pieces are never offered.",
+            "Sending the request moves the order to Return requested, records it in the history, emails the customer the next steps and emails you. The request is shown at the top of the admin order page.",
+            "Reply to the customer within two working days with how to send the piece back. For a damaged piece or a wrong item they are asked to send photos by WhatsApp or email.",
+          ] },
           { type: "steps", items: [
-            "From Delivered, select Open return and record the reason, pieces involved, and requested resolution.",
+            "If a customer asks by phone or email instead, select Open return on the delivered order and record the reason, pieces involved, and requested resolution.",
             "When the parcel arrives, select Mark return received and record its condition.",
-            "For a full-order refund, complete the payment externally, then select Mark refunded and record the full order amount, reference, method, and date.",
+            "For a refund (damaged piece or wrong item only), complete the payment externally, then select Mark refunded, choose the pieces refunded for the credit note, and record the amount, reference, method, and date.",
             "For an exchange, ship the replacement externally, then select Dispatch replacement and record replacement pieces, courier, and tracking number.",
             "After replacement delivery, select Complete exchange.",
-            "If the request is withdrawn or declined, close it back to Delivered with a required reason.",
+            "If the request is withdrawn or declined, close it back to Delivered with a required reason. Within the 7 days the customer can then send a new request.",
           ] },
-          { type: "note", tone: "warning", text: "The current return workflow and automatic refund email are whole-order only. Marking Refunded tells the customer that the full order amount was refunded. Do not use this status for a partial refund without a separate customer communication and workflow change. The application does not initiate bank refunds, courier pickups, or replacement shipments; perform those externally and record the reference internally." },
+          { type: "note", tone: "warning", text: "For an order with a tax invoice, the refund email states the credit note amount, which covers only the pieces chosen in Mark refunded. The application does not initiate bank refunds, courier pickups, or replacement shipments; perform those externally and record the reference internally." },
           { type: "table", headers: ["From", "Allowed next states"], rows: [
             ["Under verification", "Verified, Rejected, Cancelled"],
             ["Verified", "Processing, Cancelled"],

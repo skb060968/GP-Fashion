@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { createRateLimiter } from "@/lib/security/rateLimiter"
 import { orderAccessToken } from "@/lib/security/orderAccess"
 import { isSnapshot } from "@/lib/measurements/fields"
+import { returnableOrder } from "@/lib/orders/returnableOrder"
+import { describeReturn } from "@/lib/orders/returns"
 
 const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 20 })
 
@@ -31,12 +33,18 @@ export async function POST(req: NextRequest) {
   try {
     const order = await prisma.order.findUnique({
       where: { orderCode },
-      include: { address: true, items: true, history: { select: { status: true }, orderBy: { changedAt: "asc" } } },
+      include: {
+        address: true,
+        items: true,
+        history: { select: { status: true, changedAt: true }, orderBy: { changedAt: "asc" } },
+        returnRequests: { select: { createdAt: true, reason: true, resolution: true, note: true, items: true }, orderBy: { createdAt: "asc" } },
+      },
     })
 
     if (!order || !order.address || order.address.phone !== phone) {
       return NextResponse.json({ error: "We couldn't find an order with those details." }, { status: 404 })
     }
+    const last = order.returnRequests[order.returnRequests.length - 1]
 
     return NextResponse.json({
       orderCode: order.orderCode,
@@ -46,7 +54,9 @@ export async function POST(req: NextRequest) {
       invoiceNumber: order.invoiceNumber,
 
       accessToken: orderAccessToken(order.orderCode),
-      history: order.history,
+      history: order.history.map((h) => ({ status: h.status })),
+      returnable: returnableOrder(order),
+      lastReturn: last ? { ...describeReturn(last), createdAt: last.createdAt } : null,
       items: order.items.map((item) => ({
         id: item.id,
         name: item.name,

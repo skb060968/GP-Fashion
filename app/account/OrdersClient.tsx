@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Package } from "lucide-react"
+import ReturnRequest, { ReturnSummary, type LastReturn } from "@/components/ReturnRequest"
+import type { Returnable } from "@/lib/orders/returns"
 import { formatRupees } from "@/lib/money"
 import { paymentLabel, statusLabel, TRACKING_STEPS, trackingProgress } from "@/lib/orders/labels"
 import EmptyState from "@/components/EmptyState"
@@ -20,6 +22,8 @@ type Order = {
   createdAt: string
   invoiceNumber: string | null
   creditNotes: { number: string }[]
+  returnable: Returnable | null
+  lastReturn: LastReturn | null
   history: { status: string }[]
   items: {
     id: string
@@ -42,7 +46,7 @@ export default function OrdersClient() {
   const [orders, setOrders] = useState<Order[] | null>(null)
   const [error, setError] = useState("")
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/account/orders", { credentials: "same-origin" })
       .then(async (r) => {
         if (r.status === 401) {
@@ -55,6 +59,10 @@ export default function OrdersClient() {
       })
       .catch((e) => setError(e.message))
   }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   if (error) return <p className="rounded-lg border border-red-200 bg-red-50 p-4 font-jost text-sm text-red-800">{error}</p>
 
@@ -114,6 +122,8 @@ export default function OrdersClient() {
                       ))}
                     </ol>
                     <ReturnTimeline status={o.status} history={historyStatuses} />
+                    {o.lastReturn && <ReturnSummary r={o.lastReturn} status={o.status} />}
+                    {o.returnable && <ReturnRequest orderCode={o.orderCode} returnable={o.returnable} onDone={load} />}
                   </div>
                 )}
 

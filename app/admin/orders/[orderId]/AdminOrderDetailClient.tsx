@@ -15,6 +15,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Card, Skeleton, btn, input } from "@/components/admin/ui"
 import StatusChangeDialog, { type CreditTarget } from "@/components/admin/StatusChangeDialog"
 import { creditNoteDeadline, creditNoteSlug, remainingQuantities } from "@/lib/gst/creditNote"
+import { describeReturn } from "@/lib/orders/returns"
 import { adminFetch } from "@/lib/admin/fetch"
 import MeasurementsPanel from "@/components/admin/MeasurementsPanel"
 import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
@@ -80,6 +81,7 @@ type Order = {
   }[]
   history: { id: string; status: string; changedAt: string; note: string | null }[]
   creditNotes: { number: string; date: string; amount: number; reason: string; items: { orderItemId: string; quantity: number }[] }[]
+  returnRequests: { id: string; createdAt: string; reason: string; resolution: string; note: string | null; items: unknown }[]
 }
 
 const fmtDateTime = (iso: string) =>
@@ -297,6 +299,33 @@ export default function AdminOrderDetailClient() {
               </p>
             )}
           </Card>
+
+          {order.returnRequests.length > 0 && (
+            <Card title="Return requests from the customer">
+              <ul className="space-y-4 font-jost text-sm">
+                {[...order.returnRequests].reverse().map((r) => {
+                  const d = describeReturn(r)
+                  return (
+                    <li key={r.id} className="space-y-1">
+                      <p className="flex flex-wrap items-baseline justify-between gap-x-4">
+                        <span className="font-semibold">
+                          {d.resolution} · {d.reason}
+                        </span>
+                        <span className="text-xs text-black/50">{fmtDateTime(r.createdAt)}</span>
+                      </p>
+                      <ul className="text-black/70">
+                        {d.items.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                      {d.note && <p className="text-black/70">Note: {d.note}</p>}
+                      {d.photos && <p className="text-xs text-black/50">The customer was asked to send photos by WhatsApp or email.</p>}
+                    </li>
+                  )
+                })}
+              </ul>
+            </Card>
+          )}
 
           <Card title={`Items (${order.items.reduce((n, i) => n + i.quantity, 0)})`} padded={false}>
             <ul className="divide-y divide-black/5">

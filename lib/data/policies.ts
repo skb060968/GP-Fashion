@@ -58,7 +58,8 @@ export const policies: Policy[] = [
       {
         heading: "Exchanges",
         paragraphs: [
-          "Unworn ready-to-wear pieces with all tags intact can be exchanged for another size or another piece within 7 days of delivery. Email us with your order number to arrange it. Return shipping for an exchange is at the customer's cost unless the piece arrived damaged or incorrect.",
+          "Unworn ready-to-wear pieces with all tags intact can be exchanged for another size or another piece within 7 days of delivery. To arrange it, open the order under My Account, or find it on Track Order with your order number and mobile number, and choose Request an exchange. We reply within two working days with how to send the piece back. Return shipping for an exchange is at the customer's cost unless the piece arrived damaged or incorrect.",
+          "We do not give refunds, except for a piece that arrived damaged or a wrong item. Choose that reason in the request and send us photos of the piece and its tags on WhatsApp or by email; once the piece reaches us and is checked, the refund is made to the original payment method.",
           "Pieces that have been worn, altered, washed or have had tags removed cannot be exchanged. Because of their handmade nature, small variations in embroidery and finish are part of each piece and are not defects.",
         ],
       },

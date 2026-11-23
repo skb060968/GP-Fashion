@@ -50,8 +50,23 @@ model Order {
   items         OrderItem[]
   history       StatusHistory[]
   creditNotes   CreditNote[]
+  returnRequests ReturnRequest[]
 
   @@index([userId])
+}
+
+model ReturnRequest {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  reason     String
+  resolution String
+  note       String?
+  items      Json
+
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+
+  @@index([orderId])
 }
 
 model CreditNote {

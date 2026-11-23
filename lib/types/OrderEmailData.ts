@@ -6,6 +6,7 @@ export type OrderEmailData = {
   gst?: number;
   invoiceNumber?: string | null;
   creditNote?: { number: string; slug: string; amount: number } | null;
+  returnRequest?: { reason: string; resolution: string; items: string[]; note: string | null; photos: boolean } | null;
   paymentReference?: string | null;
   accessToken?: string;
   status: string;

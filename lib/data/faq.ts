@@ -39,7 +39,7 @@ export const faq = [
   {
     question: "What is your return and exchange policy?",
     answer:
-      "Unworn ready-to-wear pieces in standard sizes with tags intact can be exchanged for another size or piece within 7 days of delivery. Made-to-measure and bespoke garments cannot be returned or exchanged. We do not offer alterations on any order.",
+      "Unworn ready-to-wear pieces in standard sizes with tags intact can be exchanged for another size or piece within 7 days of delivery. Request it from the order under My Account, or on Track Order with your order number and mobile number. Refunds are given only for a damaged piece or a wrong item. Made-to-measure and bespoke garments cannot be returned or exchanged. We do not offer alterations on any order.",
   },
   {
     question: "How should I care for my garment?",
