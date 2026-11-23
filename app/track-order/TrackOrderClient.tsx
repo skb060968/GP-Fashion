@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { AlertCircle, Check } from "lucide-react"
 import { formatRupees } from "@/lib/money"
@@ -44,6 +44,16 @@ export default function TrackOrderClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [order, setOrder] = useState<OrderData | null>(null)
+  const [scrollPending, setScrollPending] = useState(false)
+  const resultRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!scrollPending || !order || !resultRef.current) return
+    setScrollPending(false)
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    resultRef.current.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" })
+    resultRef.current.focus({ preventScroll: true })
+  }, [scrollPending, order])
 
   async function handleTrack(e?: React.FormEvent, keep = false) {
     e?.preventDefault()
@@ -66,6 +76,7 @@ export default function TrackOrderClient() {
         return
       }
       setOrder(await res.json())
+      if (!keep) setScrollPending(true)
     } catch {
       setError("Something went wrong. Please check your connection and try again.")
     } finally {
@@ -131,7 +142,13 @@ export default function TrackOrderClient() {
           </FadeIn>
 
           {order && (
-            <FadeIn className="mx-auto mt-12 max-w-3xl">
+            <div
+              ref={resultRef}
+              tabIndex={-1}
+              aria-live="polite"
+              aria-label={`Order ${order.orderCode}`}
+              className="mx-auto mt-12 max-w-3xl scroll-mt-24 focus:outline-none"
+            >
               <div className="card-elevated p-6 sm:p-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
@@ -243,7 +260,7 @@ export default function TrackOrderClient() {
                   </a>
                 </div>
               </div>
-            </FadeIn>
+            </div>
           )}
         </div>
       </section>

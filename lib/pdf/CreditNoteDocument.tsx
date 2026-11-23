@@ -1,8 +1,7 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer"
 import { formatDateDDMMYYYY } from "@/lib/date"
-import { formatRupeesExact } from "@/lib/money"
 import { creditNoteDocument, type DocumentCreditNote } from "@/lib/orders/creditNoteDocument"
-import { logo, registerFonts, s } from "./InvoiceDocument"
+import { fx, logo, registerFonts, s } from "./InvoiceDocument"
 
 export default function CreditNoteDocument({ creditNote }: { creditNote: DocumentCreditNote }) {
   registerFonts()
@@ -93,11 +92,11 @@ export default function CreditNoteDocument({ creditNote }: { creditNote: Documen
               </View>
               <Text style={[s.muted, { width: w.hsn }]}>{l.hsn}</Text>
               <Text style={[s.muted, s.num, { width: w.qty }]}>{l.quantity}</Text>
-              <Text style={[s.num, { width: w.taxable }]}>{formatRupeesExact(l.taxable)}</Text>
+              <Text style={[s.num, { width: w.taxable }]}>{fx(l.taxable)}</Text>
               {l.taxParts.map((t, i) => (
-                <Text key={i} style={[s.muted, s.num, { width: w.tax }]}>{formatRupeesExact(t)}</Text>
+                <Text key={i} style={[s.muted, s.num, { width: w.tax }]}>{fx(t)}</Text>
               ))}
-              <Text style={[s.num, { width: w.amount }]}>{formatRupeesExact(l.amount)}</Text>
+              <Text style={[s.num, { width: w.amount }]}>{fx(l.amount)}</Text>
             </View>
           ))}
         </View>
@@ -105,17 +104,17 @@ export default function CreditNoteDocument({ creditNote }: { creditNote: Documen
         <View style={s.totals}>
           <View style={s.totalRow}>
             <Text style={s.muted}>Taxable value credited</Text>
-            <Text>{formatRupeesExact(d.totals.taxableValue)}</Text>
+            <Text>{fx(d.totals.taxableValue)}</Text>
           </View>
           {d.totals.taxParts.map((t) => (
             <View key={t.label} style={s.totalRow}>
               <Text style={s.muted}>{t.label}</Text>
-              <Text>{formatRupeesExact(t.value)}</Text>
+              <Text>{fx(t.value)}</Text>
             </View>
           ))}
           <View style={s.grand}>
             <Text style={s.grandKey}>Credit note total</Text>
-            <Text>{formatRupeesExact(d.totals.total)}</Text>
+            <Text>{fx(d.totals.total)}</Text>
           </View>
           <Text style={s.words}>{d.totals.inWords}</Text>
         </View>

@@ -30,6 +30,14 @@ export function registerFonts() {
     ],
   })
 
+  Font.register({
+    family: "NotoSans",
+    fonts: [
+      { src: path.join(FONT_DIR, "NotoSans-Regular.ttf"), fontWeight: 400 },
+      { src: path.join(FONT_DIR, "NotoSans-SemiBold.ttf"), fontWeight: 600 },
+    ],
+  })
+
   Font.registerHyphenationCallback((word) => [word])
   fontsRegistered = true
 }
@@ -124,6 +132,13 @@ export const s = StyleSheet.create({
     color: FAINT,
   },
 })
+
+export function money(text: string) {
+  return text.split("₹").flatMap((part, i) => (i === 0 ? [part] : [<Text key={i} style={{ fontFamily: "NotoSans" }}>₹</Text>, part]))
+}
+
+export const fx = (paise: number) => money(formatRupeesExact(paise))
+const f0 = (paise: number) => money(formatRupees(paise))
 
 export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
   registerFonts()
@@ -236,11 +251,11 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
                 </View>
                 <Text style={[s.muted, { width: w.hsn }]}>{l.hsn}</Text>
                 <Text style={[s.muted, s.num, { width: w.qty }]}>{l.quantity}</Text>
-                <Text style={[s.num, { width: w.taxable }]}>{formatRupeesExact(l.taxable)}</Text>
+                <Text style={[s.num, { width: w.taxable }]}>{fx(l.taxable)}</Text>
                 {l.taxParts.map((t, i) => (
-                  <Text key={i} style={[s.muted, s.num, { width: w.tax }]}>{formatRupeesExact(t)}</Text>
+                  <Text key={i} style={[s.muted, s.num, { width: w.tax }]}>{fx(t)}</Text>
                 ))}
-                <Text style={[s.num, { width: w.amount }]}>{formatRupeesExact(l.amount)}</Text>
+                <Text style={[s.num, { width: w.amount }]}>{fx(l.amount)}</Text>
               </View>
             ))}
           </View>
@@ -260,9 +275,9 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
                   {l.color ? <Text style={s.muted}>{l.color}</Text> : null}
                 </View>
                 <Text style={[s.muted, { width: w.size }]}>{l.sizeLabel}</Text>
-                <Text style={[s.muted, s.num, { width: w.price }]}>{formatRupees(l.unitPrice)}</Text>
+                <Text style={[s.muted, s.num, { width: w.price }]}>{f0(l.unitPrice)}</Text>
                 <Text style={[s.muted, s.num, { width: w.qty }]}>{l.quantity}</Text>
-                <Text style={[s.num, { width: w.amount }]}>{formatRupees(l.gross)}</Text>
+                <Text style={[s.num, { width: w.amount }]}>{f0(l.gross)}</Text>
               </View>
             ))}
           </View>
@@ -273,12 +288,12 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
             <>
               <View style={s.totalRow}>
                 <Text style={s.muted}>Taxable value</Text>
-                <Text>{formatRupeesExact(d.totals.taxableValue)}</Text>
+                <Text>{fx(d.totals.taxableValue)}</Text>
               </View>
               {d.totals.taxParts.map((t) => (
                 <View key={t.label} style={s.totalRow}>
                   <Text style={s.muted}>{t.label}</Text>
-                  <Text>{formatRupeesExact(t.value)}</Text>
+                  <Text>{fx(t.value)}</Text>
                 </View>
               ))}
               <View style={s.totalRow}>
@@ -287,11 +302,11 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
               </View>
               <View style={s.grand}>
                 <Text style={s.grandKey}>Invoice total</Text>
-                <Text>{formatRupeesExact(d.totals.total)}</Text>
+                <Text>{fx(d.totals.total)}</Text>
               </View>
               {d.totals.discount > 0 && (
                 <Text style={s.words}>
-                  After a discount of {formatRupeesExact(d.totals.discount)}{d.totals.couponCode ? ` (${d.totals.couponCode})` : ""}
+                  After a discount of {fx(d.totals.discount)}{d.totals.couponCode ? ` (${d.totals.couponCode})` : ""}
                 </Text>
               )}
               <Text style={s.words}>{d.totals.inWords}</Text>
@@ -300,12 +315,12 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
             <>
               <View style={s.totalRow}>
                 <Text style={s.muted}>Subtotal</Text>
-                <Text>{formatRupees(d.totals.subtotal)}</Text>
+                <Text>{f0(d.totals.subtotal)}</Text>
               </View>
               {d.totals.discount > 0 && (
                 <View style={s.totalRow}>
                   <Text style={s.muted}>Discount{d.totals.couponCode ? ` (${d.totals.couponCode})` : ""}</Text>
-                  <Text>-{formatRupeesExact(d.totals.discount)}</Text>
+                  <Text>-{fx(d.totals.discount)}</Text>
                 </View>
               )}
               <View style={s.totalRow}>
@@ -314,9 +329,9 @@ export default function InvoiceDocument({ order }: { order: InvoiceOrder }) {
               </View>
               <View style={s.grand}>
                 <Text style={s.grandKey}>Total</Text>
-                <Text>{formatRupeesExact(d.totals.total)}</Text>
+                <Text>{fx(d.totals.total)}</Text>
               </View>
-              <Text style={s.words}>Includes GST {formatRupeesExact(d.totals.tax)}</Text>
+              <Text style={s.words}>Includes GST {fx(d.totals.tax)}</Text>
             </>
           )}
         </View>
