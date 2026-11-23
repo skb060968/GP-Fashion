@@ -54,7 +54,7 @@ export default async function CategoryPage({ category, view }: { category: Categ
   if (view && !current) notFound()
 
   const chips: ListingChip[] = [
-    { label: `All ${meta.title}`, href: `/${category}`, active: !view },
+    { label: `All ${meta.title}`, href: `/${category}#pieces`, active: !view },
     ...views.map((candidate) => ({ label: candidate.title, href: `/${category}/${candidate.slug}`, active: candidate.slug === view })),
   ]
 

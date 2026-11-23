@@ -37,7 +37,7 @@ export default async function Home() {
             description={meta.description}
             image={catalog.getCategoryImage(category)}
             imageAlt={`${meta.title} from the current collection`}
-            ctaHref={`/${category}`}
+            ctaHref={`/${category}#pieces`}
             priority={index === 0}
           />
         )

@@ -45,7 +45,7 @@ export default function CategoryListing({
         </div>
       )}
 
-      <section className="pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
+      <section id="pieces" className="scroll-mt-[var(--nav-h)] pb-20 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-20">
         <div className="container-max">
           <FadeIn className="mx-auto max-w-3xl text-center">
             {eyebrow && (
