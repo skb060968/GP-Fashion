@@ -122,6 +122,9 @@ export async function GET(req: NextRequest) {
         register: invoiceRegisterCsv(invoices, business.stateCode),
         creditRegister: creditNotes.length ? creditNoteRegisterCsv(creditNotes) : null,
         gstr1: gstr1 && gstr1.invoices + gstr1.creditNotes > 0 ? gstr1.json : null,
+        buyerNames: Object.fromEntries(
+          [...invoices, ...creditNotes].filter((d) => d.buyerGstin && d.buyerName).map((d) => [d.buyerGstin!, d.buyerName!])
+        ),
       },
       { headers: { "Cache-Control": "private, no-store" } }
     )

@@ -1,7 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Download, FileJson, FolderArchive } from "lucide-react"
+import { Download, FileJson, FileSpreadsheet, FolderArchive } from "lucide-react"
+import { makeXlsx } from "@/lib/xlsx"
+import { gstr1Sheets } from "@/lib/gst/gstr1Excel"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Card, Skeleton, btn, input } from "@/components/admin/ui"
 import { adminFetch } from "@/lib/admin/fetch"
@@ -33,6 +35,7 @@ type RecordsResponse = {
   register: string
   creditRegister: string | null
   gstr1: Record<string, unknown> | null
+  buyerNames: Record<string, string>
 }
 
 type Totals = { taxableValue: number; cgst: number; sgst: number; igst: number; total: number }
@@ -45,6 +48,10 @@ type SavePicker = (options: { suggestedName: string; types: SaveType[] }) => Pro
 
 const ZIP_TYPE: SaveType = { description: "ZIP archive", accept: { "application/zip": [".zip"] } }
 const JSON_TYPE: SaveType = { description: "GSTR-1 file", accept: { "application/json": [".json"] } }
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+const XLSX_TYPE: SaveType = { description: "Excel workbook", accept: { [XLSX_MIME]: [".xlsx"] } }
+
+const gstr1Workbook = (d: RecordsResponse) => makeXlsx(gstr1Sheets(d.gstr1 ?? {}, d.buyerNames))
 
 async function pickSaveLocation(name: string, type: SaveType): Promise<Handle | null | "cancelled"> {
   const picker = (window as unknown as { showSaveFilePicker?: SavePicker }).showSaveFilePicker
@@ -111,6 +118,7 @@ export default function RecordsClient() {
   }, [load])
 
   const gstr1Name = data?.period.fp ? `GSTR-1-${data.gstin}-${data.period.fp}.json` : ""
+  const gstr1Xlsx = gstr1Name.replace(/\.json$/, ".xlsx")
   const zipName = data ? `PBL-records-${data.period.slug}.zip` : ""
 
   const downloadZip = async () => {
@@ -141,13 +149,16 @@ export default function RecordsClient() {
       const enc = new TextEncoder()
       if (data.invoices.length) entries.push({ name: `${root}/Invoice-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.register}`) })
       if (data.creditRegister) entries.push({ name: `${root}/Credit-note-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.creditRegister}`) })
-      if (data.gstr1) entries.push({ name: `${root}/${gstr1Name}`, data: enc.encode(JSON.stringify(data.gstr1)) })
+      if (data.gstr1) {
+        entries.push({ name: `${root}/${gstr1Name}`, data: enc.encode(JSON.stringify(data.gstr1)) })
+        entries.push({ name: `${root}/${gstr1Xlsx}`, data: gstr1Workbook(data) })
+      }
       await writeFile(handle, new Blob([makeZip(entries)], { type: "application/zip" }), zipName)
       const parts = [
         data.invoices.length ? `${data.invoices.length} ${data.invoices.length === 1 ? "invoice" : "invoices"}` : "",
         data.creditNotes.length ? `${data.creditNotes.length} ${data.creditNotes.length === 1 ? "credit note" : "credit notes"}` : "",
       ].filter(Boolean)
-      setFlash(`Saved ${zipName}: ${parts.join(" and ")} with the ${parts.length > 1 ? "registers" : "register"}${data.gstr1 ? " and the GSTR-1 file" : ""}.`)
+      setFlash(`Saved ${zipName}: ${parts.join(" and ")} with the ${parts.length > 1 ? "registers" : "register"}${data.gstr1 ? " and the GSTR-1 file (JSON and Excel)" : ""}.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not prepare the ZIP file")
     } finally {
@@ -168,6 +179,23 @@ export default function RecordsClient() {
       setFlash(`Saved ${gstr1Name}. Upload it on the GST portal as described below.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save the GSTR-1 file")
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const downloadGstr1Excel = async () => {
+    if (!data?.gstr1) return
+    setError(null)
+    setFlash(null)
+    const handle = await pickSaveLocation(gstr1Xlsx, XLSX_TYPE)
+    if (handle === "cancelled") return
+    setBusy("gstr1")
+    try {
+      await writeFile(handle, new Blob([gstr1Workbook(data)], { type: XLSX_MIME }), gstr1Xlsx)
+      setFlash(`Saved ${gstr1Xlsx}. Upload the JSON file on the portal; the Excel copy is for checking and for your CA.`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save the Excel file")
     } finally {
       setBusy(null)
     }
@@ -281,7 +309,7 @@ export default function RecordsClient() {
               <FolderArchive className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Invoices (ZIP)
             </div>
             <p className="font-jost text-sm text-black/60">
-              Every tax invoice and credit note in the period as a PDF, their registers as spreadsheets (CSV) and, for a quarter, the GSTR-1 file.
+              Every tax invoice and credit note in the period as a PDF, their registers as spreadsheets (CSV) and, for a quarter, the GSTR-1 file in JSON and Excel.
             </p>
             <button
               type="button"
@@ -303,10 +331,19 @@ export default function RecordsClient() {
             <p className="font-jost text-sm text-black/60">
               The quarter&apos;s sales and credit notes, filled in for upload on the GST portal: B2B, B2C large, B2C small, credit notes, HSN summary and documents issued.
             </p>
-            <button type="button" className={btn.secondary} onClick={downloadGstr1} disabled={!data?.gstr1 || loading || busy !== null}>
-              <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-              {busy === "gstr1" ? "Saving…" : "Download GSTR-1 file"}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={btn.secondary} onClick={downloadGstr1} disabled={!data?.gstr1 || loading || busy !== null}>
+                <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                {busy === "gstr1" ? "Saving…" : "JSON (for upload)"}
+              </button>
+              <button type="button" className={btn.secondary} onClick={downloadGstr1Excel} disabled={!data?.gstr1 || loading || busy !== null}>
+                <FileSpreadsheet className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                Excel
+              </button>
+            </div>
+            <p className="font-jost text-xs text-black/50">
+              The Excel copy has the same figures, one sheet per GSTR-1 table, laid out like the GST Offline Tool workbook. Upload the JSON on the portal.
+            </p>
             {gstr1Hint && !loading && <p className="font-jost text-xs text-black/50">{gstr1Hint}</p>}
           </div>
         </div>

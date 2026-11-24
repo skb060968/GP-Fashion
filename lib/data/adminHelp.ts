@@ -479,7 +479,7 @@ export const adminHelpTopics: HelpTopic[] = [
             "After the quarter ends, open Admin > Records and choose the financial year and the quarter.",
             "Read the summary and any notes under it.",
             "Choose Download invoices. In Chrome or Edge a save window opens: pick the year's folder inside the Google Drive folder on this computer. The ZIP holds every invoice and credit note PDF, their registers (CSV) and the GSTR-1 file.",
-            "Choose Download GSTR-1 file and upload it on the GST portal (below).",
+            "Under GSTR-1 file choose JSON (for upload) and upload it on the GST portal (below). Excel gives the same figures as a workbook with one sheet per table (b2b, b2cl, b2cs, cdnr, cdnur, hsn(b2b), hsn(b2c), docs), laid out like the GST Offline Tool workbook, for checking or for your CA.",
           ] },
           { type: "note", tone: "info", text: "Install Google Drive for desktop once. It keeps a Google Drive folder on the computer in step with Drive, so one save gives a copy in both places. The website itself has no access to Google Drive." },
         ],
