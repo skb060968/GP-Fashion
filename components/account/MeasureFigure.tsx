@@ -5,7 +5,8 @@ type View = "front" | "back" | "side" | "seated"
 const TAPE = "#a8803f"
 
 const HALF_ARM = "M55,31 L55,38 Q44,40 34,46 Q29,80 27,118 L25,130 Q28,134 31,130 L33,118 Q36,90 41,62"
-const HALF_BODY = "M41,62 Q45,78 44,92 Q38,102 39,112 Q40,140 42,168 L45,222 L40,228 L52,228 L51,222 L52,168 Q55,140 60,124"
+const HALF_BODY = "M41,62 Q45,78 44,92 Q38,102 39,112 Q40,140 42,168 Q39,184 43,200 L45,222 L40,228 L52,228 L51,222 L52,200 Q55,184 52,168 Q55,140 60,124"
+const KNEECAP = "M44.6,165 Q47,161.5 49.4,165 Q47,170 44.6,165"
 
 function Standing({ back }: { back?: boolean }) {
   return (
@@ -13,6 +14,12 @@ function Standing({ back }: { back?: boolean }) {
       <circle cx={60} cy={20} r={11} />
       <path d={`${HALF_ARM} ${HALF_BODY}`} />
       <path d={`${HALF_ARM} ${HALF_BODY}`} transform="translate(120,0) scale(-1,1)" />
+      {!back && (
+        <>
+          <path d={KNEECAP} strokeOpacity={0.45} strokeWidth={1} />
+          <path d={KNEECAP} strokeOpacity={0.45} strokeWidth={1} transform="translate(120,0) scale(-1,1)" />
+        </>
+      )}
       {back ? <path d="M60,38 L60,118" strokeOpacity={0.35} /> : <path d="M60,40 L60,118" strokeOpacity={0.15} strokeDasharray="2 3" />}
     </g>
   )
@@ -53,8 +60,7 @@ const ends = (...pts: [number, number][]) => pts.map(([x, y], i) => <circle key=
 const ZOOM_NECK = "35 4 50 100"
 const ZOOM_UPPER_ARM = "12 36 44 88"
 const ZOOM_HAND = "8 80 40 80"
-const ZOOM_KNEE = "27 128 40 80"
-const ZOOM_LOWER_LEG = "27 152 40 80"
+const ZOOM_LEG = "34 128 52 104"
 
 const FIGURES: Record<string, { view: View; mark: ReactNode; zoom?: string }> = {
   height: { view: "front", mark: <>{line("M104,9 L104,228")}{line("M98,9 L110,9")}{line("M98,228 L110,228")}</> },
@@ -77,15 +83,15 @@ const FIGURES: Record<string, { view: View; mark: ReactNode; zoom?: string }> = 
   hand: { view: "front", mark: tape(3.4, 28, 126, 1.2), zoom: ZOOM_HAND },
   abdomen: { view: "front", mark: tape(19.5, 60, 101) },
   upperThigh: { view: "front", mark: tape(9.5, 49.4, 130, 1.8) },
-  knee: { view: "front", mark: tape(5.4, 47, 168, 1.4), zoom: ZOOM_KNEE },
-  calf: { view: "front", mark: tape(4.8, 47.3, 186, 1.4), zoom: ZOOM_LOWER_LEG },
-  ankle: { view: "front", mark: tape(3.4, 48, 218, 1.2), zoom: ZOOM_LOWER_LEG },
+  knee: { view: "front", mark: tape(5.4, 47, 166, 1.4), zoom: ZOOM_LEG },
+  calf: { view: "front", mark: tape(6.8, 47.1, 184, 1.6), zoom: ZOOM_LEG },
+  ankle: { view: "front", mark: tape(3.6, 47.9, 218, 1.2), zoom: ZOOM_LEG },
   seatedRise: { view: "seated", mark: <>{line("M57,96 L57,138")}{line("M51,96 L63,96")}{line("M51,138 L63,138")}</> },
   crotchLength: { view: "side", mark: <>{line("M66,92 Q71,112 58,128 Q45,124 45,104 Q45,94 50,88")}{ends([66, 92], [50, 88])}</> },
   waistToHip: { view: "front", mark: <>{line("M76,92 Q82,102 81,112")}{ends([76, 92], [81, 112])}</> },
   waistToKnee: { view: "front", mark: <>{line("M76,92 Q82,102 81,112 Q80,140 78,168")}{ends([76, 92], [78, 168])}</> },
-  waistToAnkle: { view: "front", mark: <>{line("M76,92 Q82,102 81,112 Q80,140 78,168 L75,219")}{ends([76, 92], [75, 219])}</> },
-  waistToFloor: { view: "front", mark: <>{line("M76,92 Q82,102 81,112 Q80,140 78,168 L75,222 L75,228")}{line("M66,229 L86,229")}{ends([76, 92])}</> },
+  waistToAnkle: { view: "front", mark: <>{line("M76,92 Q82,102 81,112 Q80,140 78,168 Q81,184 77,200 L75,219")}{ends([76, 92], [75, 219])}</> },
+  waistToFloor: { view: "front", mark: <>{line("M76,92 Q82,102 81,112 Q80,140 78,168 Q81,184 77,200 L75,222 L75,228")}{line("M66,229 L86,229")}{ends([76, 92])}</> },
   shirtLength: { view: "front", mark: <>{line("M55,39 Q49,66 51,92 L51,128")}{line("M45,128 L57,128")}{ends([55, 39])}</> },
 }
 
