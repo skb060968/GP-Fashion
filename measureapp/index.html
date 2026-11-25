@@ -1417,7 +1417,11 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     biceps:          [null, 'Biceps (with ease)', 'Upper arm round plus ease', row('14 3/4', '15 1/2', '16 1/4', '17', '17 3/4')],
     // Shirt cuff (hand entry + 1/2″): book gives S 9, M 9 1/2, L 10 (p.607); graded on to 44.
     cuff:            [null, 'Cuff (hand entry + 1/2″)', 'Around the hand at the knuckles, plus 1/2″', row('9 1/2', '10', '10 1/4', '10 1/2', '10 3/4')],
+    // Not in the book (choice): neck base, graded 1/2″ per size as in ready-to-wear shirt charts.
+    // The shirt collar is this neck + 1/2″.
+    neck:            [null, 'Neck', 'Around the base of the neck, where the collar sits', row('15', '15 1/2', '16', '16 1/2', '17')],
   };
+  const CHOICE_ROWS = ['neck'];
 
   // Shop letter sizes. S is derived; the others are book sizes.
   const sizes = [
@@ -1432,7 +1436,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   const measurements = {};
   for (const [key, [num, label, how, values]] of Object.entries(chart)) {
     if (values.length !== bookSizes.length) throw new Error(`Men's chart row ${key} has ${values.length} values`);
-    measurements[key] = { num, label, how, values, page: 580 };
+    measurements[key] = CHOICE_ROWS.includes(key) ? { num, label, how, values, page: null, kind: 'choice' } : { num, label, how, values, page: 580 };
   }
 
   const printNotes = {
@@ -10505,6 +10509,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
   function body(b, side, o, s) {
     const casual = o.casual;
     const spread = casual ? 1 / 2 : 0, drop = (casual ? 1 : 0) + (o.armDrop || 0);
+    const ext = o.shoulderExt || 0;
     const P = {};
     const FLB = b.fullLengthB;
     const chestY = -(FLB / 2 - 1.5);           // B–F, mature male
@@ -10516,7 +10521,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       P.L = v(b.backNeck + 1 / 8, -FLB);
       const Dx = b.acrossShoulderB;
       P.M = v(Dx, -Math.sqrt(b.shoulderSlopeB ** 2 - Dx * Dx));
-      P.N = toward(P.L, P.M, b.shoulderLength + 1 / 2);
+      P.N = toward(P.L, P.M, b.shoulderLength + 1 / 2 + ext);
       P.J = v(b.acrossBack + 1 / 2, chestY);
       P.K = v(P.J.x, chestY - (chestY - P.M.y) / 3);
       P.diag = add(P.J, mul(unit(v(1, -1)), 1.25));
@@ -10532,13 +10537,14 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
         s.add('B to M', 'Shoulder slope (back), to the D guideline', b.shoulderSlopeB, 604);
         s.add('L to N', 'Shoulder length + 1/2″, through M', b.shoulderLength + 1 / 2, 604);
         s.add('Armhole', '1 1/4″ diagonal from J; armhole through N, K, the diagonal and G', 1.25, 605);
+        if (ext) s.add('Shoulder extended', `Shoulder line carried ${fmt(ext)} past the shoulder tip, front and back`, ext, 606, 'choice');
       }
     } else {
       P.H = v(0, -b.fullLengthF);
       const Ix = b.acrossShoulderF + 1 / 2;
       P.Jf = v(Ix, -Math.sqrt(b.shoulderSlopeF ** 2 - Ix * Ix));
       P.K = v(b.backNeck + 1 / 8, -b.fullLengthF);
-      P.L = toward(P.K, P.Jf, b.shoulderLength + 1 / 2);
+      P.L = toward(P.K, P.Jf, b.shoulderLength + 1 / 2 + ext);
       P.M = v(0, -(b.centerLengthF - 3 / 8));
       P.N = v(b.acrossChest + 1 / 4, chestY);
       P.O = v(P.N.x, chestY - (chestY - P.L.y) / 3);
@@ -10566,11 +10572,13 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     if (spread) for (const k of Object.keys(P)) if (P[k].x > slashX) P[k] = add(P[k], v(spread, 0));
     if (drop) P.diag = add(P.diag, v(0, drop / 2));
     P.G = v(Gx, chestY + drop);
-    P.waistIn = v(Gx - 1 / 2, 0);
+    P.waistIn = v(Gx - (o.waistIn || 1 / 2), 0);
     const hemRise = casual ? 0 : 2;
-    P.hemSide = v(Gx, below - hemRise);
+    // Hem: the chart hip is the chest + 1″, so chest ÷ 4 + 1 1/4″ is the hip ÷ 4 + 1″; keep that hip ease for a fuller hip.
+    const hemX = o.hipEase ? Math.max(Gx, b.hip / 4 + 1 + spread) : Gx;
+    P.hemSide = v(hemX, below - hemRise);
     P.hemC = v(0, below);
-    return { P, chestY, Gx, below, hemRise, slashX };
+    return { P, chestY, Gx, hemX, below, hemRise, slashX };
   }
 
   function backEdges(B) {
@@ -10648,14 +10656,43 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     return { cb, cf, len: G.polyLength(cb) + G.polyLength(cf) };
   }
 
-  function draft(b, options) {
+  const neckHalfOf = (bb, o) => G.polyLength(backEdges(body(bb, 'back', o)).neck) + G.polyLength(frontEdges(body(bb, 'front', o), 3 / 4).neck);
+
+  /** Widens (or narrows) the neck so the collar is the given neck + 1/2″; the shoulder tip stays put. */
+  function fitNeck(b, o) {
+    if (b.neck == null) return { b, d: 0, clamped: false };
+    const target = (b.neck + 1 / 2) / 2;
+    const at = (d) => neckHalfOf({ ...b, backNeck: b.backNeck + d, shoulderLength: b.shoulderLength - d }, o);
+    let d = 0;
+    for (let i = 0; i < 30; i++) {
+      const f0 = at(d) - target;
+      if (Math.abs(f0) < 1e-4) break;
+      const k = (at(d + 0.01) - at(d)) / 0.01;
+      d -= f0 / (k > 0.5 ? k : 2);
+    }
+    const clamped = Math.abs(d) > 1;
+    if (clamped) d = Math.sign(d);
+    return { b: { ...b, backNeck: b.backNeck + d, shoulderLength: b.shoulderLength - d }, d, clamped };
+  }
+
+  function draft(b0, options) {
     const casual = options.garment === 'casual';
     const half = options.sleeve === 'half';
     const s = stepper();
     const warnings = [];
-    const o = { casual, below: b.seatDepth + (casual ? 3 : 5) };
-    s.add('Shirt length below waist', casual ? 'Seat depth + 3″ (worn outside)' : 'Seat depth + 5″ (tucked in)', o.below, 604, 'choice');
+    const ext = casual ? 0 : 1 / 2;
+    const fit = { casual, shoulderExt: ext, waistIn: 3 / 4, hipEase: true };
+    const nf = fitNeck(b0, { ...fit, below: 5 });
+    const b = nf.b;
+    const below = b.shirtLength != null ? b.shirtLength - b.fullLengthF : b.seatDepth + (casual ? 3 : 5);
+    const o = { ...fit, below };
+    if (b.shirtLength != null) s.add('Shirt length below waist', 'Shirt length (front, from the shoulder at the neck) less the front full length', below, 604, 'derived');
+    else s.add('Shirt length below waist', casual ? 'Seat depth + 3″ (worn outside)' : 'Seat depth + 5″ (tucked in)', below, 604, 'choice');
+    if (below < 3) warnings.push(`The shirt length ends ${fmt(below)} below the waist. Check the customer's shirt length.`);
+    if (b.neck != null) s.add('Collar size', `Neck + 1/2″ ease; the neck width (A to L, H to K) is set so the neckline gives this collar`, b.neck + 1 / 2, 607, 'choice');
+    if (nf.clamped) warnings.push(`The neck (${fmt(b0.neck)}) is far from the chart neck for this chest; the neck width was changed by 1″ only. Check the collar against the customer.`);
     if (casual) s.add('Casual fullness', 'Slash through mid-shoulder and spread 1/2″; lower the armhole 1″', 1 / 2, 611);
+    s.add('Side waist', 'Indent the side waist 3/4″', o.waistIn, 605);
 
     // Dress shirt: the chart sleeve (cap height − 1/2″, chart biceps) must fit the armhole with
     // 3/8″–1/2″ cap ease. If the armhole is too small for it, lower the armhole in 1/8″ steps
@@ -10664,7 +10701,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     {
       const capH0 = b.capHeight - 1 / 2;
       const capLen = sleeveCap(v(0, 0), v(-b.biceps / 2, capH0), v(b.biceps / 2, capH0), { back: [5 / 8, 1 / 4, 1 / 8], front: [3 / 4, 1 / 4, 3 / 16] }).len;
-      const od = { casual: false, below: o.below, armDrop: 0 };
+      const od = { ...fit, casual: false, shoulderExt: ext, below: o.below, armDrop: 0 };
       for (;;) {
         const arm = G.polyLength(backEdges(body(b, 'back', od)).arm) + G.polyLength(frontEdges(body(b, 'front', od), 3 / 4).arm);
         if (capLen - arm <= 1 / 2 + 1e-9 || od.armDrop >= 2) break;
@@ -10674,6 +10711,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     }
     const Bk = body(b, 'back', o, s);
     const Fr = body(b, 'front', o, s);
+    if (Bk.hemX > Bk.Gx + 1e-6) s.add('Hem width', 'Hip ÷ 4 + 1″ (the chart hip ease), as the hip is fuller than the chest', Bk.hemX, 605, 'derived');
     if (o.armDrop) s.add('Armhole lowered', 'Underarm lowered so the sleeve cap fits with 3/8″–1/2″ ease', o.armDrop, 606, 'derived');
     const be = backEdges(Bk);
     const backArm = G.polyLength(be.arm);
@@ -10763,7 +10801,9 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     let sleeveEdges, sleeveMarks = [], sleeveDims, sleeveEnds = {};
     const D = v(-bic / 2, capH), E = v(bic / 2, capH);
     if (!half) {
-      sleeveLen = s.add('A to B (sleeve)', 'Sleeve length less 2 1/2″ for the cuff', b.sleeveLength - 2.5, 607);
+      sleeveLen = s.add('A to B (sleeve)', ext
+        ? `Sleeve length + 1″ (cuff at the base of the thumb), less ${fmt(ext)} for the extended shoulder, less 2 1/2″ for the cuff`
+        : 'Sleeve length + 1″ (cuff at the base of the thumb), less 2 1/2″ for the cuff', b.sleeveLength + 1 - ext - 2.5, 607, 'choice');
       const hw = cuffC + 2.5;
       s.add('B to F, B to G', `Cuff ${fmt(cuffC)} + two 1 1/4″ pleats, split equally`, hw, 607);
       const F = v(-hw / 2, sleeveLen), Gp = v(hw / 2, sleeveLen);
@@ -10891,8 +10931,8 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       lengthBack: b.fullLengthB + o.below,
       lengthFront: b.fullLengthF + o.below,
       chest: 4 * Bk.Gx,
-      waist: 4 * (Bk.Gx - 1 / 2),
-      hem: 4 * Bk.Gx,
+      waist: 4 * Bk.P.waistIn.x,
+      hem: 4 * Bk.hemX,
       shoulder: 2 * Bk.P.N.x,
       acrossBack: 2 * Bk.P.J.x,
       acrossChest: 2 * Fr.P.N.x,
@@ -17239,6 +17279,9 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     },
     men: {
       ...COMMON,
+      neck: ['neck', same],                 // the shirt collar is the neck + 1/2″
+      upperArm: ['biceps', (v) => v + 2],   // as for women: the sleeve chart's biceps is the upper arm plus 2″ ease
+      shirtLength: ['shirtLength', same],
       hand: ['cuff', (v) => v + 0.5],       // shirt cuff = hand entry + 1/2″
       upperThigh: ['thigh', same],
       waistToHip: ['seatDepth', same],
@@ -17256,7 +17299,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
     acrossBack: 'Across back', acrossFront: 'Across front', bustPointToPoint: 'Bust point to point',
     shoulderToBustPoint: 'Shoulder to bust point', frontWaistLength: 'Front waist length', backWaistLength: 'Back waist length',
     shoulderToWaistFront: 'Shoulder to waist, front', shoulderToWaistBack: 'Shoulder to waist, back', sleeveLength: 'Sleeve length',
-    upperArm: 'Upper arm', wrist: 'Wrist', hand: 'Hand', abdomen: 'Abdomen', upperThigh: 'Upper thigh', knee: 'Knee', calf: 'Calf',
+    upperArm: 'Upper arm', wrist: 'Wrist', hand: 'Hand', shirtLength: 'Shirt length', abdomen: 'Abdomen', upperThigh: 'Upper thigh', knee: 'Knee', calf: 'Calf',
     ankle: 'Ankle', seatedRise: 'Seated rise', crotchLength: 'Crotch length', waistToHip: 'Waist to hip', waistToKnee: 'Waist to knee',
     waistToAnkle: 'Waist to ankle', waistToFloor: 'Waist to floor',
   };
@@ -17328,6 +17371,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       Object.assign(body, { chest: v.chest, waist: v.waist, hip: v.hip });
       ['chest', 'waist', 'hip'].forEach((k) => given.add(k));
       if (v.shoulder != null) { setShoulder(body, v.shoulder / 2); given.add('acrossShoulderB'); }
+      if (v.shirtLength != null) body.shirtLength = v.shirtLength;
     } else if (category === 'girls' || category === 'boys') {
       if (v.height == null) throw new Error("The child's height is missing.");
       size = kidsSizeForHeight(v.height);
@@ -18053,7 +18097,7 @@ svg.lay { width: 100%; max-width: 520px; max-height: 90vh; display: block; margi
       : picked && product ? `Dress: ${product.name} (${c.garments[product.garment].name}), style options set below.`
       : picked ? `Dress: ${c.garments[garmentEl.value].name}.`
       : `${p.productName || 'The ordered dress'} has no pattern here yet: choose the nearest dress.`;
-    const given = r ? r.given.map((k) => c.chart.measurements[k]).filter(Boolean).map((m) => m.label) : [];
+    const given = r ? r.given.map((k) => (c.chart.measurements[k] ? c.chart.measurements[k].label : MA.customer.LABELS[k])).filter(Boolean) : [];
     prefillNote.replaceChildren(
       h('strong', null, `Loaded from the website${p.source ? `: ${p.source}` : ''}.`),
       dress ? h('span', { class: picked ? 'block' : 'block warn' }, dress) : null,

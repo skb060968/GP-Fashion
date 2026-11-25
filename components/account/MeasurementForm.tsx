@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Check } from "lucide-react"
 import Field from "@/components/checkout/Field"
+import MeasureFigure from "@/components/account/MeasureFigure"
 import type { ProfileDTO } from "@/lib/measurements/profiles"
 import {
   FIELD_BY_KEY,
@@ -128,8 +129,10 @@ export default function MeasurementForm({
   const input = (key: string) => {
     const f = fields.find((x) => x.key === key)!
     return (
-      <Field
-        key={key}
+      <div key={key} className="flex gap-3 rounded-lg border border-black/10 bg-white p-3">
+        <MeasureFigure field={key} className="h-36 w-[4.5rem] shrink-0 text-black/75" />
+        <div className="min-w-0 flex-1">
+          <Field
         label={fieldLabel(f, kind!)}
         name={key}
         inputMode="decimal"
@@ -140,7 +143,15 @@ export default function MeasurementForm({
         hint={f.how}
         optional={!f.required}
         endAdornment={<span className="pr-2 font-jost text-xs text-black/60">{unit}</span>}
-      />
+          />
+          {f.tip && (
+            <p className="mt-1.5 font-jost text-xs leading-relaxed text-black/55">
+              <span className="font-semibold text-[#8a6a2f]">Tip: </span>
+              {f.tip}
+            </p>
+          )}
+        </div>
+      </div>
     )
   }
 
@@ -194,6 +205,7 @@ export default function MeasurementForm({
               <li>Measure the body, not a garment. We add the right ease for each style.</li>
               <li>Wear light, close-fitting clothes and use a soft tape. Keep it snug but not tight, and level all the way round.</li>
               <li>Stand relaxed and breathe normally. Ask someone to help with back and length measurements.</li>
+              <li>Each measurement has a picture: the gold line shows where the tape goes, dotted where it passes behind the body.</li>
             </ul>
           </div>
 

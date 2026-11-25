@@ -32,6 +32,7 @@ export type MeasurementField = {
   label: string
   labels?: Partial<Record<PersonKind, string>>
   how: string
+  tip?: string
   group: FieldGroup
   kinds: readonly PersonKind[]
   required?: boolean
@@ -41,41 +42,44 @@ export type MeasurementField = {
 
 const ALL = PERSON_KINDS
 const WOMEN = ["women"] as const
+const MEN = ["men"] as const
+const WAIST_MARK = "Tie a string round the waist first and let it settle at the narrowest point; measure to or from the string."
 
 export const MEASUREMENT_FIELDS: MeasurementField[] = [
-  { key: "height", label: "Height", how: "Stand straight against a wall without shoes. Measure from the floor to the top of the head.", group: "main", kinds: ALL, required: true, adult: [48, 84], child: [28, 68] },
-  { key: "chest", label: "Chest", labels: { women: "Bust" }, how: "Around the fullest part of the chest (bust) and straight across the back. Keep the tape level.", group: "main", kinds: ALL, required: true, adult: [26, 70], child: [18, 42] },
-  { key: "waist", label: "Waist", how: "Around the natural waist, the narrowest part of the body, usually just above the navel. Snug, not tight.", group: "main", kinds: ALL, required: true, adult: [20, 70], child: [16, 38] },
-  { key: "hip", label: "Hip", labels: { men: "Hip / seat", boys: "Hip / seat" }, how: "Around the widest part of the hips and seat, with the tape level with the floor.", group: "main", kinds: ALL, required: true, adult: [28, 72], child: [18, 44] },
+  { key: "height", label: "Height", how: "Stand straight against a wall without shoes. Measure from the floor to the top of the head.", tip: "Lay a book flat on the head against the wall, mark under it and measure to the mark.", group: "main", kinds: ALL, required: true, adult: [48, 84], child: [28, 68] },
+  { key: "chest", label: "Chest", labels: { women: "Bust" }, how: "Around the fullest part of the chest (bust), under the arms and straight across the back. Keep the tape level.", tip: "Arms relaxed at the sides and breathe normally. A tape that dips at the back adds an inch or more.", group: "main", kinds: ALL, required: true, adult: [26, 70], child: [18, 42] },
+  { key: "waist", label: "Waist", how: "Around the natural waist, the narrowest part of the body, usually just above the navel. Snug, not tight.", tip: "Stand relaxed and do not pull the stomach in. If the tummy is fuller than the waist, measure round the fullest part instead.", group: "main", kinds: ALL, required: true, adult: [20, 70], child: [16, 38] },
+  { key: "hip", label: "Hip", labels: { men: "Hip / seat", boys: "Hip / seat" }, how: "Around the widest part of the hips and seat, with the tape level with the floor.", tip: "Feet together and pockets empty. Look in a mirror to check the tape is level at the back.", group: "main", kinds: ALL, required: true, adult: [28, 72], child: [18, 44] },
 
-  { key: "neck", label: "Neck", how: "Around the base of the neck, where a shirt collar sits.", group: "upper", kinds: ALL, adult: [11, 24], child: [8, 16] },
-  { key: "shoulder", label: "Shoulder width", how: "Across the back, from one shoulder tip (the bone at the top of the arm) to the other.", group: "upper", kinds: ALL, adult: [11, 24], child: [7, 16] },
-  { key: "acrossBack", label: "Across back", how: "Across the back from one armhole crease to the other, halfway down the armhole.", group: "upper", kinds: ALL, adult: [10, 24], child: [6, 16] },
-  { key: "acrossFront", label: "Across front", how: "Across the chest from one armhole crease to the other, halfway down the armhole.", group: "upper", kinds: ALL, adult: [10, 24], child: [6, 16] },
-  { key: "bustPointToPoint", label: "Bust point to point", how: "Straight across from one bust point to the other.", group: "upper", kinds: WOMEN, adult: [5, 12], child: [4, 10] },
-  { key: "shoulderToBustPoint", label: "Shoulder to bust point", how: "From the shoulder tip down to the bust point.", group: "upper", kinds: WOMEN, adult: [7, 15], child: [5, 12] },
-  { key: "frontWaistLength", label: "Front waist length", how: "From the hollow at the base of the front neck straight down to the waist.", group: "upper", kinds: ALL, adult: [10, 22], child: [6, 16] },
-  { key: "backWaistLength", label: "Back waist length", how: "From the bone at the back of the neck straight down the spine to the waist. Ask someone to help.", group: "upper", kinds: ALL, adult: [12, 24], child: [7, 18] },
-  { key: "shoulderToWaistFront", label: "Shoulder to waist, front", how: "From the shoulder where it meets the neck, over the chest, straight down to the waist.", group: "upper", kinds: ALL, adult: [12, 26], child: [8, 18] },
-  { key: "shoulderToWaistBack", label: "Shoulder to waist, back", how: "From the shoulder where it meets the neck, straight down the back to the waist.", group: "upper", kinds: ALL, adult: [12, 26], child: [8, 18] },
+  { key: "neck", label: "Neck", how: "Around the base of the neck, where a shirt collar sits.", tip: "Keep the tape flat and snug on the skin. We add the collar ease, so do not leave fingers inside the tape.", group: "upper", kinds: ALL, adult: [11, 24], child: [8, 16] },
+  { key: "shoulder", label: "Shoulder width", how: "Across the back, from one shoulder tip (the bone at the top of the arm) to the other.", tip: "Find the shoulder tip by lifting the arm slightly: it is the bony point where the arm starts. Measure straight across, not over the curve.", group: "upper", kinds: ALL, adult: [11, 24], child: [7, 16] },
+  { key: "acrossBack", label: "Across back", how: "Across the back from one armhole crease to the other, halfway down the armhole.", tip: "Arms hanging relaxed. The crease is where the arm meets the back.", group: "upper", kinds: ALL, adult: [10, 24], child: [6, 16] },
+  { key: "acrossFront", label: "Across front", how: "Across the chest from one armhole crease to the other, halfway down the armhole.", tip: "Arms hanging relaxed. The crease is where the arm meets the chest.", group: "upper", kinds: ALL, adult: [10, 24], child: [6, 16] },
+  { key: "bustPointToPoint", label: "Bust point to point", how: "Straight across from one bust point to the other.", tip: "Wear the bra you will wear with the piece.", group: "upper", kinds: WOMEN, adult: [5, 12], child: [4, 10] },
+  { key: "shoulderToBustPoint", label: "Shoulder to bust point", how: "From the shoulder tip down to the bust point.", tip: "Wear the bra you will wear with the piece.", group: "upper", kinds: WOMEN, adult: [7, 15], child: [5, 12] },
+  { key: "frontWaistLength", label: "Front waist length", how: "From the hollow at the base of the front neck straight down to the waist.", tip: WAIST_MARK, group: "upper", kinds: ALL, adult: [10, 22], child: [6, 16] },
+  { key: "backWaistLength", label: "Back waist length", how: "From the bone at the back of the neck straight down the spine to the waist. Ask someone to help.", tip: "Bend the head forward to find the bone, then look straight ahead to measure. Tie a string round the waist and measure to it.", group: "upper", kinds: ALL, adult: [12, 24], child: [7, 18] },
+  { key: "shoulderToWaistFront", label: "Shoulder to waist, front", how: "From the shoulder where it meets the neck, over the chest, straight down to the waist.", tip: WAIST_MARK, group: "upper", kinds: ALL, adult: [12, 26], child: [8, 18] },
+  { key: "shoulderToWaistBack", label: "Shoulder to waist, back", how: "From the shoulder where it meets the neck, straight down the back to the waist.", tip: WAIST_MARK, group: "upper", kinds: ALL, adult: [12, 26], child: [8, 18] },
 
-  { key: "sleeveLength", label: "Sleeve length", how: "With the arm slightly bent, from the shoulder tip over the elbow to the wrist bone.", group: "arms", kinds: ALL, adult: [16, 30], child: [9, 24] },
-  { key: "upperArm", label: "Upper arm", how: "Around the fullest part of the upper arm, with the arm relaxed.", group: "arms", kinds: ALL, adult: [8, 22], child: [5, 14] },
-  { key: "wrist", label: "Wrist", how: "Around the wrist bone.", group: "arms", kinds: ALL, adult: [5, 10], child: [4, 8] },
-  { key: "hand", label: "Hand", how: "Around the hand at the knuckles with the thumb tucked in. Used for fitted cuffs.", group: "arms", kinds: ALL, adult: [6, 12], child: [5, 10] },
+  { key: "sleeveLength", label: "Sleeve length", how: "With the arm slightly bent, from the shoulder tip over the elbow to the wrist bone.", tip: "Stop at the wrist bone. We add the length a shirt cuff needs to reach the base of the thumb.", group: "arms", kinds: ALL, adult: [16, 30], child: [9, 24] },
+  { key: "upperArm", label: "Upper arm", how: "Around the fullest part of the upper arm, with the arm relaxed.", tip: "Let the arm hang loose. Do not flex the muscle.", group: "arms", kinds: ALL, adult: [8, 22], child: [5, 14] },
+  { key: "wrist", label: "Wrist", how: "Around the wrist bone.", tip: "Measure snug on the skin. If you wear a heavy watch, say so in the fit notes.", group: "arms", kinds: ALL, adult: [5, 10], child: [4, 8] },
+  { key: "hand", label: "Hand", how: "Around the hand at the knuckles with the thumb tucked in. Used for fitted cuffs.", tip: "Bring the thumb in towards the little finger, as when slipping on a bangle.", group: "arms", kinds: ALL, adult: [6, 12], child: [5, 10] },
 
-  { key: "abdomen", label: "Abdomen", how: "Around the tummy, 3 inches (7.5 cm) below the waist.", group: "lower", kinds: WOMEN, adult: [22, 70], child: [16, 40] },
-  { key: "upperThigh", label: "Upper thigh", how: "Around the fullest part of the thigh, just below the crotch.", group: "lower", kinds: ALL, adult: [14, 40], child: [9, 26] },
-  { key: "knee", label: "Knee", how: "Around the middle of the knee.", group: "lower", kinds: ALL, adult: [10, 24], child: [7, 17] },
-  { key: "calf", label: "Calf", how: "Around the fullest part of the calf.", group: "lower", kinds: ALL, adult: [9, 22], child: [6, 17] },
-  { key: "ankle", label: "Ankle", how: "Around the ankle bone.", group: "lower", kinds: ALL, adult: [7, 14], child: [5, 11] },
-  { key: "seatedRise", label: "Seated rise", how: "Sit straight on a hard chair. From the side waist straight down to the chair seat.", group: "lower", kinds: ALL, adult: [7, 15], child: [5, 12] },
-  { key: "crotchLength", label: "Crotch length", how: "From the centre front waist, between the legs, up to the centre back waist.", group: "lower", kinds: ALL, adult: [18, 40], child: [12, 30] },
+  { key: "abdomen", label: "Abdomen", how: "Around the tummy, 3 inches (7.5 cm) below the waist.", tip: "Stand relaxed and do not pull the stomach in.", group: "lower", kinds: WOMEN, adult: [22, 70], child: [16, 40] },
+  { key: "upperThigh", label: "Upper thigh", how: "Around the fullest part of the thigh, just below the crotch.", tip: "Stand with the weight on both feet and keep the tape level.", group: "lower", kinds: ALL, adult: [14, 40], child: [9, 26] },
+  { key: "knee", label: "Knee", how: "Around the middle of the knee.", tip: "Stand with the leg straight.", group: "lower", kinds: ALL, adult: [10, 24], child: [7, 17] },
+  { key: "calf", label: "Calf", how: "Around the fullest part of the calf.", tip: "Stand with the weight on both feet. Do not tense the muscle.", group: "lower", kinds: ALL, adult: [9, 22], child: [6, 17] },
+  { key: "ankle", label: "Ankle", how: "Around the ankle bone.", tip: "Measure snug on the skin, without socks.", group: "lower", kinds: ALL, adult: [7, 14], child: [5, 11] },
+  { key: "seatedRise", label: "Seated rise", how: "Sit straight on a hard chair. From the side waist straight down to the chair seat.", tip: WAIST_MARK + " Then hold a ruler upright against the hip, resting on the chair, and read it at the string.", group: "lower", kinds: ALL, adult: [7, 15], child: [5, 12] },
+  { key: "crotchLength", label: "Crotch length", how: "From the centre front waist, between the legs, up to the centre back waist.", tip: "Hold the tape snug against the body all the way through, not hanging loose between the legs.", group: "lower", kinds: ALL, adult: [18, 40], child: [12, 30] },
 
-  { key: "waistToHip", label: "Waist to hip", how: "At the side, from the waist down to the widest part of the hips.", group: "lengths", kinds: ALL, adult: [5, 13], child: [3, 9] },
-  { key: "waistToKnee", label: "Waist to knee", how: "At the side, from the waist down to the middle of the knee.", group: "lengths", kinds: ALL, adult: [17, 30], child: [9, 24] },
-  { key: "waistToAnkle", label: "Waist to ankle", how: "At the side, from the waist down to the ankle bone.", group: "lengths", kinds: ALL, adult: [30, 48], child: [16, 40] },
-  { key: "waistToFloor", label: "Waist to floor", how: "At the side, from the waist down to the floor, without shoes.", group: "lengths", kinds: ALL, adult: [32, 50], child: [18, 44] },
+  { key: "waistToHip", label: "Waist to hip", how: "At the side, from the waist down to the widest part of the hips.", tip: WAIST_MARK, group: "lengths", kinds: ALL, adult: [5, 13], child: [3, 9] },
+  { key: "waistToKnee", label: "Waist to knee", how: "At the side, from the waist down to the middle of the knee.", tip: WAIST_MARK, group: "lengths", kinds: ALL, adult: [17, 30], child: [9, 24] },
+  { key: "waistToAnkle", label: "Waist to ankle", how: "At the side, from the waist down to the ankle bone.", tip: WAIST_MARK, group: "lengths", kinds: ALL, adult: [30, 48], child: [16, 40] },
+  { key: "waistToFloor", label: "Waist to floor", how: "At the side, from the waist down to the floor, without shoes.", tip: "Stand on a hard floor, not a carpet, and keep the tape straight down the side of the leg.", group: "lengths", kinds: ALL, adult: [32, 50], child: [18, 44] },
+  { key: "shirtLength", label: "Shirt length", how: "From the top of the shoulder beside the collar, down the front to where you want the shirt to end.", tip: "Easiest on a shirt you like: lay it flat and measure from the shoulder seam beside the collar straight down the front to the hem.", group: "lengths", kinds: MEN, adult: [22, 40], child: [14, 30] },
 ]
 
 export const FIELD_BY_KEY = new Map(MEASUREMENT_FIELDS.map((f) => [f.key, f]))
