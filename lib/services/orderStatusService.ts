@@ -10,6 +10,8 @@ import { emailBilling } from "../emails/sendOrderPlaced";
 import { checkReturnRequest, describeReturn, returnHistoryNote, ReturnRequestError, type ReturnRequestInput } from "../orders/returns";
 import { returnableOrder } from "../orders/returnableOrder";
 import { CreditNoteError, creditLines, creditNoteDeadline, creditNoteNumber, creditNoteSlug, creditTotals } from "../gst/creditNote";
+import { shippingBlock, shippingBlockMessage } from "../jobwork/challan";
+import { challanItems } from "../jobwork/items";
 
 export { CreditNoteError };
 
@@ -18,6 +20,8 @@ export class MeasurementsNotConfirmedError extends Error {
     super(`Confirm the measurements for ${count} made-to-measure ${count === 1 ? "item" : "items"} before starting processing`);
   }
 }
+
+export class ChallansPendingError extends Error {}
 
 export class MeasurementUpdateError extends Error {
   constructor(message: string, public status = 400) {
@@ -37,6 +41,7 @@ export const orderInclude = {
     select: { number: true, date: true, amount: true, reason: true, items: { select: { orderItemId: true, quantity: true } } },
   },
   returnRequests: { orderBy: { createdAt: "asc" } },
+  challans: { orderBy: { date: "asc" }, include: { lines: { orderBy: { position: "asc" } } } },
 } as const;
 
 export async function requestReturn(orderCode: string, input: ReturnRequestInput) {
@@ -134,6 +139,15 @@ export async function updateOrderStatus(orderCode: string, newStatus: OrderStatu
         where: { orderId: current.id, measurementsConfirmedAt: null, measurements: { not: Prisma.DbNull } },
       });
       if (unconfirmed > 0) throw new MeasurementsNotConfirmedError(unconfirmed);
+    }
+
+    if (newStatus === OrderStatus.SHIPPED) {
+      const stock = await tx.order.findUnique({
+        where: { id: current.id },
+        select: { items: true, challans: { select: { number: true, pieces: true, receivedAt: true, cancelledAt: true } } },
+      });
+      const block = stock ? shippingBlock(challanItems(stock.items), stock.challans) : null;
+      if (block) throw new ChallansPendingError(shippingBlockMessage(block));
     }
 
     let invoice: ({ invoiceNumber: string; invoiceDate: Date } & ReturnType<typeof sellerSnapshot>) | null = null;

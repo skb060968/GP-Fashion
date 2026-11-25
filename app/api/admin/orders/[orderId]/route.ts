@@ -10,6 +10,7 @@ import {
   updateItemMeasurements,
   confirmItemMeasurements,
   CreditNoteError,
+  ChallansPendingError,
   orderInclude,
 } from "@/lib/services/orderStatusService";
 import { prisma } from "@/lib/prisma";
@@ -97,7 +98,7 @@ export async function PATCH(
       if (err instanceof MissingTransitionNoteError) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
-      if (err instanceof MeasurementsNotConfirmedError) {
+      if (err instanceof MeasurementsNotConfirmedError || err instanceof ChallansPendingError) {
         return NextResponse.json({ error: err.message }, { status: 409 });
       }
       throw err;

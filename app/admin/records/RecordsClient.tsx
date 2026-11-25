@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Download, FileJson, FileSpreadsheet, FolderArchive } from "lucide-react"
-import { makeXlsx } from "@/lib/xlsx"
+import { makeXlsx, type Sheet } from "@/lib/xlsx"
 import { gstr1Sheets } from "@/lib/gst/gstr1Excel"
 import { AdminPageHeader } from "@/components/admin/AdminShell"
 import { Alert, Card, Skeleton, btn, input } from "@/components/admin/ui"
@@ -36,6 +36,10 @@ type RecordsResponse = {
   creditRegister: string | null
   gstr1: Record<string, unknown> | null
   buyerNames: Record<string, string>
+  challans: Doc[]
+  challanSummary: { sent: number; received: number; open: number }
+  challanRegister: string | null
+  itc04: Sheet[] | null
 }
 
 type Totals = { taxableValue: number; cgst: number; sgst: number; igst: number; total: number }
@@ -98,7 +102,7 @@ export default function RecordsClient() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
-  const [busy, setBusy] = useState<"zip" | "gstr1" | null>(null)
+  const [busy, setBusy] = useState<"zip" | "gstr1" | "itc04" | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
 
   const load = useCallback(async () => {
@@ -120,6 +124,8 @@ export default function RecordsClient() {
   const gstr1Name = data?.period.fp ? `GSTR-1-${data.gstin}-${data.period.fp}.json` : ""
   const gstr1Xlsx = gstr1Name.replace(/\.json$/, ".xlsx")
   const zipName = data ? `PBL-records-${data.period.slug}.zip` : ""
+  const itc04Name = data ? `ITC-04-${data.gstin}-${data.period.slug}.xlsx` : ""
+  const docCount = data ? data.invoices.length + data.creditNotes.length + data.challans.length : 0
 
   const downloadZip = async () => {
     if (!data) return
@@ -127,7 +133,11 @@ export default function RecordsClient() {
     setFlash(null)
     const handle = await pickSaveLocation(zipName, ZIP_TYPE)
     if (handle === "cancelled") return
-    const docs = [...data.invoices.map((d) => ({ ...d, folder: "Invoices" })), ...data.creditNotes.map((d) => ({ ...d, folder: "Credit notes" }))]
+    const docs = [
+      ...data.invoices.map((d) => ({ ...d, folder: "Invoices" })),
+      ...data.creditNotes.map((d) => ({ ...d, folder: "Credit notes" })),
+      ...data.challans.map((d) => ({ ...d, folder: "Job work challans" })),
+    ]
     setBusy("zip")
     setProgress({ done: 0, total: docs.length })
     try {
@@ -149,6 +159,8 @@ export default function RecordsClient() {
       const enc = new TextEncoder()
       if (data.invoices.length) entries.push({ name: `${root}/Invoice-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.register}`) })
       if (data.creditRegister) entries.push({ name: `${root}/Credit-note-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.creditRegister}`) })
+      if (data.challanRegister) entries.push({ name: `${root}/Job-work-challan-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.challanRegister}`) })
+      if (data.itc04) entries.push({ name: `${root}/${itc04Name}`, data: makeXlsx(data.itc04) })
       if (data.gstr1) {
         entries.push({ name: `${root}/${gstr1Name}`, data: enc.encode(JSON.stringify(data.gstr1)) })
         entries.push({ name: `${root}/${gstr1Xlsx}`, data: gstr1Workbook(data) })
@@ -157,6 +169,7 @@ export default function RecordsClient() {
       const parts = [
         data.invoices.length ? `${data.invoices.length} ${data.invoices.length === 1 ? "invoice" : "invoices"}` : "",
         data.creditNotes.length ? `${data.creditNotes.length} ${data.creditNotes.length === 1 ? "credit note" : "credit notes"}` : "",
+        data.challans.length ? `${data.challans.length} job work ${data.challans.length === 1 ? "challan" : "challans"}` : "",
       ].filter(Boolean)
       setFlash(`Saved ${zipName}: ${parts.join(" and ")} with the ${parts.length > 1 ? "registers" : "register"}${data.gstr1 ? " and the GSTR-1 file (JSON and Excel)" : ""}.`)
     } catch (e) {
@@ -196,6 +209,23 @@ export default function RecordsClient() {
       setFlash(`Saved ${gstr1Xlsx}. Upload the JSON file on the portal; the Excel copy is for checking and for your CA.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save the Excel file")
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const downloadItc04 = async () => {
+    if (!data?.itc04) return
+    setError(null)
+    setFlash(null)
+    const handle = await pickSaveLocation(itc04Name, XLSX_TYPE)
+    if (handle === "cancelled") return
+    setBusy("itc04")
+    try {
+      await writeFile(handle, new Blob([makeXlsx(data.itc04)], { type: XLSX_MIME }), itc04Name)
+      setFlash(`Saved ${itc04Name}. Copy its rows into the ITC-04 offline tool, or give it to your CA.`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save the ITC-04 file")
     } finally {
       setBusy(null)
     }
@@ -309,19 +339,19 @@ export default function RecordsClient() {
               <FolderArchive className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Invoices (ZIP)
             </div>
             <p className="font-jost text-sm text-black/60">
-              Every tax invoice and credit note in the period as a PDF, their registers as spreadsheets (CSV) and, for a quarter, the GSTR-1 file in JSON and Excel.
+              Every tax invoice, credit note and job work challan in the period as a PDF, their registers as spreadsheets (CSV), the ITC-04 workbook and, for a quarter, the GSTR-1 file in JSON and Excel.
             </p>
             <button
               type="button"
               className={btn.primary}
               onClick={downloadZip}
-              disabled={!data || loading || busy !== null || data.invoices.length + data.creditNotes.length === 0}
+              disabled={!data || loading || busy !== null || docCount === 0}
             >
               <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
               {busy === "zip" && progress ? `Preparing ${progress.done} of ${progress.total}…` : "Download invoices"}
             </button>
-            {data && data.invoices.length + data.creditNotes.length === 0 && !loading && (
-              <p className="font-jost text-xs text-black/50">No invoices or credit notes in this period.</p>
+            {data && docCount === 0 && !loading && (
+              <p className="font-jost text-xs text-black/50">No invoices, credit notes or job work challans in this period.</p>
             )}
           </div>
           <div className="space-y-3">
@@ -345,6 +375,22 @@ export default function RecordsClient() {
               The Excel copy has the same figures, one sheet per GSTR-1 table, laid out like the GST Offline Tool workbook. Upload the JSON on the portal.
             </p>
             {gstr1Hint && !loading && <p className="font-jost text-xs text-black/50">{gstr1Hint}</p>}
+          </div>
+          <div className="space-y-3 md:col-span-2 md:border-t md:border-black/10 md:pt-6">
+            <div className="flex items-center gap-2 font-jost text-sm font-semibold">
+              <FileSpreadsheet className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Job work (ITC-04)
+            </div>
+            <p className="font-jost text-sm text-black/60">
+              Fabric sent to tailors on job work challans (table 4) and the stitched pieces received back (table 5A) in the period, laid out like the ITC-04 offline tool.
+              {data && !loading && ` ${data.challanSummary.sent} sent, ${data.challanSummary.received} received back; ${data.challanSummary.open} with tailors now.`}
+            </p>
+            <button type="button" className={btn.secondary} onClick={downloadItc04} disabled={!data?.itc04 || loading || busy !== null}>
+              <FileSpreadsheet className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              {busy === "itc04" ? "Saving…" : "ITC-04 Excel"}
+            </button>
+            <p className="font-jost text-xs text-black/50">
+              File ITC-04 once a year (April to March) while turnover is up to ₹5 crore: choose Whole year above. Above ₹5 crore it is half-yearly.
+            </p>
           </div>
         </div>
       </Card>

@@ -16,6 +16,8 @@ import {
   type RecordInvoice,
 } from "@/lib/gst/gstr1"
 import { currentFyStart, previousQuarter, recordPeriod, type Quarter } from "@/lib/gst/period"
+import { challanFileName, challanSlug, parsePieces } from "@/lib/jobwork/challan"
+import { challanRegisterCsv, challanWarnings, itc04Sheets, sortChallans, type RecordChallan } from "@/lib/jobwork/records"
 
 const item = (i: { hsn: string; gstRate: number; quantity: number; taxableValue: number; taxAmount: number }) => ({
   hsn: i.hsn,
@@ -42,7 +44,8 @@ export async function GET(req: NextRequest) {
     }
     const period = recordPeriod(fy, q === "all" ? null : (Number(q) as Quarter))
 
-    const [orders, notes, earliest] = await Promise.all([
+    const inPeriod = { gte: period.from, lt: period.to }
+    const [orders, notes, earliest, challanRows, openChallans] = await Promise.all([
       prisma.order.findMany({
         where: { invoiceNumber: { not: null }, invoiceDate: { gte: period.from, lt: period.to } },
         include: { address: true, billingAddress: true, items: true, creditNotes: { select: { number: true }, orderBy: { date: "asc" } } },
@@ -56,7 +59,40 @@ export async function GET(req: NextRequest) {
         orderBy: { invoiceDate: "asc" },
         select: { invoiceDate: true },
       }),
+      prisma.jobWorkChallan.findMany({
+        where: { OR: [{ date: inPeriod }, { receivedAt: inPeriod }] },
+        include: { lines: { orderBy: { position: "asc" } }, order: { select: { orderCode: true } } },
+      }),
+      prisma.jobWorkChallan.findMany({
+        where: { receivedAt: null, cancelledAt: null },
+        select: { number: true, date: true, receivedAt: true, cancelledAt: true },
+      }),
     ])
+
+    const challans: RecordChallan[] = sortChallans(
+      challanRows.map((c) => ({
+        number: c.number,
+        date: c.date,
+        orderCode: c.order.orderCode,
+        tailorName: c.tailorName,
+        tailorStateCode: c.tailorStateCode,
+        tailorGstin: c.tailorGstin,
+        sellerStateCode: c.sellerStateCode,
+        pieces: parsePieces(c.pieces),
+        lines: c.lines,
+        taxableValue: c.taxableValue,
+        taxAmount: c.taxAmount,
+        ewayBill: c.ewayBill,
+        receivedAt: c.receivedAt,
+        receivedNote: c.receivedNote,
+        receivedEwayBill: c.receivedEwayBill,
+        cancelledAt: c.cancelledAt,
+        cancelReason: c.cancelReason,
+      }))
+    )
+    const within = (d: Date | string | null) => !!d && new Date(d) >= period.from && new Date(d) < period.to
+    const sentInPeriod = challans.filter((c) => within(c.date))
+    const receivedInPeriod = challans.filter((c) => within(c.receivedAt))
 
     const invoices: RecordInvoice[] = sortInvoices(
       orders.map((o) => ({
@@ -116,7 +152,15 @@ export async function GET(req: NextRequest) {
         gstin: business.gstin,
         placeholderGstin: placeholder,
         summary: summarise(invoices, business.stateCode, creditNotes),
-        warnings: [...recordWarnings(invoices, business.gstin, creditNotes), ...(gstr1?.warnings ?? [])],
+        warnings: [...recordWarnings(invoices, business.gstin, creditNotes), ...(gstr1?.warnings ?? []), ...challanWarnings(openChallans)],
+        challans: sentInPeriod.map((c) => ({ number: c.number, url: `/api/admin/challans/${challanSlug(c.number)}`, fileName: `${challanFileName(c.number)}.pdf` })),
+        challanSummary: {
+          sent: sentInPeriod.filter((c) => !c.cancelledAt).length,
+          received: receivedInPeriod.length,
+          open: openChallans.length,
+        },
+        challanRegister: sentInPeriod.length ? challanRegisterCsv(sentInPeriod) : null,
+        itc04: sentInPeriod.length + receivedInPeriod.length ? itc04Sheets(sentInPeriod, receivedInPeriod) : null,
         invoices: invoices.map((i) => ({ orderCode: i.orderCode, number: i.invoiceNumber, url: `/api/invoice/${encodeURIComponent(i.orderCode)}`, fileName: `${invoiceFileName(i.invoiceNumber)}.pdf` })),
         creditNotes: creditNotes.map((c) => ({ number: c.number, url: `/api/credit-note/${creditNoteSlug(c.number)}`, fileName: `${creditNoteFileName(c.number)}.pdf` })),
         register: invoiceRegisterCsv(invoices, business.stateCode),

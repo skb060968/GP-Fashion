@@ -51,8 +51,88 @@ model Order {
   history       StatusHistory[]
   creditNotes   CreditNote[]
   returnRequests ReturnRequest[]
+  challans      JobWorkChallan[]
 
   @@index([userId])
+}
+
+model Tailor {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  stateCode    String
+  pincode      String
+  gstin        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  challans     JobWorkChallan[]
+}
+
+model JobWorkChallan {
+  id               String    @id @default(cuid())
+  number           String    @unique
+  date             DateTime
+  pieces           Json
+  taxableValue     Int
+  taxAmount        Int
+  fabricBill       String?
+  ewayBill         String?
+  note             String?
+
+  tailorName       String
+  tailorAddress    String
+  tailorStateCode  String
+  tailorGstin      String?
+  tailorPhone      String?
+
+  sellerGstin      String
+  sellerLegalName  String
+  sellerTradeName  String
+  sellerAddress    String
+  sellerStateCode  String
+  sellerEmail      String
+  sellerPhone      String
+
+  receivedAt       DateTime?
+  receivedNote     String?
+  receivedEwayBill String?
+  cancelledAt      DateTime?
+  cancelReason     String?
+  createdAt        DateTime  @default(now())
+
+  order            Order     @relation(fields: [orderId], references: [id])
+  orderId          String
+  tailor           Tailor    @relation(fields: [tailorId], references: [id])
+  tailorId         String
+  lines            JobWorkChallanLine[]
+
+  @@index([orderId])
+  @@index([tailorId])
+  @@index([date])
+  @@index([receivedAt])
+}
+
+model JobWorkChallanLine {
+  id           String         @id @default(cuid())
+  position     Int
+  kind         String
+  description  String
+  hsn          String
+  quantity     Float
+  unit         String
+  taxableValue Int
+  gstRate      Int
+  taxAmount    Int
+
+  challan      JobWorkChallan @relation(fields: [challanId], references: [id])
+  challanId    String
+
+  @@index([challanId])
 }
 
 model ReturnRequest {

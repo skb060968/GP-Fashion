@@ -2,6 +2,7 @@ import { z } from "zod";
 import { OrderStatus } from "@prisma/client";
 import { PERSON_KINDS } from "@/lib/measurements/fields";
 import { gstinError, normaliseGstin } from "@/lib/gst/gstin";
+import { stateByCode } from "@/lib/gst/states";
 import { PAYMENT_REFERENCE_ERROR, PAYMENT_REFERENCE_RE, normalisePaymentReference } from "@/lib/payments/reference";
 
 export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
@@ -124,6 +125,66 @@ export const adminOrderPatchSchema = z.union([
   updateNotesSchema.extend({ action: z.literal("notes") }),
   updateItemMeasurementsSchema.extend({ action: z.literal("measurements") }),
   confirmItemMeasurementsSchema.extend({ action: z.literal("confirm-measurements") }),
+]);
+
+const optionalText = (max: number, message: string) => z.string().trim().max(max, message).optional().or(z.literal(""));
+
+export const tailorSchema = z.object({
+  name: z.string().trim().min(2, "Enter the tailor's name").max(80, "Name is too long"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(\+91[\s-]?)?[6-9]\d{9}$/, "Enter a 10-digit mobile number")
+    .optional()
+    .or(z.literal("")),
+  addressLine1: z.string().trim().min(5, "Enter the workshop address").max(200, "Address is too long"),
+  addressLine2: optionalText(200, "Address is too long"),
+  city: z.string().trim().min(2, "Enter the city").max(60, "City is too long"),
+  stateCode: z.string().refine((code) => !!stateByCode(code), "Choose the state"),
+  pincode: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit pincode"),
+  gstin: z
+    .string()
+    .transform(normaliseGstin)
+    .superRefine((value, ctx) => {
+      if (!value) return;
+      const error = gstinError(value);
+      if (error) ctx.addIssue({ code: "custom", message: error });
+    })
+    .optional(),
+  active: z.boolean().optional(),
+}).superRefine((t, ctx) => {
+  if (t.gstin && t.gstin.slice(0, 2) !== t.stateCode) {
+    ctx.addIssue({ code: "custom", path: ["gstin"], message: "The GSTIN is registered in another state" });
+  }
+});
+
+export const challanLineSchema = z.object({
+  kind: z.string().max(10),
+  description: z.string().max(200),
+  hsn: z.string().max(10),
+  quantity: z.number().finite(),
+  unit: z.string().max(5),
+  value: z.number().int(),
+  gstRate: z.number().int(),
+});
+
+export const challanCreateSchema = z.object({
+  tailorId: z.string().min(1, "Choose a tailor").max(40),
+  pieces: z.array(z.object({ orderItemId: z.string().min(1).max(40), quantity: z.number().int().min(0).max(100) })).min(1).max(50),
+  lines: z.array(challanLineSchema).min(1, "Add the fabric sent to the tailor").max(20, "A challan can have up to 20 lines"),
+  fabricBill: optionalText(60, "Keep the bill reference under 60 characters"),
+  ewayBill: optionalText(20, "An e-way bill number has 12 digits"),
+  note: optionalText(300, "Keep the note under 300 characters"),
+});
+
+export const challanUpdateSchema = z.union([
+  z.object({
+    action: z.literal("received"),
+    date: z.string().max(10),
+    note: z.string().trim().max(300, "Keep it under 300 characters"),
+    ewayBill: optionalText(20, "An e-way bill number has 12 digits"),
+  }),
+  z.object({ action: z.literal("cancel"), reason: z.string().trim().max(200, "Keep the reason under 200 characters") }),
 ]);
 
 export const couponSchema = z.object({

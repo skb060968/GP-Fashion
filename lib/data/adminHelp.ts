@@ -478,7 +478,7 @@ export const adminHelpTopics: HelpTopic[] = [
           { type: "steps", items: [
             "After the quarter ends, open Admin > Records and choose the financial year and the quarter.",
             "Read the summary and any notes under it.",
-            "Choose Download invoices. In Chrome or Edge a save window opens: pick the year's folder inside the Google Drive folder on this computer. The ZIP holds every invoice and credit note PDF, their registers (CSV) and the GSTR-1 file.",
+            "Choose Download invoices. In Chrome or Edge a save window opens: pick the year's folder inside the Google Drive folder on this computer. The ZIP holds every invoice, credit note and job work challan PDF, their registers (CSV), the ITC-04 workbook and the GSTR-1 file.",
             "Under GSTR-1 file choose JSON (for upload) and upload it on the GST portal (below). Excel gives the same figures as a workbook with one sheet per table (b2b, b2cl, b2cs, cdnr, cdnur, hsn(b2b), hsn(b2c), docs), laid out like the GST Offline Tool workbook, for checking or for your CA.",
           ] },
           { type: "note", tone: "info", text: "Install Google Drive for desktop once. It keeps a Google Drive folder on the computer in step with Drive, so one save gives a copy in both places. The website itself has no access to Google Drive." },
@@ -504,6 +504,48 @@ export const adminHelpTopics: HelpTopic[] = [
           ] },
           { type: "note", tone: "info", text: "Credit notes against B2C small invoices are taken off the B2C small total of their state and rate. If a quarter's credit notes for a state come to more than its sales there, that row would be negative, which the portal does not take; Records then leaves it out and says so, and you enter the reduction on the portal by hand." },
           { type: "note", tone: "info", text: "With no invoices or credit notes in a quarter there is no file to upload; file a nil GSTR-1 on the portal instead." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "job-work-challans",
+    title: "Tailors, job work challans and ITC-04",
+    summary: "Sending fabric bought for an order to a tailor on a delivery challan, recording the stitched pieces coming back, and the yearly ITC-04 return.",
+    keywords: ["tailor", "job work", "jobwork", "challan", "delivery challan", "fabric", "itc-04", "itc04", "e-way bill", "eway", "stitching", "lining", "trims"],
+    sections: [
+      {
+        title: "Why every order needs a challan",
+        blocks: [
+          { type: "text", text: "There is no stock: fabric is bought for each order in the business name and sent to a tailor to stitch. The fabric stays the business's property while it is with the tailor, so it moves on a job work delivery challan, not on an invoice, and no GST is charged on the movement. This applies to standard sizes and made to measure alike, and to tailors in Delhi as well as other states. Accessories are not sent to tailors and need no challan." },
+          { type: "note", tone: "warning", text: "An order cannot be marked shipped until every piece in it (other than accessories) has been on a challan that is marked received back. An unregistered tailor cannot send pieces straight to the customer, so they always come back to the studio first." },
+        ],
+      },
+      {
+        title: "Each order",
+        blocks: [
+          { type: "steps", items: [
+            "Add the tailor once on Admin > Tailors: name, workshop address, state and, only if they are registered, their GSTIN.",
+            "Start processing the order. Buy the fabric with the bill in the business name and GSTIN; the seller may deliver it straight to the tailor's address.",
+            "On the order page, under Job work challans, choose New challan. Pick the tailor and the pieces they will make, and add one line for each material: main fabric, a second fabric, lining, trims. Enter the quantity, HSN code, the value from the purchase bill (without GST) and its GST rate.",
+            "Issue the challan, download the PDF and print it. It has three copies: the original goes to the tailor, the duplicate travels with the goods, the triplicate stays with you.",
+            "When the tailor sends the pieces back they fill in the Received back box on the original challan and return it with the pieces. On the order page choose Mark received back and copy what they wrote.",
+            "Once every piece is back, the order can be marked shipped as usual.",
+          ] },
+          { type: "note", tone: "info", text: "One order can have several challans, for example when two tailors make different pieces. A challan issued by mistake can be cancelled while it is still open; its number stays in the register, marked cancelled." },
+          { type: "note", tone: "warning", text: "For a tailor in another state, an e-way bill is needed for sending the fabric and for the return, whatever the value. Generate it on the e-way bill portal using the challan number, and enter its number on the challan or when marking it received back." },
+          { type: "note", tone: "warning", text: "Goods sent for job work must come back within one year of the challan date. The order page and Admin > Tailors show the due date, and Records warns about challans due within 30 days." },
+        ],
+      },
+      {
+        title: "ITC-04 and records",
+        blocks: [
+          { type: "list", items: [
+            "Admin > Records includes every challan of the period as a PDF in the ZIP, with a challan register (CSV) and the ITC-04 workbook.",
+            "ITC-04 Excel has table 4 (goods sent to job workers, one row per material line) and table 5A (goods received back, one row per challan), laid out like the ITC-04 offline tool.",
+            "While turnover is up to ₹5 crore, ITC-04 is filed once a year for April to March, by 25 April: choose the financial year and Whole year in Records. Above ₹5 crore it is filed every half year.",
+            "Copy the rows into the ITC-04 offline tool from the GST portal, generate its upload file and upload it, or give the workbook to your CA.",
+          ] },
         ],
       },
     ],

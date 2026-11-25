@@ -21,6 +21,9 @@ import MeasurementsPanel from "@/components/admin/MeasurementsPanel"
 import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
 import { measureAppPayload } from "@/lib/measurements/measureApp"
 import { categoryOf } from "@/lib/data/categories"
+import ChallansPanel, { type AdminChallan } from "@/components/admin/ChallansPanel"
+import { shippingBlock, shippingBlockMessage } from "@/lib/jobwork/challan"
+import { challanItems } from "@/lib/jobwork/items"
 
 type Order = {
   orderCode: string
@@ -82,6 +85,7 @@ type Order = {
   history: { id: string; status: string; changedAt: string; note: string | null }[]
   creditNotes: { number: string; date: string; amount: number; reason: string; items: { orderItemId: string; quantity: number }[] }[]
   returnRequests: { id: string; createdAt: string; reason: string; resolution: string; note: string | null; items: unknown }[]
+  challans: AdminChallan[]
 }
 
 const fmtDateTime = (iso: string) =>
@@ -217,7 +221,13 @@ export default function AdminOrderDetailClient() {
   const waNumber = a ? `91${a.phone.replace(/\D/g, "").slice(-10)}` : ""
   const history = [...order.history].sort((x, y) => new Date(y.changedAt).getTime() - new Date(x.changedAt).getTime())
   const unconfirmedMtm = order.items.filter((i) => isSnapshot(i.measurements) && !i.measurementsConfirmedAt).length
-  const blockedByMeasurements = (t: Transition) => t.to === "PROCESSING" && unconfirmedMtm > 0
+  const shipBlock = shippingBlock(challanItems(order.items), order.challans)
+  const blockReason = (t: Transition) =>
+    t.to === "PROCESSING" && unconfirmedMtm > 0
+      ? "Confirm the made-to-measure measurements first"
+      : t.to === "SHIPPED" && shipBlock
+        ? "Every piece must be back from the tailor first"
+        : undefined
 
   return (
     <>
@@ -264,8 +274,8 @@ export default function AdminOrderDetailClient() {
                     key={t.to}
                     type="button"
                     onClick={() => setPending(t)}
-                    disabled={blockedByMeasurements(t)}
-                    title={blockedByMeasurements(t) ? "Confirm the made-to-measure measurements first" : undefined}
+                    disabled={!!blockReason(t)}
+                    title={blockReason(t)}
                     className={`${intentClass[t.intent]} disabled:cursor-not-allowed disabled:opacity-40`}
                   >
                     {t.label}
@@ -278,7 +288,10 @@ export default function AdminOrderDetailClient() {
                 Confirm the measurements for {unconfirmedMtm} made-to-measure {unconfirmedMtm === 1 ? "item" : "items"} with the customer before cutting. Processing can start once they are confirmed.
               </p>
             )}
-            {transitions.some((t) => t.to === "SHIPPED") && !order.invoiceNumber && (
+            {transitions.some((t) => t.to === "SHIPPED") && shipBlock && (
+              <p className="mt-4 rounded-md bg-amber-50 p-3 font-jost text-sm text-amber-900">{shippingBlockMessage(shipBlock)}</p>
+            )}
+            {transitions.some((t) => t.to === "SHIPPED") && !shipBlock && !order.invoiceNumber && (
               <p className="mt-4 rounded-md bg-stone-100 p-3 font-jost text-sm text-black/75">
                 Marking this order shipped issues the next tax invoice number.
                 {gstinIsPlaceholder() && (
@@ -444,6 +457,8 @@ export default function AdminOrderDetailClient() {
               ))}
             </dl>
           </Card>
+
+          <ChallansPanel<Order> order={order} onUpdated={setOrder} onFlash={(text) => setFlash({ tone: "success", text })} />
 
           <Card title="History" padded={false}>
             <ol className="divide-y divide-black/5">
