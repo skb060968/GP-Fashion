@@ -198,11 +198,37 @@ export const gstFilingSchema = z.object({
   kind: z.enum(RETURN_KINDS),
   period: z.string().max(10),
   itc: taxHeadsSchema.optional(),
+  resetItc: z.boolean().optional(),
   paid: taxHeadsSchema.optional(),
   filed: z.boolean().optional(),
   filedOn: z.string().max(10).optional(),
   reference: optionalText(30, "Keep the ARN or CIN under 30 characters"),
   note: optionalText(300, "Keep the note under 300 characters"),
+});
+
+const paiseSchema = z.number().int().min(0).max(10_000_000_000);
+
+export const purchaseSchema = z.object({
+  kind: z.string().max(20),
+  category: z.string().max(20),
+  date: z.string().max(10),
+  supplierName: z.string().max(200),
+  supplierGstin: z.string().max(20).optional(),
+  billNumber: z.string().max(40).optional(),
+  description: z.string().max(400),
+  taxableValue: paiseSchema,
+  igst: paiseSchema.optional(),
+  cgst: paiseSchema.optional(),
+  sgst: paiseSchema.optional(),
+  claimItc: z.boolean().optional(),
+  note: z.string().max(600).optional(),
+  orderCode: z.string().max(20).optional(),
+  challanNumber: z.string().max(20).optional(),
+});
+
+export const gstr2bUploadSchema = z.object({
+  fileName: z.string().max(200).optional(),
+  content: z.string().min(2).max(5_000_000, "The file is larger than 5 MB"),
 });
 
 export const couponSchema = z.object({

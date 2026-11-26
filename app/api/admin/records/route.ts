@@ -6,6 +6,8 @@ import { invoiceFileName } from "@/lib/orders/orderDocument"
 import { creditNoteFileName, creditNoteSlug } from "@/lib/gst/creditNote"
 import { buildGstr1, creditNoteRegisterCsv, invoiceRegisterCsv, recordWarnings, summarise } from "@/lib/gst/gstr1"
 import { loadSalesRecords } from "@/lib/gst/recordsData"
+import { purchasesForRecords } from "@/lib/services/purchaseService"
+import { purchaseRegisterCsv } from "@/lib/purchases/register"
 import { currentFyStart, previousQuarter, recordPeriod, type Quarter } from "@/lib/gst/period"
 import { challanFileName, challanSlug, parsePieces } from "@/lib/jobwork/challan"
 import { challanRegisterCsv, challanWarnings, itc04Sheets, sortChallans, type RecordChallan } from "@/lib/jobwork/records"
@@ -28,8 +30,9 @@ export async function GET(req: NextRequest) {
     const period = recordPeriod(fy, q === "all" ? null : (Number(q) as Quarter))
 
     const inPeriod = { gte: period.from, lt: period.to }
-    const [{ invoices, creditNotes }, earliest, challanRows, openChallans] = await Promise.all([
+    const [{ invoices, creditNotes }, purchases, earliest, challanRows, openChallans] = await Promise.all([
       loadSalesRecords(period.from, period.to),
+      purchasesForRecords(period.from, period.to),
       prisma.order.findFirst({
         where: { invoiceNumber: { not: null } },
         orderBy: { invoiceDate: "asc" },
@@ -90,6 +93,7 @@ export async function GET(req: NextRequest) {
           open: openChallans.length,
         },
         challanRegister: sentInPeriod.length ? challanRegisterCsv(sentInPeriod) : null,
+        purchaseRegister: purchases.length ? purchaseRegisterCsv(purchases) : null,
         itc04: sentInPeriod.length + receivedInPeriod.length ? itc04Sheets(sentInPeriod, receivedInPeriod) : null,
         invoices: invoices.map((i) => ({ orderCode: i.orderCode, number: i.invoiceNumber, url: `/api/invoice/${encodeURIComponent(i.orderCode)}`, fileName: `${invoiceFileName(i.invoiceNumber)}.pdf` })),
         creditNotes: creditNotes.map((c) => ({ number: c.number, url: `/api/credit-note/${creditNoteSlug(c.number)}`, fileName: `${creditNoteFileName(c.number)}.pdf` })),

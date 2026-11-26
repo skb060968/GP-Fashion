@@ -52,8 +52,51 @@ model Order {
   creditNotes   CreditNote[]
   returnRequests ReturnRequest[]
   challans      JobWorkChallan[]
+  purchases     Purchase[]
 
   @@index([userId])
+}
+
+model Purchase {
+  id                String          @id @default(cuid())
+  kind              String
+  category          String
+  date              DateTime
+  supplierName      String
+  supplierGstin     String?
+  supplierStateCode String?
+  billNumber        String?
+  billKey           String?
+  description       String
+  taxableValue      Int
+  igst              Int             @default(0)
+  cgst              Int             @default(0)
+  sgst              Int             @default(0)
+  claimItc          Boolean         @default(false)
+  note              String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now()) @updatedAt
+
+  order             Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderId           String?
+  challan           JobWorkChallan? @relation(fields: [challanId], references: [id], onDelete: SetNull)
+  challanId         String?
+
+  @@index([date])
+  @@index([orderId])
+  @@index([challanId])
+  @@index([supplierGstin, billKey])
+}
+
+model Gstr2bImport {
+  id          String   @id @default(cuid())
+  period      String   @unique
+  gstin       String
+  generatedOn String?
+  fileName    String?
+  docs        Json
+  other       Json?
+  importedAt  DateTime @default(now())
 }
 
 model Tailor {
@@ -110,6 +153,7 @@ model JobWorkChallan {
   tailor           Tailor    @relation(fields: [tailorId], references: [id])
   tailorId         String
   lines            JobWorkChallanLine[]
+  purchases        Purchase[]
 
   @@index([orderId])
   @@index([tailorId])
@@ -427,6 +471,7 @@ model GstFiling {
   itcIgst   Int       @default(0)
   itcCgst   Int       @default(0)
   itcSgst   Int       @default(0)
+  itcSaved  Boolean   @default(false)
   paidIgst  Int       @default(0)
   paidCgst  Int       @default(0)
   paidSgst  Int       @default(0)

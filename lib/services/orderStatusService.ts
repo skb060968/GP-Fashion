@@ -42,6 +42,7 @@ export const orderInclude = {
   },
   returnRequests: { orderBy: { createdAt: "asc" } },
   challans: { orderBy: { date: "asc" }, include: { lines: { orderBy: { position: "asc" } } } },
+  purchases: { orderBy: { date: "asc" }, include: { challan: { select: { number: true } } } },
 } as const;
 
 export async function requestReturn(orderCode: string, input: ReturnRequestInput) {

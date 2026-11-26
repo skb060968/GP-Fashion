@@ -3,6 +3,7 @@ import { prisma } from "../prisma"
 import { business } from "../data/business"
 import { currentFyStart } from "../gst/period"
 import { loadSalesRecords } from "../gst/recordsData"
+import { itcContext } from "./purchaseService"
 import {
   RETURN_TITLE,
   addHeads,
@@ -34,13 +35,18 @@ export class ReturnsError extends Error {
   }
 }
 
-type Filing = { kind: string; period: string; itcIgst: number; itcCgst: number; itcSgst: number; paidIgst: number; paidCgst: number; paidSgst: number; filedAt: Date | null; reference: string | null; note: string | null; snapshot: unknown }
+type Filing = { kind: string; period: string; itcIgst: number; itcCgst: number; itcSgst: number; itcSaved: boolean; paidIgst: number; paidCgst: number; paidSgst: number; filedAt: Date | null; reference: string | null; note: string | null; snapshot: unknown }
+
+export type ItcSource = "saved" | "gstr2b" | "register" | "none"
 
 export type ReturnDetails =
-  | { kind: "PMT06"; sales: PeriodSales; itc: Heads; carried: Heads; setOff: SetOff; cash: Heads }
+  | { kind: "PMT06"; sales: PeriodSales; itc: Heads; itcSource: ItcSource; suggested: Heads; registerBills: number; carried: Heads; setOff: SetOff; cash: Heads }
   | { kind: "IFF"; b2b: number }
   | { kind: "GSTR1"; sales: PeriodSales; nil: boolean }
-  | { kind: "GSTR3B"; sales: PeriodSales; itc: Heads; itcFromMonths: boolean; setOff: SetOff; cash: Heads; paidMonthly: Heads; balance: Heads; excess: Heads; nil: boolean }
+  | {
+      kind: "GSTR3B"; sales: PeriodSales; itc: Heads; itcSource: ItcSource; suggested: Heads; registerBills: number; gstr2bLoaded: boolean
+      setOff: SetOff; cash: Heads; paidMonthly: Heads; balance: Heads; excess: Heads; nil: boolean
+    }
   | { kind: "ITC04"; sent: number; received: number }
   | { kind: "GSTR9"; sales: PeriodSales }
 
@@ -90,8 +96,9 @@ export async function gstReturns(fyStart: number, now = new Date()) {
   const reg = registeredOn()
   const slots = returnCalendar(fyStart, reg, business.stateCode)
   const fyFrom = istDay(fyStart, 3, 1), fyTo = istDay(fyStart + 1, 3, 1)
-  const [{ invoices, creditNotes }, challans, filingRows] = await Promise.all([
+  const [{ invoices, creditNotes }, suggest, challans, filingRows] = await Promise.all([
     loadSalesRecords(fyFrom, fyTo),
+    itcContext(fyFrom, fyTo),
     prisma.jobWorkChallan.findMany({
       where: { OR: [{ date: { gte: fyFrom, lt: fyTo } }, { receivedAt: { gte: fyFrom, lt: fyTo } }] },
       select: { date: true, receivedAt: true, cancelledAt: true },
@@ -112,12 +119,15 @@ export async function gstReturns(fyStart: number, now = new Date()) {
 
     if (slot.kind === "PMT06") {
       const s = sales(slot)
-      const itc = itcOf(filing)
+      const suggestion = suggest(slot.from, slot.to)
+      const suggested = suggestion.gstr2b ?? suggestion.register
+      const source: ItcSource = filing?.itcSaved ? "saved" : suggestion.gstr2b ? "gstr2b" : suggestion.registerBills ? "register" : "none"
+      const itc = filing?.itcSaved ? itcOf(filing) : suggested
       const carried = slot.monthInQuarter === 1 ? carry.get(`${slot.fyStart}-Q${slot.quarter}`) ?? zeroHeads() : zeroHeads()
       const so = setOff(s.tax, addHeads(itc, carried))
       if (slot.monthInQuarter === 0) carry.set(`${slot.fyStart}-Q${slot.quarter}`, so.creditLeft)
       const cash = roundRupees(so.cash)
-      details = { kind: "PMT06", sales: s, itc, carried, setOff: so, cash }
+      details = { kind: "PMT06", sales: s, itc, itcSource: source, suggested, registerBills: suggestion.registerBills, carried, setOff: so, cash }
       nothing = totalHeads(cash) === 0
     } else if (slot.kind === "IFF") {
       const s = sales(slot)
@@ -132,14 +142,19 @@ export async function gstReturns(fyStart: number, now = new Date()) {
       const s = sales(slot)
       const months = slots.filter((m) => m.kind === "PMT06" && m.fyStart === slot.fyStart && m.quarter === slot.quarter)
       const monthly = months.map((m) => filings.get(key("PMT06", m.period)))
-      const itcFromMonths = !filing
-      const itc = filing ? itcOf(filing) : monthly.reduce((t, f) => addHeads(t, itcOf(f)), zeroHeads())
+      const suggestion = suggest(slot.from, slot.to)
+      const suggested = suggestion.gstr2b ?? suggestion.register
+      const source: ItcSource = filing?.itcSaved ? "saved" : suggestion.gstr2b ? "gstr2b" : suggestion.registerBills ? "register" : "none"
+      const itc = filing?.itcSaved ? itcOf(filing) : suggested
       const so = setOff(s.tax, itc)
       const cash = roundRupees(so.cash)
       const paidMonthly = monthly.filter((f) => f?.filedAt).reduce((t, f) => addHeads(t, paidOf(f)), zeroHeads())
       const balance = clampHeads(subHeads(cash, paidMonthly))
       const excess = clampHeads(subHeads(paidMonthly, cash))
-      details = { kind: "GSTR3B", sales: s, itc, itcFromMonths, setOff: so, cash, paidMonthly, balance, excess, nil: s.invoices === 0 && s.creditNotes === 0 && totalHeads(itc) === 0 }
+      details = {
+        kind: "GSTR3B", sales: s, itc, itcSource: source, suggested, registerBills: suggestion.registerBills, gstr2bLoaded: !!suggestion.gstr2b,
+        setOff: so, cash, paidMonthly, balance, excess, nil: s.invoices === 0 && s.creditNotes === 0 && totalHeads(itc) === 0,
+      }
     } else if (slot.kind === "ITC04") {
       const sent = challans.filter((c) => !c.cancelledAt && c.date >= slot.from && c.date < slot.to).length
       const received = challans.filter((c) => c.receivedAt && c.receivedAt >= slot.from && c.receivedAt < slot.to).length
@@ -197,6 +212,7 @@ export type FilingInput = {
   kind: ReturnKind
   period: string
   itc?: Heads
+  resetItc?: boolean
   paid?: Heads
   filed?: boolean
   filedOn?: string
@@ -219,7 +235,8 @@ export async function saveFiling(input: FilingInput, now = new Date()) {
 
   const where = { kind_period: { kind: input.kind, period: input.period } }
   const draft = {
-    ...(input.itc ? { itcIgst: input.itc.igst, itcCgst: input.itc.cgst, itcSgst: input.itc.sgst } : {}),
+    ...(input.itc ? { itcIgst: input.itc.igst, itcCgst: input.itc.cgst, itcSgst: input.itc.sgst, itcSaved: true } : {}),
+    ...(input.resetItc ? { itcIgst: 0, itcCgst: 0, itcSgst: 0, itcSaved: false } : {}),
     ...(input.note !== undefined ? { note: input.note.trim() || null } : {}),
   }
   await prisma.gstFiling.upsert({ where, create: { kind: input.kind, period: input.period, ...draft }, update: draft })

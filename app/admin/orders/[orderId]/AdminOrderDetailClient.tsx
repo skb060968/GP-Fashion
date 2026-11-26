@@ -22,6 +22,8 @@ import { isSnapshot, itemSizeLabel } from "@/lib/measurements/fields"
 import { measureAppPayload } from "@/lib/measurements/measureApp"
 import { categoryOf } from "@/lib/data/categories"
 import ChallansPanel, { type AdminChallan } from "@/components/admin/ChallansPanel"
+import CostsPanel from "@/components/admin/CostsPanel"
+import type { AdminPurchase } from "@/components/admin/PurchaseDialog"
 import { shippingBlock, shippingBlockMessage } from "@/lib/jobwork/challan"
 import { challanItems } from "@/lib/jobwork/items"
 
@@ -86,6 +88,7 @@ type Order = {
   creditNotes: { number: string; date: string; amount: number; reason: string; items: { orderItemId: string; quantity: number }[] }[]
   returnRequests: { id: string; createdAt: string; reason: string; resolution: string; note: string | null; items: unknown }[]
   challans: AdminChallan[]
+  purchases: AdminPurchase[]
 }
 
 const fmtDateTime = (iso: string) =>
@@ -459,6 +462,17 @@ export default function AdminOrderDetailClient() {
           </Card>
 
           <ChallansPanel<Order> order={order} onUpdated={setOrder} onFlash={(text) => setFlash({ tone: "success", text })} />
+
+          <CostsPanel
+            orderCode={order.orderCode}
+            taxableValue={order.taxableValue}
+            purchases={order.purchases}
+            challans={order.challans}
+            onChanged={(text) => {
+              setFlash({ tone: "success", text })
+              adminFetch<Order>(`/api/admin/orders/${order.orderCode}`).then(setOrder).catch(() => {})
+            }}
+          />
 
           <Card title="History" padded={false}>
             <ol className="divide-y divide-black/5">

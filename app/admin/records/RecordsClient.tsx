@@ -40,6 +40,7 @@ type RecordsResponse = {
   challans: Doc[]
   challanSummary: { sent: number; received: number; open: number }
   challanRegister: string | null
+  purchaseRegister: string | null
   itc04: Sheet[] | null
 }
 
@@ -129,7 +130,7 @@ export default function RecordsClient() {
   const gstr1Xlsx = gstr1Name.replace(/\.json$/, ".xlsx")
   const zipName = data ? `PBL-records-${data.period.slug}.zip` : ""
   const itc04Name = data ? `ITC-04-${data.gstin}-${data.period.slug}.xlsx` : ""
-  const docCount = data ? data.invoices.length + data.creditNotes.length + data.challans.length : 0
+  const docCount = data ? data.invoices.length + data.creditNotes.length + data.challans.length + (data.purchaseRegister ? 1 : 0) : 0
 
   const downloadZip = async () => {
     if (!data) return
@@ -165,6 +166,7 @@ export default function RecordsClient() {
       if (data.creditRegister) entries.push({ name: `${root}/Credit-note-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.creditRegister}`) })
       if (data.challanRegister) entries.push({ name: `${root}/Job-work-challan-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.challanRegister}`) })
       if (data.itc04) entries.push({ name: `${root}/${itc04Name}`, data: makeXlsx(data.itc04) })
+      if (data.purchaseRegister) entries.push({ name: `${root}/Purchase-register-${data.period.slug}.csv`, data: enc.encode(`\ufeff${data.purchaseRegister}`) })
       if (data.gstr1) {
         entries.push({ name: `${root}/${gstr1Name}`, data: enc.encode(JSON.stringify(data.gstr1)) })
         entries.push({ name: `${root}/${gstr1Xlsx}`, data: gstr1Workbook(data) })
@@ -343,7 +345,7 @@ export default function RecordsClient() {
               <FolderArchive className="h-4 w-4" strokeWidth={1.75} aria-hidden /> Invoices (ZIP)
             </div>
             <p className="font-jost text-sm text-black/60">
-              Every tax invoice, credit note and job work challan in the period as a PDF, their registers as spreadsheets (CSV), the ITC-04 workbook and, for a quarter, the GSTR-1 file in JSON and Excel.
+              Every tax invoice, credit note and job work challan in the period as a PDF, their registers and the purchase register as spreadsheets (CSV), the ITC-04 workbook and, for a quarter, the GSTR-1 file in JSON and Excel.
             </p>
             <button
               type="button"

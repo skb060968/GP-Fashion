@@ -576,13 +576,48 @@ export const adminHelpTopics: HelpTopic[] = [
         blocks: [
           { type: "steps", items: [
             "Open the return on Admin > GST returns. The figures come from the invoices and credit notes dated in the period.",
-            "For PMT-06 and GSTR-3B, enter the input tax credit shown in GSTR-2B on the portal (purchases are not recorded on the site) and choose Save input tax credit. The page sets the credit off against the tax in the order GST law requires and shows the cash to pay.",
+            "For PMT-06 and GSTR-3B the input tax credit is filled in from the purchase register: for GSTR-3B from the bills that match the quarter's GSTR-2B once it is uploaded on the Purchases page. You can change it and choose Save input tax credit. The page sets the credit off against the tax in the order GST law requires and shows the cash to pay.",
             "File or pay on gst.gov.in as described under How to file on the return.",
             "Choose Mark filed (or Record payment for PMT-06) and enter the date and the ARN or CIN. GSTR-3B takes off the PMT-06 amounts already paid in the quarter.",
           ] },
           { type: "note", tone: "info", text: "A month with no tax left after credit needs no PMT-06 challan. A quarter with no sales needs a nil GSTR-1 and a nil GSTR-3B, which can also be filed by SMS to 14409 from the registered mobile." },
           { type: "note", tone: "warning", text: "Late returns attract a late fee for each day, and late tax attracts interest at 18% a year. The dashboard shows returns due within 7 days and those overdue." },
           { type: "note", tone: "info", text: "If an invoice or credit note is added to a period after its return was filed, the return shows that its sales have changed. Correct the difference in the next return, or ask your CA." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "purchases",
+    title: "Purchases, expenses and GSTR-2B",
+    summary: "Recording purchase bills and other costs, linking them to orders, and checking the GST bills against GSTR-2B for input tax credit.",
+    keywords: ["purchase", "purchases", "expense", "bill", "fabric bill", "gstr-2b", "gstr2b", "2b", "input tax credit", "itc", "reconcile", "ims", "cost", "margin", "tailor labour"],
+    sections: [
+      {
+        title: "Entering bills and expenses",
+        blocks: [
+          { type: "steps", items: [
+            "Open Admin > Purchases and choose New entry, or Add cost on an order page to link it to that order straight away.",
+            "Choose the type: GST bill (from a registered seller), Supplier credit note (a seller reduced an earlier bill) or Expense without GST (the tailor's labour, unregistered sellers).",
+            "Enter the details as printed on the bill: date, supplier and GSTIN, bill number, what was bought, the amount before GST and the GST. The GST is worked out from the rate; type the amounts from the bill if it has items at more than one rate.",
+            "Link it to an order, and to a job work challan if the fabric went to a tailor on one.",
+          ] },
+          { type: "note", tone: "info", text: "Untick Claim input tax credit for things GST allows no credit on, such as food or personal use. They count as a cost with their GST." },
+          { type: "text", text: "The order page shows the costs linked to the order and the margin: the sale value before GST less the costs, with GST that is claimed as credit taken off." },
+        ],
+      },
+      {
+        title: "Matching with GSTR-2B",
+        blocks: [
+          { type: "steps", items: [
+            "Under QRMP, GSTR-2B is made once a quarter, on the 14th of the month after it. On gst.gov.in open Returns Dashboard, choose the quarter, and in the GSTR-2B tile download it as JSON.",
+            "On Admin > Purchases choose Upload GSTR-2B (JSON) and pick the file.",
+            "Each GST bill now shows In GSTR-2B, Amount differs, Credit not available or Not in GSTR-2B yet. Documents in GSTR-2B that are not in the register are listed with Add to register.",
+            "On the GST returns page, GSTR-3B for the quarter takes its input tax credit from the bills that match.",
+          ] },
+          { type: "note", tone: "warning", text: "Credit can be claimed only for bills that appear in GSTR-2B. If a bill is missing, ask the seller to report it in their GSTR-1; it shows up in a later GSTR-2B and is claimed then." },
+          { type: "note", tone: "info", text: "PMT-06 for the first two months of a quarter has no GSTR-2B, so its credit comes from the bills in the register for that month. Check them in the Invoice Management System (IMS) on the portal before paying." },
+          { type: "note", tone: "info", text: "The purchase register for the period is in the Records ZIP as a spreadsheet." },
         ],
       },
     ],

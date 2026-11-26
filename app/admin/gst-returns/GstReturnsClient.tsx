@@ -13,11 +13,38 @@ import { addHeads, clampHeads, roundRupees, setOff, subHeads, type Heads } from 
 
 type Sales = { invoices: number; creditNotes: number; b2b: number; taxableValue: number; tax: Heads; interState: { pos: string; taxableValue: number; igst: number }[] }
 type SetOff = { liability: Heads; credit: Heads; creditUsed: Heads; creditLeft: Heads; cash: Heads }
+type ItcSource = "saved" | "gstr2b" | "register" | "none"
+
+function ItcSourceNote({ d, filed, onReset, busy }: { d: Extract<Details, { kind: "PMT06" | "GSTR3B" }>; filed: boolean; onReset: () => void; busy: boolean }) {
+  const differs = HEADS.some((h) => d.suggested[h] !== d.itc[h])
+  const from =
+    d.kind === "GSTR3B" && d.gstr2bLoaded
+      ? "the bills in the purchase register that match GSTR-2B"
+      : d.registerBills
+        ? `the ${d.registerBills} GST ${d.registerBills === 1 ? "bill" : "bills"} in the purchase register${d.kind === "GSTR3B" ? " (GSTR-2B not uploaded yet, so not checked)" : ""}`
+        : null
+  return (
+    <p className="mt-2 text-xs text-black/55">
+      {d.itcSource === "saved" ? "Credit as you saved it." : from ? `Filled in from ${from}.` : "No GST bills in the purchase register for this period."}{" "}
+      {d.itcSource === "saved" && differs && !filed && (
+        <>
+          The register gives {formatRupeesExact(total(d.suggested))}.{" "}
+          <button type="button" onClick={onReset} disabled={busy} className="font-semibold text-black underline underline-offset-2">Use the register figures</button>
+        </>
+      )}
+      {d.kind === "PMT06" && " Under QRMP there is no GSTR-2B for this month: check the bills in IMS on the portal before paying."}
+      {" "}<Link href="/admin/purchases" className="underline underline-offset-2">Purchases</Link>
+    </p>
+  )
+}
 type Details =
-  | { kind: "PMT06"; sales: Sales; itc: Heads; carried: Heads; setOff: SetOff; cash: Heads }
+  | { kind: "PMT06"; sales: Sales; itc: Heads; itcSource: ItcSource; suggested: Heads; registerBills: number; carried: Heads; setOff: SetOff; cash: Heads }
   | { kind: "IFF"; b2b: number }
   | { kind: "GSTR1"; sales: Sales; nil: boolean }
-  | { kind: "GSTR3B"; sales: Sales; itc: Heads; itcFromMonths: boolean; setOff: SetOff; cash: Heads; paidMonthly: Heads; balance: Heads; excess: Heads; nil: boolean }
+  | {
+      kind: "GSTR3B"; sales: Sales; itc: Heads; itcSource: ItcSource; suggested: Heads; registerBills: number; gstr2bLoaded: boolean
+      setOff: SetOff; cash: Heads; paidMonthly: Heads; balance: Heads; excess: Heads; nil: boolean
+    }
   | { kind: "ITC04"; sent: number; received: number }
   | { kind: "GSTR9"; sales: Sales }
 
@@ -302,7 +329,7 @@ export default function GstReturnsClient() {
       )}
 
       <Alert tone="info">
-        Returns are filed on gst.gov.in with the OTP sent to the registered mobile. This page works out what each return and payment should contain from the site&apos;s invoices and credit notes, and keeps a record of each one filed. Purchases are not recorded on the site, so enter the input tax credit from GSTR-2B where asked.
+        Returns are filed on gst.gov.in with the OTP sent to the registered mobile. This page works out what each return and payment should contain from the site&apos;s invoices and credit notes, and keeps a record of each one filed. Input tax credit comes from the purchase register, checked against GSTR-2B once you upload it on the Purchases page.
       </Alert>
 
       {!data ? (
@@ -360,6 +387,7 @@ export default function GstReturnsClient() {
                           setItc={(v) => setItc((m) => ({ ...m, [k]: v }))}
                           busy={busy === k}
                           onSaveItc={() => save({ kind: r.kind, period: r.period, itc: headsPaise(itc[k] ?? {}) }, `${r.title}, ${r.label}: input tax credit saved.`)}
+                          onResetItc={() => save({ kind: r.kind, period: r.period, resetItc: true }, `${r.title}, ${r.label}: credit taken from the purchase register.`)}
                           onFile={() => setFiling(r)}
                           onUndo={() => save({ kind: r.kind, period: r.period, filed: false }, `${r.title}, ${r.label}: marked not filed.`)}
                         />
@@ -394,6 +422,7 @@ function Worksheet({
   setItc,
   busy,
   onSaveItc,
+  onResetItc,
   onFile,
   onUndo,
 }: {
@@ -402,6 +431,7 @@ function Worksheet({
   setItc: (v: Record<string, string>) => void
   busy: boolean
   onSaveItc: () => void
+  onResetItc: () => void
   onFile: () => void
   onUndo: () => void
 }) {
@@ -458,10 +488,9 @@ function Worksheet({
           <HeadsRow name="Paid from credit" value={now.setOff.creditUsed} />
           <HeadsRow name="Pay in cash (PMT-06)" value={now.cash} strong />
         </HeadsTable>
-        {total(now.cash) === 0 ? (
+        <ItcSourceNote d={d} filed={filed} onReset={onResetItc} busy={busy} />
+        {total(now.cash) === 0 && (
           <p className="text-black/70">No tax to pay for this month, so no PMT-06 challan is needed. Any tax is settled with the quarter&apos;s GSTR-3B.</p>
-        ) : (
-          total(liability) > 0 && total(now.credit) === 0 && <p className="text-xs text-black/55">If there are purchase invoices for the month in GSTR-2B, enter their tax above and save; otherwise the full tax is payable.</p>
         )}
         {changed}
         {actions}
@@ -549,9 +578,7 @@ function Worksheet({
               <HeadsRow name="Pay now with GSTR-3B" value={now.balance} strong />
             </HeadsTable>
           </div>
-          {d.itcFromMonths && total(d.itc) > 0 && (
-            <p className="mt-2 text-xs text-black/55">Filled in from the credit entered for the first two months. Add the third month&apos;s credit from GSTR-2B and save.</p>
-          )}
+          <ItcSourceNote d={d} filed={filed} onReset={onResetItc} busy={busy} />
           {total(now.excess) > 0 && (
             <p className="mt-2 text-xs text-black/55">{formatRupeesExact(total(now.excess))} paid with PMT-06 is more than needed. It stays in the electronic cash ledger for the next quarter.</p>
           )}
