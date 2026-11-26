@@ -9,6 +9,8 @@ export const business = {
   state: "Delhi",
   stateCode: "07",
   gstin: "07FSKPB8774F1ZD",
+  gstRegisteredOn: "2026-11-19",
+  annualReturnOptional: true,
   email: contact.email,
   phone: contact.phone,
   invoicePrefix: "PBL",

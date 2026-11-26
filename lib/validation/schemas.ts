@@ -3,6 +3,7 @@ import { OrderStatus } from "@prisma/client";
 import { PERSON_KINDS } from "@/lib/measurements/fields";
 import { gstinError, normaliseGstin } from "@/lib/gst/gstin";
 import { stateByCode } from "@/lib/gst/states";
+import { RETURN_KINDS } from "@/lib/gst/returns";
 import { PAYMENT_REFERENCE_ERROR, PAYMENT_REFERENCE_RE, normalisePaymentReference } from "@/lib/payments/reference";
 
 export const sizeLabelSchema = z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9][A-Za-z0-9 .\/()+&-]*$/, "Invalid size")
@@ -186,6 +187,23 @@ export const challanUpdateSchema = z.union([
   }),
   z.object({ action: z.literal("cancel"), reason: z.string().trim().max(200, "Keep the reason under 200 characters") }),
 ]);
+
+const taxHeadsSchema = z.object({
+  igst: z.number().int().min(0).max(100_000_000_000),
+  cgst: z.number().int().min(0).max(100_000_000_000),
+  sgst: z.number().int().min(0).max(100_000_000_000),
+});
+
+export const gstFilingSchema = z.object({
+  kind: z.enum(RETURN_KINDS),
+  period: z.string().max(10),
+  itc: taxHeadsSchema.optional(),
+  paid: taxHeadsSchema.optional(),
+  filed: z.boolean().optional(),
+  filedOn: z.string().max(10).optional(),
+  reference: optionalText(30, "Keep the ARN or CIN under 30 characters"),
+  note: optionalText(300, "Keep the note under 300 characters"),
+});
 
 export const couponSchema = z.object({
   code: z.string().min(1, "Code is required").regex(

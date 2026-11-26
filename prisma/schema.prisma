@@ -420,6 +420,26 @@ model Coupon {
   createdAt      DateTime     @default(now())
 }
 
+model GstFiling {
+  id        String    @id @default(cuid())
+  kind      String
+  period    String
+  itcIgst   Int       @default(0)
+  itcCgst   Int       @default(0)
+  itcSgst   Int       @default(0)
+  paidIgst  Int       @default(0)
+  paidCgst  Int       @default(0)
+  paidSgst  Int       @default(0)
+  filedAt   DateTime?
+  reference String?
+  note      String?
+  snapshot  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  @@unique([kind, period])
+}
+
 model InvoiceCounter {
   financialYear String @id
   last          Int

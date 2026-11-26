@@ -4,28 +4,11 @@ import { requireAdmin } from "@/lib/security/adminAuth"
 import { business, gstinIsPlaceholder } from "@/lib/data/business"
 import { invoiceFileName } from "@/lib/orders/orderDocument"
 import { creditNoteFileName, creditNoteSlug } from "@/lib/gst/creditNote"
-import {
-  buildGstr1,
-  creditNoteRegisterCsv,
-  invoiceRegisterCsv,
-  recordWarnings,
-  sortCreditNotes,
-  sortInvoices,
-  summarise,
-  type RecordCreditNote,
-  type RecordInvoice,
-} from "@/lib/gst/gstr1"
+import { buildGstr1, creditNoteRegisterCsv, invoiceRegisterCsv, recordWarnings, summarise } from "@/lib/gst/gstr1"
+import { loadSalesRecords } from "@/lib/gst/recordsData"
 import { currentFyStart, previousQuarter, recordPeriod, type Quarter } from "@/lib/gst/period"
 import { challanFileName, challanSlug, parsePieces } from "@/lib/jobwork/challan"
 import { challanRegisterCsv, challanWarnings, itc04Sheets, sortChallans, type RecordChallan } from "@/lib/jobwork/records"
-
-const item = (i: { hsn: string; gstRate: number; quantity: number; taxableValue: number; taxAmount: number }) => ({
-  hsn: i.hsn,
-  gstRate: i.gstRate,
-  quantity: i.quantity,
-  taxableValue: i.taxableValue,
-  taxAmount: i.taxAmount,
-})
 
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin(req)
@@ -45,15 +28,8 @@ export async function GET(req: NextRequest) {
     const period = recordPeriod(fy, q === "all" ? null : (Number(q) as Quarter))
 
     const inPeriod = { gte: period.from, lt: period.to }
-    const [orders, notes, earliest, challanRows, openChallans] = await Promise.all([
-      prisma.order.findMany({
-        where: { invoiceNumber: { not: null }, invoiceDate: { gte: period.from, lt: period.to } },
-        include: { address: true, billingAddress: true, items: true, creditNotes: { select: { number: true }, orderBy: { date: "asc" } } },
-      }),
-      prisma.creditNote.findMany({
-        where: { date: { gte: period.from, lt: period.to } },
-        include: { items: true, order: { select: { orderCode: true, address: { select: { fullName: true } }, billingAddress: { select: { fullName: true } } } } },
-      }),
+    const [{ invoices, creditNotes }, earliest, challanRows, openChallans] = await Promise.all([
+      loadSalesRecords(period.from, period.to),
       prisma.order.findFirst({
         where: { invoiceNumber: { not: null } },
         orderBy: { invoiceDate: "asc" },
@@ -93,52 +69,6 @@ export async function GET(req: NextRequest) {
     const within = (d: Date | string | null) => !!d && new Date(d) >= period.from && new Date(d) < period.to
     const sentInPeriod = challans.filter((c) => within(c.date))
     const receivedInPeriod = challans.filter((c) => within(c.receivedAt))
-
-    const invoices: RecordInvoice[] = sortInvoices(
-      orders.map((o) => ({
-        orderCode: o.orderCode,
-        invoiceNumber: o.invoiceNumber!,
-        invoiceDate: o.invoiceDate ?? o.updatedAt,
-        amount: o.amount,
-        taxableValue: o.taxableValue,
-        cgst: o.cgst,
-        sgst: o.sgst,
-        igst: o.igst,
-        placeOfSupply: o.placeOfSupply,
-        buyerGstin: o.buyerGstin,
-        buyerName: o.buyerName,
-        customerName: o.billingAddress?.fullName ?? o.address?.fullName ?? null,
-        sellerGstin: o.sellerGstin,
-        sellerStateCode: o.sellerStateCode,
-        status: o.status,
-        creditNotes: o.creditNotes.map((c) => c.number),
-        items: o.items.map(item),
-      }))
-    )
-
-    const creditNotes: RecordCreditNote[] = sortCreditNotes(
-      notes.map((c) => ({
-        number: c.number,
-        date: c.date,
-        reason: c.reason,
-        orderCode: c.order.orderCode,
-        invoiceNumber: c.invoiceNumber,
-        invoiceDate: c.invoiceDate,
-        invoiceAmount: c.invoiceAmount,
-        amount: c.amount,
-        taxableValue: c.taxableValue,
-        cgst: c.cgst,
-        sgst: c.sgst,
-        igst: c.igst,
-        placeOfSupply: c.placeOfSupply,
-        buyerGstin: c.buyerGstin,
-        buyerName: c.buyerName,
-        customerName: c.order.billingAddress?.fullName ?? c.order.address?.fullName ?? null,
-        sellerGstin: c.sellerGstin,
-        sellerStateCode: c.sellerStateCode,
-        items: c.items.map(item),
-      }))
-    )
 
     const placeholder = gstinIsPlaceholder()
     const gstr1 = period.fp && !placeholder ? buildGstr1(invoices, period, business.gstin, business.stateCode, creditNotes) : null

@@ -551,6 +551,43 @@ export const adminHelpTopics: HelpTopic[] = [
     ],
   },
   {
+    id: "gst-returns",
+    title: "GST returns and due dates",
+    summary: "What to file and pay each month, quarter and year under QRMP, worked out from the site's invoices, with a record of each filing.",
+    keywords: ["gst returns", "due date", "qrmp", "pmt-06", "pmt06", "gstr-3b", "gstr3b", "gstr-1", "iff", "gstr-9", "itc-04", "challan", "cin", "arn", "nil return", "input tax credit", "itc"],
+    sections: [
+      {
+        title: "What is due",
+        blocks: [
+          { type: "text", text: "The business files under QRMP: GSTR-1 and GSTR-3B every quarter, with tax paid each month by PMT-06 challan. Admin > GST returns lists every return and payment from the GST registration onward, with its due date and status." },
+          { type: "table", headers: ["Return", "Period", "Due"], rows: [
+            ["PMT-06 tax payment", "First and second month of each quarter", "25th of the next month"],
+            ["IFF (optional)", "First and second month, only when there are B2B invoices", "13th of the next month"],
+            ["GSTR-1", "Quarter", "13th of the month after the quarter"],
+            ["GSTR-3B", "Quarter", "24th of the month after the quarter (Delhi)"],
+            ["ITC-04", "Financial year", "25 April"],
+            ["GSTR-9", "Financial year (optional up to ₹2 crore turnover)", "31 December"],
+          ] },
+          { type: "note", tone: "info", text: "The government sometimes extends a due date by notification. The page uses the normal dates; check the portal's notices near each due date." },
+        ],
+      },
+      {
+        title: "Each month and quarter",
+        blocks: [
+          { type: "steps", items: [
+            "Open the return on Admin > GST returns. The figures come from the invoices and credit notes dated in the period.",
+            "For PMT-06 and GSTR-3B, enter the input tax credit shown in GSTR-2B on the portal (purchases are not recorded on the site) and choose Save input tax credit. The page sets the credit off against the tax in the order GST law requires and shows the cash to pay.",
+            "File or pay on gst.gov.in as described under How to file on the return.",
+            "Choose Mark filed (or Record payment for PMT-06) and enter the date and the ARN or CIN. GSTR-3B takes off the PMT-06 amounts already paid in the quarter.",
+          ] },
+          { type: "note", tone: "info", text: "A month with no tax left after credit needs no PMT-06 challan. A quarter with no sales needs a nil GSTR-1 and a nil GSTR-3B, which can also be filed by SMS to 14409 from the registered mobile." },
+          { type: "note", tone: "warning", text: "Late returns attract a late fee for each day, and late tax attracts interest at 18% a year. The dashboard shows returns due within 7 days and those overdue." },
+          { type: "note", tone: "info", text: "If an invoice or credit note is added to a period after its return was filed, the return shows that its sales have changed. Correct the difference in the next return, or ask your CA." },
+        ],
+      },
+    ],
+  },
+  {
     id: "made-to-measure",
     title: "Made-to-measure orders",
     summary: "Confirm customer measurements before cutting, correct them on the order, and load them into Measurements.",

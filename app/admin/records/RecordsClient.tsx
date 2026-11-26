@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Download, FileJson, FileSpreadsheet, FolderArchive } from "lucide-react"
 import { makeXlsx, type Sheet } from "@/lib/xlsx"
 import { gstr1Sheets } from "@/lib/gst/gstr1Excel"
@@ -95,9 +96,12 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default function RecordsClient() {
+  const params = useSearchParams()
   const initial = previousQuarter()
-  const [fy, setFy] = useState(initial.fyStart)
-  const [q, setQ] = useState<string>(String(initial.quarter))
+  const askedFy = Number(params.get("fy"))
+  const askedQ = params.get("q")
+  const [fy, setFy] = useState(Number.isInteger(askedFy) && askedFy >= 2017 ? askedFy : initial.fyStart)
+  const [q, setQ] = useState<string>(askedQ && ["1", "2", "3", "4", "all"].includes(askedQ) ? askedQ : String(initial.quarter))
   const [data, setData] = useState<RecordsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

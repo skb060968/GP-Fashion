@@ -33,6 +33,8 @@ type Dashboard = {
   generatedAt: string
 }
 
+type ReturnAlert = { kind: string; title: string; period: string; label: string; due: string; daysLeft: number; status: "overdue" | "dueSoon" }
+
 const VERIFY = TRANSITIONS.UNDER_VERIFICATION.find((t) => t.to === "VERIFIED")!
 const REJECT = TRANSITIONS.UNDER_VERIFICATION.find((t) => t.to === "REJECTED")!
 
@@ -55,10 +57,14 @@ export default function DashboardClient() {
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<{ tone: "success" | "error"; text: string } | null>(null)
   const [dialog, setDialog] = useState<{ target: StatusChangeTarget; transition: Transition } | null>(null)
+  const [returnsDue, setReturnsDue] = useState<ReturnAlert[]>([])
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
+    adminFetch<{ alerts: ReturnAlert[] }>("/api/admin/gst-returns?alerts=1")
+      .then((r) => setReturnsDue(r.alerts))
+      .catch(() => setReturnsDue([]))
     try {
       setData(await adminFetch<Dashboard>("/api/admin/dashboard"))
     } catch (e) {
@@ -116,6 +122,27 @@ export default function DashboardClient() {
             {flash.text}
           </Alert>
         </div>
+      )}
+
+      {returnsDue.length > 0 && (
+        <Link
+          href="/admin/gst-returns"
+          className={`mb-5 block rounded-xl border p-4 font-jost transition-colors hover:border-black ${returnsDue.some((r) => r.status === "overdue") ? "border-red-200 bg-red-50" : "border-amber-300 bg-amber-50"}`}
+        >
+          <p className="text-sm font-semibold">GST returns due</p>
+          <ul className="mt-1 space-y-0.5 text-sm text-black/75">
+            {returnsDue.map((r) => (
+              <li key={`${r.kind}|${r.period}`}>
+                {r.title}, {r.label}:{" "}
+                {r.status === "overdue"
+                  ? `overdue since ${new Date(r.due).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}`
+                  : r.daysLeft <= 1
+                    ? "due today"
+                    : `due in ${r.daysLeft} days (${new Date(r.due).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })})`}
+              </li>
+            ))}
+          </ul>
+        </Link>
       )}
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-7">
